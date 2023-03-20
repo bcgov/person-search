@@ -1,0 +1,35 @@
+[
+    {
+        "vault": "nats",
+        "application": [
+            "base",
+            "entity-events-listener",
+            "bor-solr-updater"
+        ]
+    },
+    {
+        "vault": "sentry",
+        "application": [
+             "bor-backend"
+        ]
+    },
+    {
+        "vault": "API",
+        "application": [
+            "legal-api",
+            "bor-api",
+            "bor-api-internal"
+        ]
+    },
+    {
+        "vault": "keycloak",
+        "application": [
+            "base",
+            "business-search-service-account"
+        ]
+    },
+    {
+        "vault": "bor",
+        "application": ["shared"]
+    }
+]

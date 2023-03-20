@@ -1,0 +1,7 @@
+cx_Oracle
+Flask
+python-dotenv
+sentry-sdk[flask]
+# for bor-api dependency
+certifi==2022.5.18.1
+requests

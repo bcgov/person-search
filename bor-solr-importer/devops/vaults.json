@@ -1,0 +1,30 @@
+[
+    {
+        "vault": "API",
+        "application": [
+            "bor-api",
+            "bor-api-internal"
+        ]
+    },
+    {
+        "vault": "entity",
+        "application": [
+            "colin-api",
+            "postgres-legal"
+        ]
+    },
+    {
+        "vault": "bor",
+        "application": [
+            "shared",
+            "bor-solr",
+            "bor-solr-importer"
+        ]
+    },
+    {
+        "vault": "sentry",
+        "application": [
+            "bor-backend"
+        ]
+    }
+]

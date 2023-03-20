@@ -1,5 +1,4 @@
 # Beneficial Ownership Registry
-BC Registry's business search service
 ## bor-ui
 UI portion for beneficial ownership. Contains user facing registries searching and results components.
 ## bor-api

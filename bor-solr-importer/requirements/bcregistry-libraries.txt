@@ -1,0 +1,1 @@
+https://github.com/bcgov-registries/beneficial-ownership.git#egg=bor_api&subdirectory=bor-api

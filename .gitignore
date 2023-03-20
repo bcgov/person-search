@@ -20,8 +20,8 @@ pids
 lib-cov
 
 # Coverage directory used by tools like istanbul
-search-api/.coverage
-search-api/coverage.xml
+bor-api/.coverage
+bor-api/coverage.xml
 *.lcov
 
 # nyc test coverage
@@ -121,7 +121,7 @@ htmlcov/
 bor-ui/public/config/local.configuration.json
 
 # local solr index
-bor-solr/bitnami/solr/server/solr/search/data/*
+bor-solr/bitnami/solr/server/solr/bor/data/*
 # local test solr (for api unit tests)
 bor-solr/test_solr
 

@@ -1,4 +1,4 @@
-FROM bitnami/solr:9.0.0
+FROM bitnami/solr:9.1.1
 USER root
 
 ARG VCS_REF="missing"

@@ -326,7 +326,7 @@
   <!-- <field name="addressCountry_q" type="string" indexed="true" stored="false"/> -->
   <field name="addressRegion" type="string" docValues="true" indexed="true" stored="true"/>
   <!-- <field name="addressRegion_q" type="string" indexed="true" stored="false"/> -->
-  <field name="address_q" type="text_stemmed" indexed="true" stored="false"/>
+  <field name="address_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="postalCode" type="string" indexed="false" stored="true"/>
   <field name="postalCode_q" type="phrase_ngram" indexed="true" stored="false"/>
   <field name="streetAddress" type="string" indexed="false" stored="true"/>

@@ -27,6 +27,7 @@ from dotenv import find_dotenv, load_dotenv
 # this will load all the envars from a .env file located in the project root (api)
 load_dotenv(find_dotenv())
 
+
 class Config():  # pylint: disable=too-few-public-methods
     """Base class configuration that should set reasonable defaults.
 
@@ -91,6 +92,7 @@ class Config():  # pylint: disable=too-few-public-methods
 
     # Event tracking max retries before human intervention.
     EVENT_MAX_RETRIES: int = int(os.getenv('EVENT_MAX_RETRIES', '3'))
+
 
 class DevelopmentConfig(Config):  # pylint: disable=too-few-public-methods
     """Config object for development environment."""
@@ -185,7 +187,7 @@ class ProductionConfig(Config):  # pylint: disable=too-few-public-methods
     TESTING = False
 
 
-config = {
+config = {  # pylint: disable=invalid-name; Keeping name consistent with our other apps
     'development': DevelopmentConfig,
     'production': ProductionConfig,
     'unitTesting': UnitTestingConfig,

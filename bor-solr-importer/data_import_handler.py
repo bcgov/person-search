@@ -14,7 +14,6 @@
 """The BOR solr data import service."""
 import sys
 from datetime import datetime
-from dataclasses import asdict
 from http import HTTPStatus
 
 import psycopg2
@@ -89,11 +88,11 @@ def collect_lear_data():
     return cur
 
 
-def prep_data(data: list[dict[str,str]], cur, source: str) -> list[Entity]:
+def prep_data(data: list[dict[str, str]], cur, source: str) -> list[Entity]:  # pylint: disable=too-many-locals
     """Return the list of BusinessDocs for the given raw db data."""
-    prepped_data: dict[str,Entity] = {}
+    prepped_data: dict[str, Entity] = {}
 
-    def get_party_name(item_dict: dict[str,str]) -> str:
+    def get_party_name(item_dict: dict[str, str]) -> str:
         """Return the parsed name of the party in the given doc info."""
         if item_dict['organization_name']:
             return item_dict['organization_name'].strip()
@@ -157,11 +156,12 @@ def prep_data(data: list[dict[str,str]], cur, source: str) -> list[Entity]:
             if not item_dict.get('party_type'):
                 item_dict['party_type'] = 'organization' if item_dict['organization_name'] else 'person'
             # set party role
-            role_date_range = DateRange(start=datetime.isoformat(item_dict['appointment_date'], timespec='seconds').replace('+00:00', 'Z'),
+            role_date_range = DateRange(start=datetime.isoformat(item_dict['appointment_date'],
+                                                                 timespec='seconds').replace('+00:00', 'Z'),
                                         end=item_dict.get('cessation_date', None))
             if role_date_range.end:
                 role_date_range.end = datetime.isoformat(role_date_range.end, timespec='seconds').replace('+00:00', 'Z')
-            party_role = EntityRole(active=False if role_date_range.end else True,
+            party_role = EntityRole(active=not role_date_range.end,
                                     relatedBN=item_dict['tax_id'],
                                     relatedEntityType='BUSINESS',
                                     relatedIdentifier=item_dict['identifier'],
@@ -171,9 +171,9 @@ def prep_data(data: list[dict[str,str]], cur, source: str) -> list[Entity]:
                                     roleDates=[role_date_range],
                                     roleType=item_dict['role'])
             # check if entity record already there
-            party_id = item_dict.get('party_identifier') or f"{source}{item_dict['party_id']}{item_dict['party_role_id']}"
+            party_id = item_dict.get('party_identifier') \
+                or f"{source}{item_dict['party_id']}{item_dict['party_role_id']}"
             party_already_added = party_id in prepped_data
-            
 
         if party_already_added:
             # party already added as entity -- add the new entity role to it
@@ -189,7 +189,7 @@ def prep_data(data: list[dict[str,str]], cur, source: str) -> list[Entity]:
                                     addressRegion=item_dict['party_region'],
                                     streetAddress=street,
                                     postalCode=item_dict['party_postal_code'])
-            
+
             party_entity = Entity(entityAddresses=[party_address],
                                   entityType='PERSON' if item_dict['party_type'] == 'person' else 'BUSINESS',
                                   identifier=party_id,
@@ -197,7 +197,6 @@ def prep_data(data: list[dict[str,str]], cur, source: str) -> list[Entity]:
                                   roles=[party_role])
 
             prepped_data[party_id] = party_entity
-            
 
     return [prepped_data[x] for x in prepped_data]
 

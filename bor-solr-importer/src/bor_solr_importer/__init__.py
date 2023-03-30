@@ -56,7 +56,7 @@ def register_shellcontext(app):
     app.shell_context_processor(shell_context)
 
 
-def create_app(config_name: str = os.getenv('APP_ENV') or 'production', **kwargs):
+def create_app(config_name: str = os.getenv('APP_ENV') or 'production'):
     """Return a configured Flask App using the Factory method."""
     app = Flask(__name__)
     app.config.from_object(config[config_name])

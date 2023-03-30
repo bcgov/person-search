@@ -13,15 +13,15 @@
 # limitations under the License.
 """The BOR solr data import service."""
 import sys
+from datetime import datetime
 from http import HTTPStatus
-from typing import Dict, List, Optional
 
 import psycopg2
 import requests
 from flask import current_app
-from search_api.exceptions import SolrException
-from search_api.services import bor_solr
-from search_api.services.solr.solr_docs import BusinessDoc, PartyDoc
+from bor_api.exceptions import SolrException
+from bor_api.services import bor_solr
+from bor_api.services.solr.solr_docs import Address, Entity, EntityRole, DateRange
 
 from bor_solr_importer import create_app, oracle_db
 from bor_solr_importer.enums import ColinPartyTypeCode
@@ -66,36 +66,46 @@ def collect_lear_data():
     cur = conn.cursor()
     current_app.logger.debug('Collecting LEAR data...')
     cur.execute("""
-        SELECT b.identifier,b.legal_name,b.legal_type,b.tax_id, pr.role, p.first_name,
-            p.middle_initial, p.last_name, p.organization_name, p.party_type, p.id as party_id,
+        SELECT b.identifier,b.legal_name,b.legal_type,b.tax_id,
+            a.street,a.street_additional,a.city,a.country,a.region,a.postal_code,
+            pr.id as party_role_id,pr.role,pr.appointment_date,pr.cessation_date,
+            p.first_name,p.middle_initial,p.last_name,p.organization_name,p.party_type,
+            p.id as party_id,p.identifier as party_identifier,
+            p_a.street as party_street,p_a.street_additional as party_street_additional,
+            p_a.city as party_city,p_a.country as party_country,p_a.region as party_region,
+            p_a.postal_code as party_postal_code,
             CASE when b.state = 'LIQUIDATION' then 'ACTIVE' else b.state END state
         FROM businesses b
-            LEFT JOIN (SELECT * FROM party_roles WHERE cessation_date is null
-                       AND role in ('partner', 'proprietor')) as pr on pr.business_id = b.id
+            LEFT JOIN offices o ON o.business_id = b.id
+            LEFT JOIN addresses a ON a.office_id = o.id
+            LEFT JOIN party_roles pr on pr.business_id = b.id
             LEFT JOIN parties p on p.id = pr.party_id
+            LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
         WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
+            AND o.office_type='registeredOffice'
+            AND a.address_type='delivery'
         """)
     return cur
 
 
-def prep_data(data: List, cur, source: str) -> List[BusinessDoc]:  # pylint: disable=too-many-branches, too-many-locals
+def prep_data(data: list[dict[str, str]], cur, source: str) -> list[Entity]:  # pylint: disable=too-many-locals
     """Return the list of BusinessDocs for the given raw db data."""
-    prepped_data = {}
+    prepped_data: dict[str, Entity] = {}
 
-    def get_party_name(doc_info: Dict) -> str:
+    def get_party_name(item_dict: dict[str, str]) -> str:
         """Return the parsed name of the party in the given doc info."""
-        if doc_info['organization_name']:
-            return doc_info['organization_name'].strip()
+        if item_dict['organization_name']:
+            return item_dict['organization_name'].strip()
         person_name = ''
-        if doc_info['first_name']:
-            person_name += doc_info['first_name'].strip()
-        if doc_info['middle_initial']:
-            person_name += ' ' + doc_info['middle_initial'].strip()
-        if doc_info['last_name']:
-            person_name += ' ' + doc_info['last_name'].strip()
+        if item_dict['first_name']:
+            person_name += item_dict['first_name'].strip()
+        if item_dict['middle_initial']:
+            person_name += ' ' + item_dict['middle_initial'].strip()
+        if item_dict['last_name']:
+            person_name += ' ' + item_dict['last_name'].strip()
         return person_name.strip()
 
-    def get_party_role(type_cd: str, legal_type: str) -> Optional[str]:
+    def get_party_role(type_cd: str, legal_type: str) -> str:
         """Return the lear party_type given the colin party type code."""
         if type_cd == ColinPartyTypeCode.DIRECTOR:
             return 'director'
@@ -111,72 +121,87 @@ def prep_data(data: List, cur, source: str) -> List[BusinessDoc]:  # pylint: dis
 
     for item in data:
         item_dict = dict(zip([x[0].lower() for x in cur.description], item))
-        base_doc_already_added = item_dict['identifier'] in prepped_data
+        if not item_dict['identifier'] in prepped_data:
+            # add entity doc with address
+            street = f"{item_dict['street']} {item_dict.get('street_additional', '')}"
+            business_address = Address(addressType='DELIVERY',
+                                       addressCity=item_dict['city'],
+                                       addressCountry=item_dict['country'],
+                                       addressRegion=item_dict['region'],
+                                       streetAddress=street,
+                                       postalCode=item_dict['postal_code'])
+
+            prepped_data[item_dict['identifier']] = Entity(entityAddresses=[business_address],
+                                                           entityType='BUSINESS',
+                                                           identifier=item_dict['identifier'],
+                                                           legalName=item_dict['legal_name'],
+                                                           legalType=item_dict['legal_type'],
+                                                           state=item_dict['state'],
+                                                           bn=item_dict.get('tax_id'))
+
+        elif not prepped_data[item_dict['identifier']].legalType:
+            # if business was added as a party then it won't have the legal_type, state, or bn set
+            prepped_data[item_dict['identifier']].legalType = item_dict['legal_type']
+            prepped_data[item_dict['identifier']].state = item_dict['state']
+            prepped_data[item_dict['identifier']].bn = item_dict['tax_id']
+
         has_party = item_dict.get('party_id')
+        party_already_added = False
+        party_role: EntityRole = None
         if has_party:
             # prep party fields
             if not item_dict.get('role'):
                 item_dict['role'] = get_party_role(item_dict.get('party_typ_cd'), item_dict['legal_type'])
+            item_dict['role'] = item_dict['role'].replace('_', ' ').upper()
             if not item_dict.get('party_type'):
                 item_dict['party_type'] = 'organization' if item_dict['organization_name'] else 'person'
+            # set party role
+            role_date_range = DateRange(start=datetime.isoformat(item_dict['appointment_date'],
+                                                                 timespec='seconds').replace('+00:00', 'Z'),
+                                        end=item_dict.get('cessation_date', None))
+            if role_date_range.end:
+                role_date_range.end = datetime.isoformat(role_date_range.end, timespec='seconds').replace('+00:00', 'Z')
+            party_role = EntityRole(active=not role_date_range.end,
+                                    relatedBN=item_dict['tax_id'],
+                                    relatedEntityType='BUSINESS',
+                                    relatedIdentifier=item_dict['identifier'],
+                                    relatedLegalType=item_dict['legal_type'],
+                                    relatedName=item_dict['legal_name'],
+                                    relatedState=item_dict['state'],
+                                    roleDates=[role_date_range],
+                                    roleType=item_dict['role'])
+            # check if entity record already there
+            party_id = item_dict.get('party_identifier') \
+                or f"{source}{item_dict['party_id']}{item_dict['party_role_id']}"
+            party_already_added = party_id in prepped_data
 
-        if base_doc_already_added and has_party:
-            # base doc already added, add extra party doc
-            if item_dict['party_id'] in prepped_data[item_dict['identifier']]['parties']:
-                # party doc already added, add extra role
-                party_roles = prepped_data[item_dict['identifier']]['parties'][item_dict['party_id']]['partyRoles']
-                party_roles.append(item_dict['role'])
-            else:
-                # add party doc to base doc
-                prepped_data[item_dict['identifier']]['parties'][item_dict['party_id']] = {
-                    'parentBN': item_dict['tax_id'],
-                    'parentLegalType': item_dict['legal_type'],
-                    'parentName': item_dict['legal_name'],
-                    'parentStatus': item_dict['state'],
-                    'partyName': get_party_name(item_dict),
-                    'partyRoles': [item_dict['role']],
-                    'partyType': item_dict['party_type']
-                }
+        if party_already_added:
+            # party already added as entity -- add the new entity role to it
+            roles = prepped_data[party_id].get('roles', [])
+            prepped_data[party_id].roles = roles.append(party_role)
 
-        elif not base_doc_already_added:
-            # add new base doc
-            identifier = item_dict['identifier']
-            if source == 'COLIN' and item_dict['legal_type'] in ['BC', 'CC', 'ULC']:
-                identifier = f'BC{identifier}'
-            prepped_data[item_dict['identifier']] = {
-                'identifier': identifier,
-                'name': item_dict['legal_name'],
-                'legalType': item_dict['legal_type'],
-                'status': item_dict['state'],
-                'bn': item_dict['tax_id']
-            }
-            if has_party:
-                # add party doc to base doc
-                prepped_data[item_dict['identifier']]['parties'] = {
-                    item_dict['party_id']: {
-                        'parentBN': item_dict['tax_id'],
-                        'parentLegalType': item_dict['legal_type'],
-                        'parentName': item_dict['legal_name'],
-                        'parentStatus': item_dict['state'],
-                        'partyName': get_party_name(item_dict),
-                        'partyRoles': [item_dict['role']],
-                        'partyType': item_dict['party_type']
-                    }
-                }
-    # flatten the data to a list of solr docs (also flatten the parties to a list)
-    solr_docs = []
-    for identifier in prepped_data:
-        base_doc = prepped_data[identifier]
-        if base_doc.get('parties'):
-            flattened_parties = []
-            for party_key in base_doc['parties']:
-                flattened_parties.append(PartyDoc(**base_doc['parties'][party_key]))
-            base_doc['parties'] = flattened_parties
-        solr_docs.append(BusinessDoc(**base_doc))
-    return solr_docs
+        elif has_party:
+            # add new entity doc for party including address and role
+            street = f"{item_dict['party_street']} {item_dict.get('party_street_additional', '')}"
+            party_address = Address(addressType='DELIVERY',
+                                    addressCity=item_dict['party_city'],
+                                    addressCountry=item_dict['party_country'],
+                                    addressRegion=item_dict['party_region'],
+                                    streetAddress=street,
+                                    postalCode=item_dict['party_postal_code'])
+
+            party_entity = Entity(entityAddresses=[party_address],
+                                  entityType='PERSON' if item_dict['party_type'] == 'person' else 'BUSINESS',
+                                  identifier=party_id,
+                                  legalName=get_party_name(item_dict),
+                                  roles=[party_role])
+
+            prepped_data[party_id] = party_entity
+
+    return [prepped_data[x] for x in prepped_data]
 
 
-def update_solr(base_docs: List[BusinessDoc], data_name: str) -> int:
+def update_solr(base_docs: list[Entity], data_name: str) -> int:
     """Import data into solr."""
     count = 0
     offset = 0
@@ -193,11 +218,11 @@ def update_solr(base_docs: List[BusinessDoc], data_name: str) -> int:
 def load_search_core():  # pylint: disable=too-many-statements
     """Load data from LEAR and COLIN into the search core."""
     try:
-        colin_data_cur = collect_colin_data()
-        colin_data = colin_data_cur.fetchall()
-        current_app.logger.debug('Prepping COLIN data...')
-        prepped_colin_data = prep_data(colin_data, colin_data_cur, 'COLIN')
-        current_app.logger.debug(f'{len(prepped_colin_data)} COLIN records ready for import.')
+        # colin_data_cur = collect_colin_data()
+        # colin_data = colin_data_cur.fetchall()
+        # current_app.logger.debug('Prepping COLIN data...')
+        # prepped_colin_data = prep_data(colin_data, colin_data_cur, 'COLIN')
+        # current_app.logger.debug(f'{len(prepped_colin_data)} COLIN records ready for import.')
         lear_data_cur = collect_lear_data()
         lear_data = lear_data_cur.fetchall()
         current_app.logger.debug('Prepping LEAR data...')
@@ -208,19 +233,19 @@ def load_search_core():  # pylint: disable=too-many-statements
             current_app.logger.debug('REINDEX_CORE set: deleting current solr index...')
             bor_solr.delete_all_docs()
         # execute update to solr in batches
-        current_app.logger.debug('Importing records from COLIN...')
-        count = update_solr(prepped_colin_data, 'COLIN')
-        current_app.logger.debug('COLIN import completed.')
+        # current_app.logger.debug('Importing records from COLIN...')
+        # count = update_solr(prepped_colin_data, 'COLIN')
+        # current_app.logger.debug('COLIN import completed.')
         current_app.logger.debug('Importing records from LEAR...')
-        count += update_solr(prepped_lear_data, 'LEAR')
+        count = update_solr(prepped_lear_data, 'LEAR')
         current_app.logger.debug('LEAR import completed.')
         current_app.logger.debug(f'Total records imported: {count}')
 
         if not current_app.config.get('PRELOADER_JOB', False):
             try:
                 current_app.logger.debug('Resyncing any overwritten docs during import...')
-                search_api_url = f'{current_app.config.get("SEARCH_API_URL")}{current_app.config.get("SEARCH_API_V1")}'
-                resync_resp = requests.post(url=f'{search_api_url}/internal/solr/update/resync',
+                api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
+                resync_resp = requests.post(url=f'{api_url}/internal/solr/update/resync',
                                             json={'minutesOffset': 60})
                 if resync_resp.status_code != HTTPStatus.CREATED:
                     current_app.logger.error('Resync failed with status %s', resync_resp.status_code)
@@ -229,20 +254,6 @@ def load_search_core():  # pylint: disable=too-many-statements
                 current_app.logger.debug(error.with_traceback(None))
                 current_app.logger.error('Resync failed.')
 
-        if current_app.config.get('REINDEX_CORE', False):
-            current_app.logger.debug('Building suggester...')
-            try:
-                bor_solr.suggest('', 1, True)
-            except SolrException as err:
-                current_app.logger.debug(f'SOLR gave status code: {err.status_code}')
-                if err.status_code in [HTTPStatus.BAD_GATEWAY, HTTPStatus.GATEWAY_TIMEOUT]:
-                    current_app.logger.error('SOLR timeout most likely due to suggester build. ' +
-                                             'Please wait a couple minutes and then verify import '
-                                             'and suggester build manually in the solr admin UI.')
-                    sys.exit(0)
-                else:
-                    raise err
-            current_app.logger.debug('Suggester built.')
         current_app.logger.debug('SOLR import finished successfully.')
 
     except SolrException as err:

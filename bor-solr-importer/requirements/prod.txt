@@ -1,7 +1,17 @@
 cx_Oracle
 Flask
+psycopg2-binary
 python-dotenv
-sentry-sdk[flask]
-# for bor-api dependency
-certifi==2022.5.18.1
 requests
+sentry-sdk[flask]
+# for bor-api dependency (can remove once importing api is figured out)
+Flask-Cors
+Flask-Migrate
+Flask-SQLAlchemy
+Werkzeug
+attrs
+dpath
+flask-jwt-oidc
+gunicorn
+launchdarkly-server-sdk
+python-dotenv

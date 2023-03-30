@@ -21,6 +21,12 @@ or by accessing this configuration directly.
 """
 import os
 
+from dotenv import find_dotenv, load_dotenv
+
+
+# this will load all the envars from a .env file located in the project root (api)
+load_dotenv(find_dotenv())
+
 
 class Config():  # pylint: disable=too-few-public-methods
     """Base class configuration that should set reasonable defaults.
@@ -55,14 +61,15 @@ class Config():  # pylint: disable=too-few-public-methods
     ORACLE_HOST = os.getenv('ORACLE_HOST', '')
     ORACLE_PORT = int(os.getenv('ORACLE_PORT', '1521'))
 
+    # POSTGRESQL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     DB_USER = os.getenv('DATABASE_USERNAME', '')
     DB_PASSWORD = os.getenv('DATABASE_PASSWORD', '')
     DB_NAME = os.getenv('DATABASE_NAME', '')
     DB_HOST = os.getenv('DATABASE_HOST', '')
-    DB_PORT = os.getenv('DATABASE_PORT', '5432')  # POSTGRESQL
-    # POSTGRESQL
+    DB_PORT = os.getenv('DATABASE_PORT', '5432')
+
     if DB_UNIX_SOCKET := os.getenv('DATABASE_UNIX_SOCKET', None):
         SQLALCHEMY_DATABASE_URI = f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host={DB_UNIX_SOCKET}'
     else:
@@ -85,6 +92,7 @@ class Config():  # pylint: disable=too-few-public-methods
 
     # Event tracking max retries before human intervention.
     EVENT_MAX_RETRIES: int = int(os.getenv('EVENT_MAX_RETRIES', '3'))
+
 
 class DevelopmentConfig(Config):  # pylint: disable=too-few-public-methods
     """Config object for development environment."""
@@ -179,7 +187,7 @@ class ProductionConfig(Config):  # pylint: disable=too-few-public-methods
     TESTING = False
 
 
-config = {
+config = {  # pylint: disable=invalid-name; Keeping name consistent with our other apps
     'development': DevelopmentConfig,
     'production': ProductionConfig,
     'unitTesting': UnitTestingConfig,

@@ -16,7 +16,6 @@ import sys
 from datetime import datetime
 from dataclasses import asdict
 from http import HTTPStatus
-from time import sleep
 
 import psycopg2
 import requests
@@ -214,7 +213,6 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
         bor_solr.create_or_replace_docs(base_docs[offset:count])
         offset = count
         current_app.logger.debug(f'Total {data_name} base doc records imported: {count}')
-        break
     return count
 
 
@@ -235,7 +233,6 @@ def load_search_core():  # pylint: disable=too-many-statements
             # delete existing index
             current_app.logger.debug('REINDEX_CORE set: deleting current solr index...')
             bor_solr.delete_all_docs()
-            sleep(5)
         # execute update to solr in batches
         # current_app.logger.debug('Importing records from COLIN...')
         # count = update_solr(prepped_colin_data, 'COLIN')

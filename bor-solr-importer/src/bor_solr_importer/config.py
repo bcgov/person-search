@@ -21,6 +21,11 @@ or by accessing this configuration directly.
 """
 import os
 
+from dotenv import find_dotenv, load_dotenv
+
+
+# this will load all the envars from a .env file located in the project root (api)
+load_dotenv(find_dotenv())
 
 class Config():  # pylint: disable=too-few-public-methods
     """Base class configuration that should set reasonable defaults.
@@ -62,6 +67,8 @@ class Config():  # pylint: disable=too-few-public-methods
     DB_NAME = os.getenv('DATABASE_NAME', '')
     DB_HOST = os.getenv('DATABASE_HOST', '')
     DB_PORT = os.getenv('DATABASE_PORT', '5432')  # POSTGRESQL
+    print(DB_USER)
+    print(DB_HOST)
     # POSTGRESQL
     if DB_UNIX_SOCKET := os.getenv('DATABASE_UNIX_SOCKET', None):
         SQLALCHEMY_DATABASE_URI = f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host={DB_UNIX_SOCKET}'

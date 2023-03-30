@@ -22,16 +22,13 @@ from http import HTTPStatus
 
 import sentry_sdk  # noqa: I001; pylint: disable=ungrouped-imports; conflicts with Flake8
 from sentry_sdk.integrations.flask import FlaskIntegration  # noqa: I001
+from bor_api.services import bor_solr  # noqa: I001
+from dotenv import load_dotenv
 from flask import Flask  # noqa: I001
-# from legal_api.models import db
-from registry_schemas import __version__ as registry_schemas_version
-from registry_schemas.flask import SchemaServices  # noqa: I001
-from search_api.services import bor_solr
 
-from bor_solr_importer import config
+from bor_solr_importer.config import config
 from bor_solr_importer.logging import setup_logging
 from bor_solr_importer.oracle import oracle_db
-from bor_solr_importer.translations import babel
 from bor_solr_importer.version import __version__
 # noqa: I003; the sentry import creates a bad line count in isort
 

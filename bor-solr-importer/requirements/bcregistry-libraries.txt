@@ -1,1 +1,2 @@
-https://github.com/bcgov-registries/beneficial-ownership.git#egg=bor_api&subdirectory=bor-api
+# can't install without a PAT because the repo is private
+# https://github.com/bcgov-registries/beneficial-ownership.git#egg=bor_api&subdirectory=bor-api

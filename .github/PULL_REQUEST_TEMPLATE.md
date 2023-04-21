@@ -1,4 +1,4 @@
-*Issue:*https://github.com/bcgov-registries/beneficial-ownership/issues/
+*Issue:*https://github.com/bcgov/entity/issues/
 
 *Description of changes:*
 

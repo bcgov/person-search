@@ -103,7 +103,7 @@ async def process_business_event(event_message: Dict[str, any]):  # pylint: disa
     business_resp = get_business_info(business_info_url, headers)
     parties_resp = get_business_info(parties_info_url, headers)
     address_resp = get_business_info(address_info_url, headers)
-    
+
     parties = []
     for party in parties_resp.json().get('parties'):
         if party.get('officer', {}).get('partyType') != 'person':

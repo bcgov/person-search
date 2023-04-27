@@ -119,7 +119,7 @@ class UnitTestingConfig(Config):  # pylint: disable=too-few-public-methods
     SENTRY_ENABLE = 'false'
     STAN_CLUSTER_NAME = 'test-cluster'
     KEYCLOAK_AUTH_TOKEN_URL = os.getenv('TEST_KEYCLOAK_AUTH_TOKEN_URL', 'http://token_url.test')
-    LEAR_SVC_URL = os.getenv('TEST_LEAR_SVC_URL', 'http://lear_api_url.test') 
+    LEAR_SVC_URL = os.getenv('TEST_LEAR_SVC_URL', 'http://lear_api_url.test')
     BOR_API_URL = os.getenv('TEST_BOR_API_INTERNAL_URL', 'http://bor_api_url.test')
 
 

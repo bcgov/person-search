@@ -51,12 +51,7 @@ jobs:
     needs: setup-job
     env:
       POD_NAMESPACE: ci
-      NATS_SERVERS: localhost:4222
-      NATS_CLUSTER_ID: test-cluster
       STAN_CLUSTER_NAME: test-cluster
-      NATS_ENTITY_EVENTS_CLIENT_NAME: entity.events.tester
-      NATS_ENTITY_EVENTS_SUBJECT: entity.events
-      NATS_ENTITY_EVENTS_QUEUE: entity-worker
       RUN_NATS_TESTS: True
 
     runs-on: ubuntu-20.04

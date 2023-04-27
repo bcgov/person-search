@@ -20,6 +20,31 @@ Flask config, rather than reading environment variables directly
 or by accessing this configuration directly.
 """
 import os
+import random
+
+
+CONFIGURATION = {
+    'development': 'search_solr_updater.config.DevConfig',
+    'testing': 'search_solr_updater.config.TestConfig',
+    'production': 'search_solr_updater.config.ProdConfig',
+    'default': 'search_solr_updater.config.ProdConfig'
+}
+
+
+def get_named_config(config_name: str = 'production'):
+    """Return the configuration object based on the name.
+
+    :raise: KeyError: if an unknown configuration is requested
+    """
+    if config_name in ['production', 'staging', 'default']:
+        app_config = ProductionConfig()
+    elif config_name == 'testing':
+        app_config = UnitTestingConfig()
+    elif config_name == 'development':
+        app_config = DevelopmentConfig()
+    else:
+        raise KeyError(f'Unknown configuration: {config_name}')
+    return app_config
 
 
 class Config():  # pylint: disable=too-few-public-methods
@@ -59,8 +84,7 @@ class Config():  # pylint: disable=too-few-public-methods
     }
 
     LEAR_SVC_URL = os.getenv('LEGAL_API_URL', 'http://') + os.getenv('LEGAL_API_VERSION_2', '/api/v2')
-    BOR_API_URL = os.getenv('BOR_API_INTERNAL_URL') \
-        + os.getenv('BOR_API_VERSION', '/api/v1')
+    BOR_API_URL = os.getenv('BOR_API_INTERNAL_URL', 'http://') + os.getenv('BOR_API_VERSION', '/api/v1')
 
     # External API Timeouts
     try:
@@ -94,6 +118,8 @@ class UnitTestingConfig(Config):  # pylint: disable=too-few-public-methods
     TESTING = True
     SENTRY_ENABLE = 'false'
     STAN_CLUSTER_NAME = 'test-cluster'
+    KEYCLOAK_AUTH_TOKEN_URL = os.getenv('TEST_KEYCLOAK_AUTH_TOKEN_URL', 'http://token_url.test')
+    LEAR_SVC_URL = os.getenv('TEST_LEAR_SVC_URL', 'http://lear_api_url.test') 
     BOR_API_URL = os.getenv('TEST_BOR_API_INTERNAL_URL', 'http://bor_api_url.test')
 
 
@@ -103,10 +129,3 @@ class ProductionConfig(Config):  # pylint: disable=too-few-public-methods
     DEBUG = False
     DEVELOPMENT = False
     TESTING = False
-
-
-config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'unitTesting': UnitTestingConfig,
-}

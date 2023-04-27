@@ -70,12 +70,11 @@ def client_id():
     return f'client-{_id}'
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='session', autouse=True)
 def stan_server(docker_services):
     """Create the nats / stan services that the integration tests will use."""
-    if os.getenv('RUN_NATS_TESTS') == 'True':
-        docker_services.start('nats')
-        time.sleep(2)
+    docker_services.start('nats')
+    time.sleep(2)
     # TODO get the wait part working, as opposed to sleeping for 2s
     # public_port = docker_services.wait_for_service("nats", 4222)
     # dsn = "{docker_services.docker_ip}:{public_port}".format(**locals())

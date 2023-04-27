@@ -67,7 +67,7 @@ class Config():  # pylint: disable=too-few-public-methods
 
     NATS_CONNECTION_OPTIONS = {
         'servers': os.getenv('NATS_SERVERS', 'nats://127.0.0.1:4222').split(','),
-        'name': os.getenv('NATS_BOR_SOLR_CLIENT_NAME', 'search.solr.worker')
+        'name': os.getenv('NATS_BOR_SOLR_CLIENT_NAME', 'bor.solr.worker')
     }
 
     STAN_CONNECTION_OPTIONS = {

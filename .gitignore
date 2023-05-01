@@ -130,3 +130,5 @@ bor-solr/test_solr
 .DS_Store
 
 __pycache__
+
+.python-version

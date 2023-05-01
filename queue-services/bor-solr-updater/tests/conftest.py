@@ -41,12 +41,12 @@ def not_raises(exception):
 
 
 @pytest.fixture(scope='session')
-def app(ld):
+def app():
     """Return a session-wide application configured in TEST mode."""
-    _app = create_app('unitTesting', **{'ld_test_data': ld})
+    _app = Flask(__name__)
+    _app.config.from_object(get_named_config('testing'))
 
-    with _app.app_context():
-        yield _app
+    return _app
 
 
 @pytest.fixture
@@ -70,12 +70,11 @@ def client_id():
     return f'client-{_id}'
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='session', autouse=True)
 def stan_server(docker_services):
     """Create the nats / stan services that the integration tests will use."""
-    if os.getenv('RUN_NATS_TESTS') == 'True':
-        docker_services.start('nats')
-        time.sleep(2)
+    docker_services.start('nats')
+    time.sleep(2)
     # TODO get the wait part working, as opposed to sleeping for 2s
     # public_port = docker_services.wait_for_service("nats", 4222)
     # dsn = "{docker_services.docker_ip}:{public_port}".format(**locals())
@@ -102,7 +101,7 @@ async def stan(event_loop, client_id):
 
 @pytest.fixture(scope='function')
 @pytest.mark.asyncio
-async def events_stan(app, event_loop, client_id):
+async def events_stan(config, event_loop, client_id):
     """Create a stan connection for each function.
 
     Uses environment variables for the cluster name.
@@ -112,7 +111,7 @@ async def events_stan(app, event_loop, client_id):
 
     await nc.connect(io_loop=event_loop)
 
-    cluster_name = os.getenv('STAN_CLUSTER_NAME')
+    cluster_name = config.get('STAN_CLUSTER_NAME')
 
     if not cluster_name:
         raise ValueError('Missing env variable: STAN_CLUSTER_NAME-')

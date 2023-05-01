@@ -16,15 +16,11 @@
 # limitations under the License.
 """s2i based launch script to run the service."""
 import asyncio
-import random
-from copy import deepcopy
 
 from bor_solr_updater.worker import APP_CONFIG, cb_nr_subscription_handler, qsm
 
 
 if __name__ == '__main__':
-
-    # my_config = config.get_named_config(os.getenv('DEPLOYMENT_ENV', 'production'))
 
     event_loop = asyncio.get_event_loop()
 

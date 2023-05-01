@@ -1,4 +1,4 @@
-FROM python:3.11-buster
+FROM python:3.8-buster
 
 ARG VCS_REF="missing"
 ARG BUILD_DATE="missing"

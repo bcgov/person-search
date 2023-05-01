@@ -36,7 +36,7 @@ from requests import exceptions
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
-from bor_solr_updater import config
+from bor_solr_updater.config import get_named_config
 from bor_solr_updater.logging import logger
 from bor_solr_updater.utils import get_bearer_token, get_business_info, get_run_version
 
@@ -72,8 +72,8 @@ async def process_event(event_message, flask_app):
 async def process_business_event(event_message: Dict[str, any]):  # pylint: disable=too-many-locals
     """Process business events.
 
-    1. Get business data + parties data from legal-api
-    2. Call search-api to update solr
+    1. Get business data + address data + parties data from legal-api
+    2. Call bor-api to update solr
 
     Args:
         event_message (object): cloud event message, format below.
@@ -99,21 +99,24 @@ async def process_business_event(event_message: Dict[str, any]):  # pylint: disa
     # get extra data from lear
     business_info_url = f'{APP_CONFIG.LEAR_SVC_URL}/businesses/{identifier}'
     parties_info_url = f'{APP_CONFIG.LEAR_SVC_URL}/businesses/{identifier}/parties'
+    address_info_url = f'{APP_CONFIG.LEAR_SVC_URL}/businesses/{identifier}/addresses'
     business_resp = get_business_info(business_info_url, headers)
     parties_resp = get_business_info(parties_info_url, headers)
-    # only add parties that are currently stored in solr
-    solr_party_roles = ['partner', 'proprietor']  # solr does not store other parties
+    address_resp = get_business_info(address_info_url, headers)
+
     parties = []
     for party in parties_resp.json().get('parties'):
-        valid_roles = [x for x in party.get('roles') if x['roleType'].lower() in solr_party_roles]
-        if valid_roles:
-            party['roles'] = valid_roles
-            parties.append(party)
+        if party.get('officer', {}).get('partyType') != 'person':
+            # skip businesses for now until LEAR reworked
+            continue
+        # bor_api/bor_solr needs to know if its a LEAR party vs COLIN for the unique id
+        party['source'] = 'LEAR'
+        parties.append(party)
 
     # update solr via search-api
     try:
-        update_payload = {**business_resp.json(), 'parties': parties}
-        solr_update_url = f'{APP_CONFIG.SEARCH_API_URL}/internal/solr/update'
+        update_payload = {**business_resp.json(), 'businessAddresses': address_resp.json(), 'parties': parties}
+        solr_update_url = f'{APP_CONFIG.BOR_API_URL}/internal/solr/update'
         update_resp = requests.put(url=solr_update_url, headers=headers, json=update_payload, timeout=30)
         if update_resp.status_code != HTTPStatus.OK:
             logger.debug(update_resp.json())
@@ -132,7 +135,7 @@ async def process_business_event(event_message: Dict[str, any]):  # pylint: disa
 
 
 qsm = QueueServiceManager()  # pylint: disable=invalid-name
-APP_CONFIG = config.get_named_config(os.getenv('DEPLOYMENT_ENV', 'production'))
+APP_CONFIG = get_named_config(os.getenv('DEPLOYMENT_ENV', 'production'))
 FLASK_APP = Flask(__name__)
 FLASK_APP.config.from_object(APP_CONFIG)
 

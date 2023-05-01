@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The Business Events Listener service.
+"""The BOR Updater Listener service.
 
-This module is the service worker for applying changes from business to accounts.
+This module is the service worker for applying changes from LEAR to BOR.
 """

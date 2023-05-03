@@ -41,6 +41,7 @@ class OracleDB:
     @staticmethod
     def teardown(exc=None):
         """Oracle session pool cleans up after itself."""
+        print(f'teardown {exc}')
         pool = g.pop('_oracle_pool', None)
 
         if pool is not None:
@@ -79,9 +80,9 @@ class OracleDB:
         :return: cx_Oracle.connection type
         """
         if '_oracle_pool' not in g:
-            g._oracle_pool = self._create_pool()
+            g._oracle_pool = self._create_pool()  # pylint: disable=protected-access, assigning-non-slot
 
-        return g._oracle_pool.acquire()
+        return g._oracle_pool.acquire()  # pylint: disable=protected-access
 
 
 # export instance of this class

@@ -132,3 +132,5 @@ bor-solr/test_solr
 __pycache__
 
 .python-version
+
+.history

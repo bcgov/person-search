@@ -1,4 +1,4 @@
-name: ASSETS UI CD - OCP
+name: BOR UI CD
 
 on:
   push:

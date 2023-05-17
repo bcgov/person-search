@@ -1,5 +1,5 @@
-cx_Oracle
 Flask
+cx_Oracle
 psycopg2-binary
 python-dotenv
 requests

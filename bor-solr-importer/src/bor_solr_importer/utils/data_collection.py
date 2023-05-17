@@ -32,7 +32,8 @@ def collect_colin_data():
             cn.corp_nme as legal_name, cp.business_nme as organization_name, cp.first_nme as first_name,
             cp.last_nme as last_name, cp.middle_nme as middle_initial, cp.party_typ_cd, cp.corp_party_id as party_id,
             cp.appointment_dt as appointment_date, cp.cessation_dt as cessation_date, cp.start_event_id,
-            cp.end_event_id, pt.short_desc as party_type_desc,
+            cp.end_event_id, cp.prev_party_id, cp.delivery_addr_id,
+            pt.short_desc as party_type_desc, cpe.event_timestmp, cpef.effective_dt,
             cpa.province as party_region, cpa.country_typ_cd as party_country, cpa.city as party_city,
             cpa.postal_cd as party_postal_code, cpa.addr_line_1 as party_street, cpa.unit_type as party_unit_type,
             cpa.unit_no as party_unit_no, cpa.civic_no as party_civic_no, cpa.civic_no_suffix as party_civic_no_suffix,
@@ -42,6 +43,18 @@ def collect_colin_data():
             cpa.route_service_type as party_route_service_type, cpa.lock_box_no as party_lock_box_no,
             cpa.route_service_no as party_route_service_no, cpa.installation_type as party_installation_type,
             cpa.installation_name as party_installation_name,
+            cpam.province as party_mail_region, cpam.country_typ_cd as party_mail_country,
+            cpam.city as party_mail_city, cpam.postal_cd as party_mail_postal_code,
+            cpam.addr_line_1 as party_mail_street, cpam.unit_type as party_mail_unit_type,
+            cpam.unit_no as party_mail_unit_no, cpam.civic_no as party_mail_civic_no,
+            cpam.civic_no_suffix as party_mail_civic_no_suffix, cpam.street_name as party_mail_street_name,
+            cpam.street_type as party_mail_street_type, cpam.street_direction as party_mail_street_direction,
+            cpam.address_format_type as party_mail_address_format_type,
+            cpam.addr_line_2 as party_mail_street_additional, cpam.addr_line_3 as party_mail_addr_line_3,
+            cpam.route_service_type as party_mail_route_service_type, cpam.lock_box_no as party_mail_lock_box_no,
+            cpam.route_service_no as party_mail_route_service_no,
+            cpam.installation_type as party_mail_installation_type,
+            cpam.installation_name as party_mail_installation_name,
             CASE cos.op_state_typ_cd
                 when 'ACT' then 'ACTIVE' when 'HIS' then 'HISTORICAL'
                 else 'ACTIVE' END as state
@@ -53,12 +66,16 @@ def collect_colin_data():
         join corp_name cn on cn.corp_num = c.corp_num
         join corp_party cp on cp.corp_num = c.corp_num
         join party_type pt on pt.party_typ_cd = cp.party_typ_cd
+        left join event cpe on cpe.event_id = cp.start_event_id
+        left join filing cpef on cpef.event_id = cp.start_event_id
         left join address cpa on cpa.addr_id = cp.delivery_addr_id
+        left join address cpam on cpam.addr_id = cp.mailing_addr_id
         WHERE c.corp_typ_cd not in ('BEN','CP','GP','SP')
             and cs.end_event_id is null
             and cn.end_event_id is null
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and o.office_typ_cd = 'RG'
+            and o.end_event_id is null
         """)
     return cursor
 

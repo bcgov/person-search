@@ -30,12 +30,31 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
     count = 0
     offset = 0
     rows = current_app.config.get('BATCH_SIZE', 1000)
+    retry_count = 0
+    erred_record_count = 0
     while count < len(base_docs) and rows > 0 and len(base_docs) - offset > 0:
-        count += min(rows, len(base_docs) - offset)
+        batch_amount = min(rows, len(base_docs) - offset)
+        count += batch_amount
         # send batch to solr
-        bor_solr.create_or_replace_docs(base_docs[offset:count])
+        try:
+            bor_solr.create_or_replace_docs(base_docs[offset:count])
+            retry_count = 0
+        except SolrException as err:  # pylint: disable=bare-except;
+            current_app.logger.debug(err)
+            if retry_count < 3:
+                # retry
+                current_app.logger.debug('Failed to update solr with batch. Trying again...')
+                retry_count += 1
+                # set count back
+                count -= batch_amount
+                continue
+            else:
+                # log error and skip
+                current_app.logger.error('Retry count exceeded for batch. Skipping batch.')
+                # add number of records in failed batch to the erred count
+                erred_record_count += (count - offset)
         offset = count
-        current_app.logger.debug(f'Total {data_name} base doc records imported: {count}')
+        current_app.logger.debug(f'Total {data_name} base doc records imported: {count - erred_record_count}')
     return count
 
 
@@ -72,7 +91,10 @@ def load_search_core():  # pylint: disable=too-many-statements
                 resync_resp = requests.post(url=f'{api_url}/internal/solr/update/resync',
                                             json={'minutesOffset': current_app.config.get('RESYNC_OFFSET', '130')})
                 if resync_resp.status_code != HTTPStatus.CREATED:
-                    current_app.logger.error('Resync failed with status %s', resync_resp.status_code)
+                    if resync_resp.status_code == HTTPStatus.GATEWAY_TIMEOUT:
+                        current_app.logger.debug('Resync timed out -- check api for any individual failures.')
+                    else:
+                        current_app.logger.error('Resync failed with status %s', resync_resp.status_code)
                 current_app.logger.debug('Resync complete.')
             except Exception as error:  # noqa: B902
                 current_app.logger.debug(error.with_traceback(None))

@@ -30,15 +30,21 @@ RUN        apt-get update && apt-get install -y libaio1 gdb wget unzip \
 RUN mkdir /opt/app-root && chmod 755 /opt/app-root
 WORKDIR /opt/app-root
 
-# Install the requirements
-COPY ./requirements.txt .
+# install poetry
+RUN pip install "poetry==1.5.0"
+COPY ./poetry.lock .
+COPY ./pyproject.toml .
 
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-
+# Add bor-api folder
+COPY ./.build/ ../
 COPY . .
 
-RUN pip install .
+# Install the requirements
+RUN poetry config virtualenvs.in-project true
+RUN poetry install --only main
+
+# cleanup
+RUN rm -rf ../bor-api/
 
 USER 1001
 
@@ -46,3 +52,5 @@ USER 1001
 ENV PYTHONPATH=/opt/app-root
 
 EXPOSE 8080
+
+ENTRYPOINT ["bash", "run.sh"]

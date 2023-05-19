@@ -1,0 +1,15 @@
+Dockerfile
+.dockerignore
+.pytest_cache
+__pycache__
+.venv
+.env
+.env*
+.eggs
+devops
+k8s
+manage.py
+migrations
+pre-hook-update-db.sh
+requirements
+tests

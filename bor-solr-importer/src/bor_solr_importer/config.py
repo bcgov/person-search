@@ -67,7 +67,7 @@ class Config():  # pylint: disable=too-few-public-methods
     DB_USER = os.getenv('DATABASE_USERNAME', '')
     DB_PASSWORD = os.getenv('DATABASE_PASSWORD', '')
     DB_NAME = os.getenv('DATABASE_NAME', '')
-    DB_HOST = os.getenv('DATABASE_HOST', '')
+    DB_HOST = os.getenv('DATABASE_HOST_LEAR', '')
     DB_PORT = os.getenv('DATABASE_PORT', '5432')
 
     if DB_UNIX_SOCKET := os.getenv('DATABASE_UNIX_SOCKET', None):

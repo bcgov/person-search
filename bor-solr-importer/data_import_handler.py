@@ -19,6 +19,7 @@ import requests
 from flask import current_app
 from bor_api.exceptions import SolrException
 from bor_api.services import bor_solr
+from bor_api.services.authz import get_bearer_token
 from bor_api.services.solr.solr_docs import Entity
 
 from bor_solr_importer import create_app
@@ -86,9 +87,13 @@ def load_search_core():  # pylint: disable=too-many-statements
 
         if not current_app.config.get('PRELOADER_JOB', False):
             try:
+                current_app.logger.debug('Getting token for Resync...')
+                token = get_bearer_token()
+                headers = {'Authorization': 'Bearer ' + token}
                 current_app.logger.debug('Resyncing any overwritten docs during import...')
                 api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
                 resync_resp = requests.post(url=f'{api_url}/internal/solr/update/resync',
+                                            headers=headers,
                                             json={'minutesOffset': current_app.config.get('RESYNC_OFFSET', '130')})
                 if resync_resp.status_code != HTTPStatus.CREATED:
                     if resync_resp.status_code == HTTPStatus.GATEWAY_TIMEOUT:

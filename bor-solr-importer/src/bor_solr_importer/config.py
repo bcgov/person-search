@@ -95,6 +95,12 @@ class Config():  # pylint: disable=too-few-public-methods
     ACCOUNT_SVC_CLIENT_ID = os.getenv('BUSINESS_SEARCH_SERVICE_ACCOUNT_CLIENT_ID')
     ACCOUNT_SVC_CLIENT_SECRET = os.getenv('BUSINESS_SEARCH_SERVICE_ACCOUNT_SECRET')
 
+    # External API Timeouts
+    try:
+        ACCOUNT_SVC_TIMEOUT = int(os.getenv('AUTH_API_TIMEOUT', '20'))
+    except:  # pylint: disable=bare-except; # noqa: B901, E722
+        ACCOUNT_SVC_TIMEOUT = 20
+
 
 class DevelopmentConfig(Config):  # pylint: disable=too-few-public-methods
     """Config object for development environment."""

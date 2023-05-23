@@ -89,7 +89,7 @@ class Config():  # pylint: disable=too-few-public-methods
         'pool_recycle': int(DB_CONN_TIMEOUT),
         'pool_timeout': int(DB_CONN_WAIT_TIMEOUT)
     }
-    
+
     # Service account details
     ACCOUNT_SVC_AUTH_URL = os.getenv('KEYCLOAK_AUTH_TOKEN_URL')
     ACCOUNT_SVC_CLIENT_ID = os.getenv('BUSINESS_SEARCH_SERVICE_ACCOUNT_CLIENT_ID')

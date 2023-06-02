@@ -333,6 +333,7 @@
   <!-- <field name="streetAddress_q" type="phrase_ngram" indexed="true" stored="false"/> -->
   <!-- child entity role docs -->
   <field name="active" type="boolean" docValues="true" indexed="true" stored="true"/>
+  <field name="related_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="relatedBN" type="string" indexed="false" stored="true"/>
   <field name="relatedBN_q" type="phrase_ngram" indexed="true" stored="false"/>
   <field name="relatedEntityType" type="string" docValues="true" indexed="true" stored="true"/>

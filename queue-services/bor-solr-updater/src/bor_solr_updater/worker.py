@@ -50,11 +50,11 @@ async def cb_nr_subscription_handler(msg: nats.aio.client.Msg):
         logger.debug('Event Message Received: %s', event_message)
         await process_event(event_message, FLASK_APP)
     except QueueException as err:
-        logger.error('search-solr-updater: %s', err)
+        logger.error('bor-solr-updater: %s', err)
     except Exception as err:  # noqa pylint: disable=broad-except
         logger.debug(err.with_traceback(None))
         # NB: sentry breadcrumb will contain event msg already
-        logger.error('search-solr-updater: Unhandled error')
+        logger.error('bor-solr-updater: Unhandled error')
 
 
 async def process_event(event_message, flask_app):
@@ -120,16 +120,16 @@ async def process_business_event(event_message: Dict[str, any]):  # pylint: disa
         update_resp = requests.put(url=solr_update_url, headers=headers, json=update_payload, timeout=30)
         if update_resp.status_code != HTTPStatus.OK:
             logger.debug(update_resp.json())
-            raise QueueException(update_resp.status_code, 'Unable to update search solr via search api.')
+            raise QueueException(update_resp.status_code, 'Unable to update search solr via bor api.')
     except (exceptions.ConnectionError, exceptions.Timeout) as err:
-        logger.debug('SEARCH API connection failure: %s', err)
-        raise QueueException(HTTPStatus.GATEWAY_TIMEOUT, 'Unable to update search solr via search api.')
+        logger.debug('BOR API connection failure: %s', err)
+        raise QueueException(HTTPStatus.GATEWAY_TIMEOUT, 'Unable to update search solr via bor api.')
     except QueueException as err:
         # pass along
         raise err
     except Exception as err:  # noqa: B902
-        logger.debug('SEARCH API connection failure: %s', err.with_traceback(None))
-        raise QueueException(HTTPStatus.INTERNAL_SERVER_ERROR, 'Unable to update search solr via search api.')
+        logger.debug('BOR API connection failure: %s', err.with_traceback(None))
+        raise QueueException(HTTPStatus.INTERNAL_SERVER_ERROR, 'Unable to update search solr via bor api.')
 
     logger.debug('<<<<<<<process_business_event<<<<<<<<<<')
 
@@ -148,6 +148,6 @@ if APP_CONFIG.SENTRY_DSN and APP_CONFIG.SENTRY_ENABLE.lower() == 'true':
         dsn=APP_CONFIG.SENTRY_DSN,
         integrations=[FlaskIntegration(), SENTRY_LOGGING],
         environment=APP_CONFIG.POD_NAMESPACE,
-        release=f'search-solr-updater@{get_run_version()}',
+        release=f'bor-solr-updater@{get_run_version()}',
         traces_sample_rate=APP_CONFIG.SENTRY_TSR
     )

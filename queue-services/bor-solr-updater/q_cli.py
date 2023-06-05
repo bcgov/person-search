@@ -67,8 +67,8 @@ async def run(loop, identifier):
     def subscription_options():
         return {
             'subject': os.getenv('NATS_ENTITY_EVENTS_SUBJECT', 'entity.events'),
-            'queue': os.getenv('NATS_BOR_SOLR_QUEUE', 'search-solr-worker'),
-            'durable_name': os.getenv('NATS_BOR_SOLR_QUEUE', 'search-solr-worker') + '_durable'
+            'queue': os.getenv('NATS_BOR_SOLR_QUEUE', 'bor-solr-worker'),
+            'durable_name': os.getenv('NATS_BOR_SOLR_QUEUE', 'bor-solr-worker') + '_durable'
         }
 
     try:

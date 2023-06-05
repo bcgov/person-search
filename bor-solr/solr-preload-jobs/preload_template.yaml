@@ -7,11 +7,15 @@ objects:
     kind: Job
     metadata:
       name: bor-solr-preload
-      namespace: cc892f-${ENV}
+      namespace: 1dfe78-${ENV}
     spec:
       template:
         metadata:
           name: bor-solr-preload-${ENV}
+          labels:
+            app: bor-solr
+            name: bor-solr-preload-${ENV}
+            role: job
         spec:
           containers:
             - command:
@@ -93,16 +97,16 @@ objects:
                     secretKeyRef:
                       key: FLASK_ENV
                       name: bor-solr-importer-${ENV}-secret
-              image: image-registry.openshift-image-registry.svc:5000/cc892f-tools/bor-solr-importer:${ENV}
+              image: image-registry.openshift-image-registry.svc:5000/1dfe78-tools/bor-solr-importer:${ENV}
               imagePullPolicy: Always
               name: bor-solr-preload-${ENV}
               resources:
                 limits:
-                  cpu: 250m
-                  memory: 5Gi
+                  cpu: '1'
+                  memory: 16Gi
                 requests:
-                  cpu: 150m
-                  memory: 3Gi
+                  cpu: 900m
+                  memory: 12Gi
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
           dnsPolicy: ClusterFirst

@@ -7,7 +7,7 @@ objects:
   kind: Job
   metadata:
     name: bor-solr-preload-integration
-    namespace: cc892f-prod
+    namespace: 1dfe78-prod
   spec:
     template:
       metadata:

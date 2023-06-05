@@ -24,10 +24,10 @@ import random
 
 
 CONFIGURATION = {
-    'development': 'search_solr_updater.config.DevConfig',
-    'testing': 'search_solr_updater.config.TestConfig',
-    'production': 'search_solr_updater.config.ProdConfig',
-    'default': 'search_solr_updater.config.ProdConfig'
+    'development': 'bor_solr_updater.config.DevConfig',
+    'testing': 'bor_solr_updater.config.TestConfig',
+    'production': 'bor_solr_updater.config.ProdConfig',
+    'default': 'bor_solr_updater.config.ProdConfig'
 }
 
 
@@ -79,8 +79,8 @@ class Config():  # pylint: disable=too-few-public-methods
 
     SUBSCRIPTION_OPTIONS = {
         'subject': os.getenv('NATS_ENTITY_EVENTS_SUBJECT', 'entity.events'),
-        'queue': os.getenv('NATS_BOR_SOLR_QUEUE', 'search-solr-worker'),
-        'durable_name': os.getenv('NATS_BOR_SOLR_QUEUE', 'search-solr-worker') + '_durable'
+        'queue': os.getenv('NATS_BOR_SOLR_QUEUE', 'bor-solr-worker'),
+        'durable_name': os.getenv('NATS_BOR_SOLR_QUEUE', 'bor-solr-worker') + '_durable'
     }
 
     LEAR_SVC_URL = os.getenv('LEGAL_API_URL', 'http://') + os.getenv('LEGAL_API_VERSION_2', '/api/v2')

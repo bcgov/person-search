@@ -7,7 +7,7 @@ MKFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_ABS_DIR:=$(patsubst %/,%,$(dir $(MKFILE_PATH)))
 
 PROJECT_NAME:=bor_solr_updater
-DOCKER_NAME:=search-solr-updater
+DOCKER_NAME:=bor-solr-updater
 
 #################################################################################
 # COMMANDS -- Setup                                                             #

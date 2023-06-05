@@ -67,7 +67,7 @@ def create_app(config_name: str = os.getenv('APP_ENV') or 'production'):
             dsn=dsn,
             integrations=[FlaskIntegration()],
             environment=app.config.get('POD_NAMESPACE'),
-            release=f'search-solr-importer@{get_run_version()}',
+            release=f'bor-solr-importer@{get_run_version()}',
             traces_sample_rate=app.config.get('SENTRY_TSR'))
 
     oracle_db.init_app(app)

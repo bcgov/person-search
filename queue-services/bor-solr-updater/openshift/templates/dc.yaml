@@ -106,7 +106,7 @@ parameters:
     displayName: Name
     description: The name assigned to all of the OpenShift resources associated to the server instance.
     required: true
-    value: search-solr-updater
+    value: bor-solr-updater
 
   - name: TAG
     displayName: Environment TAG name

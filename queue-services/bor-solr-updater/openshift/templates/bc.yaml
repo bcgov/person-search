@@ -78,7 +78,7 @@ parameters:
   displayName: Name
   name: NAME
   required: true
-  value: search-solr-updater
+  value: bor-solr-updater
 - description: |
     The URL to your GIT repo, don't use the this default unless
     your just experimenting.
@@ -95,7 +95,7 @@ parameters:
   displayName: Source Context Directory
   name: SOURCE_CONTEXT_DIR
   required: false
-  value: queue_services/search-solr-updater
+  value: queue_services/bor-solr-updater
 - description: The tag given to the built image.
   displayName: Output Image Tag
   name: OUTPUT_IMAGE_TAG

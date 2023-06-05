@@ -50,11 +50,11 @@ async def cb_nr_subscription_handler(msg: nats.aio.client.Msg):
         logger.debug('Event Message Received: %s', event_message)
         await process_event(event_message, FLASK_APP)
     except QueueException as err:
-        logger.error('search-solr-updater: %s', err)
+        logger.error('bor-solr-updater: %s', err)
     except Exception as err:  # noqa pylint: disable=broad-except
         logger.debug(err.with_traceback(None))
         # NB: sentry breadcrumb will contain event msg already
-        logger.error('search-solr-updater: Unhandled error')
+        logger.error('bor-solr-updater: Unhandled error')
 
 
 async def process_event(event_message, flask_app):
@@ -148,6 +148,6 @@ if APP_CONFIG.SENTRY_DSN and APP_CONFIG.SENTRY_ENABLE.lower() == 'true':
         dsn=APP_CONFIG.SENTRY_DSN,
         integrations=[FlaskIntegration(), SENTRY_LOGGING],
         environment=APP_CONFIG.POD_NAMESPACE,
-        release=f'search-solr-updater@{get_run_version()}',
+        release=f'bor-solr-updater@{get_run_version()}',
         traces_sample_rate=APP_CONFIG.SENTRY_TSR
     )

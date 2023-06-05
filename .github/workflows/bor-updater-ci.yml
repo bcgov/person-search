@@ -1,4 +1,4 @@
-name: BOR Solr Updater CI
+name: BOR SOLR UPDATER CI
 
 on:
   pull_request:

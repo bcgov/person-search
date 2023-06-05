@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""The SEARCH API service.
+"""The BOR API service.
 
 This module is the API for the BC Registries Registry Search system.
 """

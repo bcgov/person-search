@@ -120,16 +120,16 @@ async def process_business_event(event_message: Dict[str, any]):  # pylint: disa
         update_resp = requests.put(url=solr_update_url, headers=headers, json=update_payload, timeout=30)
         if update_resp.status_code != HTTPStatus.OK:
             logger.debug(update_resp.json())
-            raise QueueException(update_resp.status_code, 'Unable to update search solr via search api.')
+            raise QueueException(update_resp.status_code, 'Unable to update search solr via bor api.')
     except (exceptions.ConnectionError, exceptions.Timeout) as err:
-        logger.debug('SEARCH API connection failure: %s', err)
-        raise QueueException(HTTPStatus.GATEWAY_TIMEOUT, 'Unable to update search solr via search api.')
+        logger.debug('BOR API connection failure: %s', err)
+        raise QueueException(HTTPStatus.GATEWAY_TIMEOUT, 'Unable to update search solr via bor api.')
     except QueueException as err:
         # pass along
         raise err
     except Exception as err:  # noqa: B902
-        logger.debug('SEARCH API connection failure: %s', err.with_traceback(None))
-        raise QueueException(HTTPStatus.INTERNAL_SERVER_ERROR, 'Unable to update search solr via search api.')
+        logger.debug('BOR API connection failure: %s', err.with_traceback(None))
+        raise QueueException(HTTPStatus.INTERNAL_SERVER_ERROR, 'Unable to update search solr via bor api.')
 
     logger.debug('<<<<<<<process_business_event<<<<<<<<<<')
 

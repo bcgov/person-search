@@ -1,4 +1,4 @@
-name: BOR UPDATER CD
+name: BOR SOLR UPDATER CD
 
 on:
   push:
@@ -87,7 +87,7 @@ jobs:
           OPENSHIFT_DOCKER_REGISTRY: ${{ secrets.OPENSHIFT_DOCKER_REGISTRY }}
           OPENSHIFT_SA_NAME: ${{ secrets.OPENSHIFT_SA_NAME }}
           OPENSHIFT_SA_TOKEN: ${{ secrets.OPENSHIFT_SA_TOKEN }}
-          OPENSHIFT_REPOSITORY: ${{ secrets.OPENSHIFT_REPOSITORY4_QUEUE_SERVICE }}
+          OPENSHIFT_REPOSITORY: ${{ secrets.OPENSHIFT_REPOSITORY }}
           TAG_NAME: ${{ env.TAG_NAME }}
         run: |
           make cd

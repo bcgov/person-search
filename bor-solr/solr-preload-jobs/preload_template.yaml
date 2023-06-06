@@ -56,11 +56,11 @@ objects:
                     secretKeyRef:
                       key: ORACLE_PORT
                       name: bor-solr-importer-${ENV}-secret
-                - name: DATABASE_HOST
+                - name: DATABASE_HOST_LEAR
                   valueFrom:
                     secretKeyRef:
-                      key: DATABASE_HOST
-                      name: bor-solr-importer-${ENV}-secret
+                      name: bor-solr-importer-dev-secret
+                      key: DATABASE_HOST_LEAR
                 - name: DATABASE_NAME
                   valueFrom:
                     secretKeyRef:

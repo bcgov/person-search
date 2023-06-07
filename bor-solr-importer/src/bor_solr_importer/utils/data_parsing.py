@@ -163,11 +163,7 @@ def set_party_entity(item_dict: dict[str, str], prepped_data: dict[str, Entity],
     if cessation_date := item_dict.get('cessation_date', None):
         role_date_range.end = datetime.isoformat(cessation_date,
                                                  timespec='seconds').replace('+00:00', 'Z')
-    active = not item_dict.get('end_event_id')
-    if role_date_range:
-        active = not role_date_range.end
-    party_role = EntityRole(active=active,
-                            relatedBN=item_dict['tax_id'],
+    party_role = EntityRole(relatedBN=item_dict['tax_id'],
                             relatedEntityType='BUSINESS',
                             relatedIdentifier=item_dict['identifier'],
                             relatedLegalType=item_dict['legal_type'],

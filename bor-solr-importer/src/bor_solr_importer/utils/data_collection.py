@@ -76,7 +76,6 @@ def collect_colin_data():
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and o.office_typ_cd = 'RG'
             and o.end_event_id is null
-            and rownum < 1000
         """)
     return cursor
 

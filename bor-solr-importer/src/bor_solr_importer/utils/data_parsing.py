@@ -126,17 +126,19 @@ def set_business_entity(item_dict: dict[str, str], prepped_data: dict[str, Entit
         business_address = get_address(item_dict, False, False)
         prepped_data[item_dict['identifier']] = Entity(entityAddresses=[business_address],
                                                        entityType='BUSINESS',
+                                                       id=item_dict['identifier'].strip(),
                                                        identifier=item_dict['identifier'].strip(),
                                                        legalName=item_dict['legal_name'].strip(),
                                                        legalType=item_dict['legal_type'].strip(),
                                                        state=item_dict['state'].strip(),
                                                        bn=item_dict.get('tax_id'))
 
-    elif not prepped_data[item_dict['identifier']].legalType:
-        # if business was added as a party then it won't have the legal_type, state, or bn set
-        prepped_data[item_dict['identifier']].legalType = item_dict['legal_type']
-        prepped_data[item_dict['identifier']].state = item_dict['state']
-        prepped_data[item_dict['identifier']].bn = item_dict['tax_id']
+    elif not prepped_data[item_dict['identifier']].identifier:
+        # if business was added as a party then it won't have the identifier, legal_type, state, or bn set
+        prepped_data[item_dict['identifier']].identifier = item_dict['identifier'].strip()
+        prepped_data[item_dict['identifier']].legalType = item_dict['legal_type'].strip()
+        prepped_data[item_dict['identifier']].state = item_dict['state'].strip()
+        prepped_data[item_dict['identifier']].bn = item_dict.get('tax_id')
 
 
 def set_party_entity(item_dict: dict[str, str], prepped_data: dict[str, Entity], source: str) -> Entity:
@@ -186,9 +188,11 @@ def set_party_entity(item_dict: dict[str, str], prepped_data: dict[str, Entity],
         # add new entity doc for party including address and role
         use_mailing = not item_dict.get('delivery_addr_id', None) and source == 'COLIN'
         party_address = get_address(item_dict, True, use_mailing)
+        is_party = item_dict['party_type'] == 'person'
         party_entity = Entity(entityAddresses=[party_address],
-                              entityType='PERSON' if item_dict['party_type'] == 'person' else 'BUSINESS',
-                              identifier=party_id,
+                              entityType='PERSON' if is_party else 'BUSINESS',
+                              id=party_id,
+                              identifier=None if is_party else party_id,
                               legalName=get_party_name(item_dict),
                               roles=[party_role])
 
@@ -301,7 +305,7 @@ def prep_data(data: list[dict[str, str]], cur, source: str) -> list[Entity]:  # 
                                event_link=event_link,
                                dupes=dupes,
                                corp_num=party_entity.roles[0].relatedIdentifier,
-                               new_id=party_entity.identifier,
+                               new_id=party_entity.id,
                                prev_id=f"{source}{item_dict['prev_party_id']}",
                                start_event_id=item_dict['start_event_id'])
 

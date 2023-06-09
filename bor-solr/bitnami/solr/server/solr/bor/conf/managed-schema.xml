@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema name="default-config" version="1.6">
-  <uniqueKey>identifier</uniqueKey>
+  <uniqueKey>id</uniqueKey>
   <fieldType name="_nest_path_" class="solr.NestPathField" maxCharsForDocValues="-1" omitNorms="true" omitTermFreqAndPositions="true" stored="false" multiValued="false"/>
   <!-- auto-generated field types -->
   <fieldType name="ancestor_path" class="solr.TextField">
@@ -299,14 +299,15 @@
   <field name="_text_" type="text_general" multiValued="true" indexed="true" stored="false"/>
   <field name="_version_" type="plong" indexed="false" stored="false"/>
   <!-- base entity docs -->
+  <field name="id" type="string" indexed="true" required="true" stored="true"/>
   <field name="bn" type="string" indexed="false" stored="true"/>
   <field name="bn_q" type="phrase_ngram" indexed="true" stored="false"/>
   <field name="bnSP" type="string" indexed="false" stored="true"/>
   <field name="bnSP_q" type="phrase_ngram" indexed="true" stored="false"/>
   <field name="entityAddresses" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="entityType" type="string" docValues="true" indexed="true" stored="true"/>
-  <field name="identifier" type="string" indexed="true" required="true" stored="true"/>
-  <field name="identifier_q" type="phrase_ngram" indexed="true" stored="true"/>
+  <field name="identifier" type="string" indexed="false" stored="true"/>
+  <field name="identifier_q" type="phrase_ngram" indexed="true" stored="false"/>
   <field name="legalName" type="string" indexed="false" stored="true"/>
   <field name="legalName_q" type="text_stemmed" indexed="true" stored="false"/>
   <field name="legalName_single_term" type="text_ngram" indexed="true" stored="false"/>
@@ -397,6 +398,7 @@
   <!-- <copyField source="streetAddress" dest="streetAddress_q"/> -->
   <copyField source="bn" dest="bn_q"/>
   <copyField source="bnSP" dest="bnSP_q"/>
+  <copyField source="identifier" dest="identifier_q"/>
   <copyField source="legalName" dest="legalName_q"/>
   <copyField source="legalName" dest="legalName_single_term"/>
   <copyField source="legalName" dest="legalName_agro_q"/>

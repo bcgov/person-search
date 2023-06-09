@@ -1043,8 +1043,8 @@
   <updateRequestProcessorChain name="dedupe">
     <processor class="solr.processor.SignatureUpdateProcessorFactory">
       <bool name="enabled">true</bool>
-      <str name="signatureField">identifier</str>
-      <str name="fields">identifier</str>
+      <str name="signatureField">id</str>
+      <str name="fields">id</str>
       <str name="signatureClass">solr.processor.Lookup3Signature</str>
     </processor>
     <processor class="solr.LogUpdateProcessorFactory" />

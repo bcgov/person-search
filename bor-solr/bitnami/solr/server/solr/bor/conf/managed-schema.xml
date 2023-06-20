@@ -196,99 +196,111 @@
   </fieldType>
   <!-- custom field types -->
   <fieldType name="datetime" class="solr.DateRangeField"/>
-  <fieldType name="phrase_basic" class="solr.TextField" positionIncrementGap="100">
+  <!-- <fieldType name="phrase_basic" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
       <tokenizer name="keyword"/>
       <filter name="lowercase"/>
-      <filter class="solr.ASCIIFoldingFilterFactory"/>
+      <filter name="asciiFolding"/>
       <filter name="classic"/>
     </analyzer>
     <analyzer type="query">
       <tokenizer name="keyword"/>
       <filter name="lowercase"/>
-      <filter class="solr.ASCIIFoldingFilterFactory"/>
+      <filter name="asciiFolding"/>
       <filter name="classic"/>
     </analyzer>
-  </fieldType>
+  </fieldType> -->
   <fieldType name="phrase_ngram" class="solr.TextField">
     <analyzer type="index">
       <tokenizer name="keyword"/>
       <filter name="lowercase"/>
-      <filter generateWordParts="0" splitOnNumerics="0" catenateAll="1" name="wordDelimiterGraph" generateNumberParts="0"/>
+      <filter name="wordDelimiterGraph" generateWordParts="0" splitOnNumerics="0" catenateAll="1" generateNumberParts="0"/>
       <filter name="flattenGraph"/>
-      <filter class="solr.NGramFilterFactory" maxGramSize="15" minGramSize="1"/>
+      <filter name="nGram" maxGramSize="15" minGramSize="1"/>
     </analyzer>
     <analyzer type="query">
       <tokenizer name="keyword"/>
       <filter name="lowercase"/>
-      <filter generateWordParts="0" splitOnNumerics="0" catenateAll="1" name="wordDelimiterGraph" generateNumberParts="0"/>
+      <filter name="wordDelimiterGraph" generateWordParts="0" splitOnNumerics="0" catenateAll="1" generateNumberParts="0"/>
+    </analyzer>
+  </fieldType>
+  <fieldType name="phrase_synonym" class="solr.TextField">
+    <analyzer type="index">
+      <tokenizer name="standard"/>
+      <filter name="lowercase"/>
+      <filter name="managedSynonymGraph" managed="english"/>
+      <filter name="asciiFolding"/>
+      <filter name="classic"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
+      <filter name="flattenGraph"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <filter name="lowercase"/>
+      <filter name="asciiFolding"/>
+      <filter name="classic"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
     </analyzer>
   </fieldType>
   <fieldType name="text_ngram" class="solr.TextField">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="-" replacement=" "/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
-      <filter class="solr.ASCIIFoldingFilterFactory"/>
+      <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter generateWordParts="0" splitOnNumerics="0" catenateAll="1" name="wordDelimiterGraph" generateNumberParts="0"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
       <filter name="flattenGraph"/>
-      <filter maxGramSize="15" name="nGram" minGramSize="1"/>
+      <filter name="nGram" maxGramSize="15" minGramSize="1"/>
     </analyzer>
     <analyzer type="query">
-      <charFilter name="patternReplace" pattern="-" replacement=" "/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
-      <filter class="solr.ASCIIFoldingFilterFactory"/>
+      <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter generateWordParts="0" splitOnNumerics="0" catenateAll="1" name="wordDelimiterGraph" generateNumberParts="0"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
     </analyzer>
   </fieldType>
   <fieldType name="text_stemmed" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="-" replacement=" "/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
-      <filter class="solr.ASCIIFoldingFilterFactory"/>
+      <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter generateWordParts="0" splitOnNumerics="0" catenateAll="1" name="wordDelimiterGraph" generateNumberParts="0"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
       <filter name="flattenGraph"/>
       <filter name="englishMinimalStem"/>
     </analyzer>
     <analyzer type="query">
-      <charFilter name="patternReplace" pattern="-" replacement=" "/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
-      <filter class="solr.ASCIIFoldingFilterFactory"/>
+      <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter generateWordParts="0" splitOnNumerics="0" catenateAll="1" name="wordDelimiterGraph" generateNumberParts="0"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
       <filter name="englishMinimalStem"/>
     </analyzer>
   </fieldType>
   <fieldType name="text_stemmed_agro" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="-" replacement=" "/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
-      <filter class="solr.ASCIIFoldingFilterFactory"/>
+      <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter generateWordParts="0" splitOnNumerics="0" catenateAll="1" name="wordDelimiterGraph" generateNumberParts="0"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
       <filter name="flattenGraph"/>
       <filter name="porterStem"/>
     </analyzer>
     <analyzer type="query">
-      <charFilter name="patternReplace" pattern="-" replacement=" "/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
-      <filter class="solr.ASCIIFoldingFilterFactory"/>
+      <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter generateWordParts="0" splitOnNumerics="0" catenateAll="1" name="wordDelimiterGraph" generateNumberParts="0"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
       <filter name="porterStem"/>
     </analyzer>
   </fieldType>
@@ -302,36 +314,27 @@
   <field name="id" type="string" indexed="true" required="true" stored="true"/>
   <field name="bn" type="string" indexed="false" stored="true"/>
   <field name="bn_q" type="phrase_ngram" indexed="true" stored="false"/>
-  <field name="bnSP" type="string" indexed="false" stored="true"/>
-  <field name="bnSP_q" type="phrase_ngram" indexed="true" stored="false"/>
   <field name="entityAddresses" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="entityType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="identifier" type="string" indexed="false" stored="true"/>
   <field name="identifier_q" type="phrase_ngram" indexed="true" stored="false"/>
   <field name="legalName" type="string" indexed="false" stored="true"/>
   <field name="legalName_q" type="text_stemmed" indexed="true" stored="false"/>
-  <field name="legalName_single_term" type="text_ngram" indexed="true" stored="false"/>
-  <field name="legalName_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
+  <field name="legalName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="legalName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
+  <field name="legalName_synonym_q" type="phrase_synonym" indexed="true" stored="false"/>
   <field name="legalType" type="string" docValues="true" indexed="true" stored="true"/>
-  <field name="operatingName" type="string" indexed="false" stored="true"/>
-  <field name="operatingName_q" type="text_stemmed" indexed="true" stored="false"/>
-  <field name="operatingName_single_term" type="text_ngram" indexed="true" stored="false"/>
-  <field name="operatingName_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="state" type="string" docValues="true" indexed="true" stored="true"/>
   <!-- child address docs -->
   <field name="addressType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="addressCity" type="string" docValues="true" indexed="true" stored="true"/>
-  <!-- <field name="addressCity_q" type="string" indexed="true" stored="false"/> -->
   <field name="addressCountry" type="string" docValues="true" indexed="true" stored="true"/>
-  <!-- <field name="addressCountry_q" type="string" indexed="true" stored="false"/> -->
   <field name="addressRegion" type="string" docValues="true" indexed="true" stored="true"/>
-  <!-- <field name="addressRegion_q" type="string" indexed="true" stored="false"/> -->
   <field name="address_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="address_synonym_q" type="phrase_synonym" indexed="true" stored="false"/>
   <field name="postalCode" type="string" indexed="false" stored="true"/>
-  <field name="postalCode_q" type="phrase_ngram" indexed="true" stored="false"/>
   <field name="streetAddress" type="string" indexed="false" stored="true"/>
-  <!-- <field name="streetAddress_q" type="phrase_ngram" indexed="true" stored="false"/> -->
   <!-- child entity role docs -->
   <field name="related_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="relatedBN" type="string" indexed="false" stored="true"/>
@@ -342,8 +345,9 @@
   <field name="relatedLegalType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="relatedName" type="string" indexed="false" stored="true"/>
   <field name="relatedName_q" type="text_stemmed" indexed="true" stored="false"/>
-  <field name="relatedName_single_term" type="text_ngram" indexed="true" stored="false"/>
-  <field name="relatedName_stem_agro" type="text_stemmed_agro" indexed="true" stored="false"/>
+  <field name="relatedName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="relatedName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
+  <field name="relatedName_synonym_q" type="phrase_synonym" indexed="true" stored="false"/>
   <field name="relatedState" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="roleDates" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="roleType" type="string" docValues="true" indexed="true" stored="true"/>
@@ -391,23 +395,20 @@
   <dynamicField name="*_d" type="pdouble" indexed="true" stored="true"/>
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <!-- custom copy fields -->
-  <!-- <copyField source="addressCity" dest="addressCity_q"/> -->
-  <!-- <copyField source="addressCountry" dest="addressCountry_q"/> -->
-  <!-- <copyField source="addressRegion" dest="addressRegion_q"/> -->
-  <copyField source="postalCode" dest="postalCode_q"/>
-  <!-- <copyField source="streetAddress" dest="streetAddress_q"/> -->
+  <!-- address -->
+  <copyField source="address_q" dest="address_synonym_q"/>
+  <!-- entity -->
   <copyField source="bn" dest="bn_q"/>
-  <copyField source="bnSP" dest="bnSP_q"/>
   <copyField source="identifier" dest="identifier_q"/>
   <copyField source="legalName" dest="legalName_q"/>
-  <copyField source="legalName" dest="legalName_single_term"/>
-  <copyField source="legalName" dest="legalName_agro_q"/>
-  <copyField source="operatingName" dest="operatingName_q"/>
-  <copyField source="operatingName" dest="operatingName_single_term"/>
-  <copyField source="operatingName" dest="operatingName_agro_q"/>
+  <copyField source="legalName" dest="legalName_single_term_q"/>
+  <copyField source="legalName" dest="legalName_stem_agro_q"/>
+  <copyField source="legalName" dest="legalName_synonym_q"/>
+  <!-- entity roles -->
   <copyField source="relatedBN" dest="relatedBN_q"/>
   <copyField source="relatedIdentifier" dest="relatedIdentifier_q"/>
   <copyField source="relatedName" dest="relatedName_q"/>
-  <copyField source="relatedName" dest="relatedName_single_term"/>
-  <copyField source="relatedName" dest="relatedName_stem_agro"/>
+  <copyField source="relatedName" dest="relatedName_single_term_q"/>
+  <copyField source="relatedName" dest="relatedName_stem_agro_q"/>
+  <copyField source="relatedName" dest="relatedName_synonym_q"/>
 </schema>

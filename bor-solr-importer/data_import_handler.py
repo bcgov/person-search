@@ -76,22 +76,22 @@ def load_search_core():  # pylint: disable=too-many-statements
             # delete existing index
             current_app.logger.debug('REINDEX_CORE set: deleting current solr index...')
             bor_solr.delete_all_docs()
-        if current_app.config.get('REINDEX_CORE', False) or current_app.config.get('PRELOADER_JOB', False):
             # update the synonym lists
-            try:
-                current_app.logger.debug('Getting token for synonym lists update...')
-                token = get_bearer_token()
-                headers = {'Authorization': 'Bearer ' + token}
-                current_app.logger.debug('Updating synonym lists...')
-                api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
-                update_resp = requests.put(url=f'{api_url}/internal/solr/update/synonyms', headers=headers, json={})
-                if update_resp.status_code != HTTPStatus.OK:
-                    current_app.logger.error('Synonym lists update failed with status %s', update_resp.status_code)
-                else:
-                    current_app.logger.debug('Synonym lists update complete.')
-            except Exception as error:  # noqa: B902
-                current_app.logger.debug(error.with_traceback(None))
-                current_app.logger.error('Synonym lists update failed.')
+            if not current_app.config.get('PRELOADER_JOB', False):
+                try:
+                    current_app.logger.debug('Getting token for synonym lists update...')
+                    token = get_bearer_token()
+                    headers = {'Authorization': 'Bearer ' + token}
+                    current_app.logger.debug('Updating synonym lists...')
+                    api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
+                    update_resp = requests.put(url=f'{api_url}/internal/solr/update/synonyms', headers=headers, json={})
+                    if update_resp.status_code != HTTPStatus.OK:
+                        current_app.logger.error('Synonym lists update failed with status %s', update_resp.status_code)
+                    else:
+                        current_app.logger.debug('Synonym lists update complete.')
+                except Exception as error:  # noqa: B902
+                    current_app.logger.debug(error.with_traceback(None))
+                    current_app.logger.error('Synonym lists update failed.')
 
         # execute update to solr in batches
         current_app.logger.debug('Importing records from COLIN...')

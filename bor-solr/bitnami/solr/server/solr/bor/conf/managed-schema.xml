@@ -224,11 +224,29 @@
       <filter name="wordDelimiterGraph" generateWordParts="0" splitOnNumerics="0" catenateAll="1" generateNumberParts="0"/>
     </analyzer>
   </fieldType>
-  <fieldType name="phrase_synonym" class="solr.TextField">
+  <fieldType name="synonym_address" class="solr.TextField">
     <analyzer type="index">
       <tokenizer name="standard"/>
       <filter name="lowercase"/>
-      <filter name="managedSynonymGraph" managed="english"/>
+      <filter name="managedSynonymGraph" managed="ADDRESS"/>
+      <filter name="asciiFolding"/>
+      <filter name="classic"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
+      <filter name="flattenGraph"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="standard"/>
+      <filter name="lowercase"/>
+      <filter name="asciiFolding"/>
+      <filter name="classic"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
+    </analyzer>
+  </fieldType>
+  <fieldType name="synonym_name" class="solr.TextField">
+    <analyzer type="index">
+      <tokenizer name="standard"/>
+      <filter name="lowercase"/>
+      <filter name="managedSynonymGraph" managed="NAME"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
       <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
@@ -322,7 +340,7 @@
   <field name="legalName_q" type="text_stemmed" indexed="true" stored="false"/>
   <field name="legalName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="legalName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
-  <field name="legalName_synonym_q" type="phrase_synonym" indexed="true" stored="false"/>
+  <field name="legalName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
   <field name="legalType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="state" type="string" docValues="true" indexed="true" stored="true"/>
@@ -332,7 +350,7 @@
   <field name="addressCountry" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="addressRegion" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="address_q" type="text_ngram" indexed="true" stored="false"/>
-  <field name="address_synonym_q" type="phrase_synonym" indexed="true" stored="false"/>
+  <field name="address_synonym_q" type="synonym_address" indexed="true" stored="false"/>
   <field name="postalCode" type="string" indexed="false" stored="true"/>
   <field name="streetAddress" type="string" indexed="false" stored="true"/>
   <!-- child entity role docs -->
@@ -347,7 +365,7 @@
   <field name="relatedName_q" type="text_stemmed" indexed="true" stored="false"/>
   <field name="relatedName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="relatedName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
-  <field name="relatedName_synonym_q" type="phrase_synonym" indexed="true" stored="false"/>
+  <field name="relatedName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
   <field name="relatedState" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="roleDates" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="roleType" type="string" docValues="true" indexed="true" stored="true"/>

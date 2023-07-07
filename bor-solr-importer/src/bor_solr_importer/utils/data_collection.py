@@ -33,7 +33,7 @@ def collect_colin_data():
             cp.last_nme as last_name, cp.middle_nme as middle_initial, cp.party_typ_cd, cp.corp_party_id as party_id,
             cp.appointment_dt as appointment_date, cp.cessation_dt as cessation_date, cp.start_event_id,
             cp.end_event_id, cp.prev_party_id, cp.delivery_addr_id,
-            pt.short_desc as party_type_desc, cpe.event_timestmp, cpef.effective_dt,
+            pt.short_desc as party_type_desc, cpe.event_typ_cd, cpe.event_timestmp, cpef.effective_dt,
             cpa.province as party_region, cpa.country_typ_cd as party_country, cpa.city as party_city,
             cpa.postal_cd as party_postal_code, cpa.addr_line_1 as party_street, cpa.unit_type as party_unit_type,
             cpa.unit_no as party_unit_no, cpa.civic_no as party_civic_no, cpa.civic_no_suffix as party_civic_no_suffix,
@@ -76,6 +76,7 @@ def collect_colin_data():
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and o.office_typ_cd = 'RG'
             and o.end_event_id is null
+            and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
         """)
     return cursor
 

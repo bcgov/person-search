@@ -209,17 +209,16 @@ def party_cleanup(prepped_data: dict[str, Entity], party_links: dict[str, str]):
             if current_id not in prepped_data:
                 skipped_ids.append(current_id)
                 continue
-            if prepped_data[current_id].roles[0].roleDates[0].start:
-                # no need to loop through previous records for the start date info
-                continue
 
             # get start date from the last party record (expects oldest record to be last in the list)
             prev_id = party_links[corp_num][current_id]
 
             if prev_id in prepped_data:
-                prepped_data[current_id].roles[0].roleDates[0].start = \
-                    prepped_data[prev_id].roles[0].roleDates[0].start
-                # remove older record from prepped data
+                if not prepped_data[current_id].roles[0].roleDates[0].start:
+                    # parent appointment date not there so use child appointment date
+                    prepped_data[current_id].roles[0].roleDates[0].start = \
+                        prepped_data[prev_id].roles[0].roleDates[0].start
+                # remove child record from prepped data
                 del prepped_data[prev_id]
     print(f'skipped_ids {skipped_ids}')
 
@@ -311,6 +310,10 @@ def prep_data(data: list[dict[str, str]], cur, source: str) -> list[Entity]:  # 
 
         elif party_entity and not party_entity.roles[0].roleDates[0].start:
             # no older records to pull appointment date from so use filing_date
+            if item_dict.get('event_typ_cd', None) in ['CONVICORP', 'CONVAMAL', 'CONVCIN']:
+                # event date does not correspond to appointment date of party for these
+                # appointment date is unknown in this case (so keep it as None)
+                continue
             if filing_date := item_dict.get('effective_dt', None) or item_dict.get('event_timestmp', None):
                 party_entity.roles[0].roleDates[0].start = datetime.isoformat(filing_date,
                                                                               timespec='seconds').replace('+00:00', 'Z')

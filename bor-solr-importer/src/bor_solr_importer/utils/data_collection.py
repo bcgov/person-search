@@ -24,11 +24,7 @@ def collect_colin_data():
     cursor = oracle_db.connection.cursor()
     current_app.logger.debug('Collecting COLIN data...')
     cursor.execute("""
-        SELECT c.corp_num as identifier, c.corp_typ_cd as legal_type, c.bn_15 as tax_id,
-            a.province as region, a.country_typ_cd as country, a.city, a.postal_cd as postal_code,
-            a.addr_line_1 as street, a.addr_line_2 as street_additional, a.addr_line_3, a.unit_type, a.unit_no,
-            a.civic_no, a.civic_no_suffix, a.street_name, a.street_type, a.street_direction, a.address_format_type,
-            a.route_service_type, a.lock_box_no, a.route_service_no, a.installation_type, a.installation_name,
+        SELECT c.corp_num as identifier, c.corp_typ_cd as legal_type, c.bn_15 as tax_id, c.admin_email,
             cn.corp_nme as legal_name, cp.business_nme as organization_name, cp.first_nme as first_name,
             cp.last_nme as last_name, cp.middle_nme as middle_initial, cp.party_typ_cd, cp.corp_party_id as party_id,
             cp.appointment_dt as appointment_date, cp.cessation_dt as cessation_date, cp.start_event_id,
@@ -59,8 +55,6 @@ def collect_colin_data():
                 when 'ACT' then 'ACTIVE' when 'HIS' then 'HISTORICAL'
                 else 'ACTIVE' END as state
         FROM corporation c
-        left join office o on o.corp_num = c.corp_num
-        left join address a on a.addr_id = o.delivery_addr_id
         join corp_state cs on cs.corp_num = c.corp_num
         join corp_op_state cos on cos.state_typ_cd = cs.state_typ_cd
         join corp_name cn on cn.corp_num = c.corp_num
@@ -74,8 +68,6 @@ def collect_colin_data():
             and cs.end_event_id is null
             and cn.end_event_id is null
             and cn.corp_name_typ_cd in ('CO', 'NB')
-            and o.office_typ_cd = 'RG'
-            and o.end_event_id is null
             and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
         """)
     return cursor
@@ -93,7 +85,6 @@ def collect_lear_data():
     current_app.logger.debug('Collecting LEAR data...')
     cur.execute("""
         SELECT b.identifier,b.legal_name,b.legal_type,b.tax_id,
-            a.street,a.street_additional,a.city,a.country,a.region,a.postal_code,
             pr.id as party_role_id,pr.role,pr.appointment_date,pr.cessation_date,
             p.first_name,p.middle_initial,p.last_name,p.organization_name,p.party_type,
             p.id as party_id,p.identifier as party_identifier,
@@ -102,13 +93,9 @@ def collect_lear_data():
             p_a.postal_code as party_postal_code,
             CASE when b.state = 'LIQUIDATION' then 'ACTIVE' else b.state END state
         FROM businesses b
-            LEFT JOIN offices o ON o.business_id = b.id
-            LEFT JOIN addresses a ON a.office_id = o.id
             LEFT JOIN party_roles pr on pr.business_id = b.id
             LEFT JOIN parties p on p.id = pr.party_id
             LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
         WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
-            AND o.office_type in ('registeredOffice', 'businessOffice')
-            AND a.address_type='delivery'
         """)
     return cur

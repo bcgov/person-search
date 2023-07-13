@@ -195,6 +195,17 @@
     </analyzer>
   </fieldType>
   <!-- custom field types -->
+  <fieldType name="email_ngram" class="solr.TextField">
+    <analyzer type="index">
+      <tokenizer name="keyword"/>
+      <filter name="lowercase"/>
+      <filter name="nGram" maxGramSize="50" minGramSize="1"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer name="keyword"/>
+      <filter name="lowercase"/>
+    </analyzer>
+  </fieldType>
   <fieldType name="datetime" class="solr.DateRangeField"/>
   <!-- <fieldType name="phrase_basic" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
@@ -332,6 +343,8 @@
   <field name="id" type="string" indexed="true" required="true" stored="true"/>
   <field name="bn" type="string" indexed="false" stored="true"/>
   <field name="bn_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="email" type="string" indexed="false" stored="true"/>
+  <field name="email_q" type="email_ngram" indexed="true" stored="false"/>
   <field name="entityAddresses" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="entityType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="identifier" type="string" indexed="false" stored="true"/>
@@ -357,6 +370,8 @@
   <field name="related_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="relatedBN" type="string" indexed="false" stored="true"/>
   <field name="relatedBN_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="relatedEmail" type="string" indexed="false" stored="true"/>
+  <field name="relatedEmail_q" type="email_ngram" indexed="true" stored="false"/>
   <field name="relatedEntityType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="relatedIdentifier" type="string" indexed="false" stored="true"/>
   <field name="relatedIdentifier_q" type="phrase_ngram" indexed="true" stored="false"/>
@@ -417,6 +432,7 @@
   <copyField source="address_q" dest="address_synonym_q"/>
   <!-- entity -->
   <copyField source="bn" dest="bn_q"/>
+  <copyField source="email" dest="email_q"/>
   <copyField source="identifier" dest="identifier_q"/>
   <copyField source="legalName" dest="legalName_q"/>
   <copyField source="legalName" dest="legalName_single_term_q"/>
@@ -424,6 +440,7 @@
   <copyField source="legalName" dest="legalName_synonym_q"/>
   <!-- entity roles -->
   <copyField source="relatedBN" dest="relatedBN_q"/>
+  <copyField source="relatedEmail" dest="relatedEmail_q"/>
   <copyField source="relatedIdentifier" dest="relatedIdentifier_q"/>
   <copyField source="relatedName" dest="relatedName_q"/>
   <copyField source="relatedName" dest="relatedName_single_term_q"/>

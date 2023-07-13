@@ -123,15 +123,15 @@ def set_business_entity(item_dict: dict[str, str], prepped_data: dict[str, Entit
     """Set the business entity in the prepped data."""
     if not item_dict['identifier'] in prepped_data:
         # add entity doc with address
-        business_address = get_address(item_dict, False, False)
-        prepped_data[item_dict['identifier']] = Entity(entityAddresses=[business_address],
+        prepped_data[item_dict['identifier']] = Entity(entityAddresses=[],
                                                        entityType='BUSINESS',
                                                        id=item_dict['identifier'].strip(),
                                                        identifier=item_dict['identifier'].strip(),
                                                        legalName=item_dict['legal_name'].strip(),
                                                        legalType=item_dict['legal_type'].strip(),
                                                        state=item_dict['state'].strip(),
-                                                       bn=item_dict.get('tax_id'))
+                                                       bn=item_dict.get('tax_id'),
+                                                       email=item_dict.get('admin_email'))
 
     elif not prepped_data[item_dict['identifier']].identifier:
         # if business was added as a party then it won't have the identifier, legal_type, state, or bn set
@@ -167,6 +167,7 @@ def set_party_entity(item_dict: dict[str, str], prepped_data: dict[str, Entity],
                                                  timespec='seconds').replace('+00:00', 'Z')
         role_date_range.active = False
     party_role = EntityRole(relatedBN=item_dict['tax_id'],
+                            relatedEmail=item_dict.get('admin_email'),
                             relatedEntityType='BUSINESS',
                             relatedIdentifier=item_dict['identifier'],
                             relatedLegalType=item_dict['legal_type'],

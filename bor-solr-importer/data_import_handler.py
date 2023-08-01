@@ -23,7 +23,8 @@ from bor_api.services.authz import get_bearer_token
 from bor_api.services.solr.solr_docs import Entity
 
 from bor_solr_importer import create_app
-from bor_solr_importer.utils import collect_colin_data, collect_lear_data, prep_data
+from bor_solr_importer.utils import (collect_colin_data, collect_lear_data, prep_data,
+                                     reindex_post, reindex_prep, reindex_recovery)
 
 
 def update_solr(base_docs: list[Entity], data_name: str) -> int:
@@ -62,51 +63,48 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
 def load_search_core():  # pylint: disable=too-many-statements
     """Load data from LEAR and COLIN into the search core."""
     try:
+        is_reindex = current_app.config.get('REINDEX_CORE', False)
+        is_preload = current_app.config.get('PRELOADER_JOB', False)
+
         colin_data_cur = collect_colin_data()
         colin_data = colin_data_cur.fetchall()
+
         current_app.logger.debug('Prepping COLIN data...')
         prepped_colin_data = prep_data(colin_data, colin_data_cur, 'COLIN')
         current_app.logger.debug(f'{len(prepped_colin_data)} COLIN records ready for import.')
+
         lear_data_cur = collect_lear_data()
         lear_data = lear_data_cur.fetchall()
+
         current_app.logger.debug('Prepping LEAR data...')
         prepped_lear_data = prep_data(lear_data, lear_data_cur, 'LEAR')
         current_app.logger.debug(f'{len(prepped_lear_data)} LEAR records ready for import.')
-        if current_app.config.get('REINDEX_CORE', False):
-            # delete existing index
-            current_app.logger.debug('REINDEX_CORE set: deleting current solr index...')
-            bor_solr.delete_all_docs()
-            # update the synonym lists
-            if not current_app.config.get('PRELOADER_JOB', False):
-                try:
-                    current_app.logger.debug('Getting token for synonym lists update...')
-                    token = get_bearer_token()
-                    headers = {'Authorization': 'Bearer ' + token}
-                    current_app.logger.debug('Updating synonym lists...')
-                    api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
-                    update_resp = requests.put(url=f'{api_url}/internal/solr/update/synonyms', headers=headers, json={})
-                    if update_resp.status_code != HTTPStatus.OK:
-                        current_app.logger.error('Synonym lists update failed with status %s', update_resp.status_code)
-                    else:
-                        current_app.logger.debug('Synonym lists update complete.')
-                except Exception as error:  # noqa: B902
-                    current_app.logger.debug(error.with_traceback(None))
-                    current_app.logger.error('Synonym lists update failed.')
 
-        # execute update to solr in batches
-        current_app.logger.debug('Importing records from COLIN...')
-        count = update_solr(prepped_colin_data, 'COLIN')
-        current_app.logger.debug('COLIN import completed.')
-        current_app.logger.debug('Importing records from LEAR...')
-        count += update_solr(prepped_lear_data, 'LEAR')
-        current_app.logger.debug('LEAR import completed.')
-        current_app.logger.debug(f'Total records imported: {count}')
+        if is_reindex:
+            reindex_prep(is_preload)
 
-        if not current_app.config.get('PRELOADER_JOB', False):
+        try:
+            # execute update to solr in batches
+            current_app.logger.debug('Importing records from COLIN...')
+            count = update_solr(prepped_colin_data, 'COLIN')
+            current_app.logger.debug('COLIN import completed.')
+
+            current_app.logger.debug('Importing records from LEAR...')
+            count += update_solr(prepped_lear_data, 'LEAR')
+            current_app.logger.debug('LEAR import completed.')
+
+            current_app.logger.debug(f'Total records imported: {count}')
+        except Exception as err:  # noqa: B902
+            if is_reindex and not is_preload:
+                reindex_recovery()
+            raise err  # pass along
+
+        if not is_preload:
             try:
                 current_app.logger.debug('Getting token for Resync...')
                 token = get_bearer_token()
                 headers = {'Authorization': 'Bearer ' + token}
+
                 current_app.logger.debug('Resyncing any overwritten docs during import...')
                 api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
                 resync_resp = requests.post(url=f'{api_url}/internal/solr/update/resync',
@@ -122,6 +120,9 @@ def load_search_core():  # pylint: disable=too-many-statements
             except Exception as error:  # noqa: B902
                 current_app.logger.debug(error.with_traceback(None))
                 current_app.logger.error('Resync failed.')
+
+        if is_reindex and not is_preload:
+            reindex_post()
 
         current_app.logger.debug('SOLR import finished successfully.')
 

@@ -14,3 +14,4 @@
 """Manages util functions for the importer."""
 from .data_collection import collect_colin_data, collect_lear_data
 from .data_parsing import prep_data
+from .reindex import reindex_post, reindex_prep, reindex_recovery

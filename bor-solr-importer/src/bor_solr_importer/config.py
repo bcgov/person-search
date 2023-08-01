@@ -40,7 +40,11 @@ class Config():  # pylint: disable=too-few-public-methods
 
     PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
-    SOLR_SVC_URL = os.getenv('SOLR_SVC_URL', 'http://')
+    SOLR_SVC_LEADER_CORE = os.getenv('SOLR_SVC_LEADER_CORE', 'bor')
+    SOLR_SVC_FOLLOWER_CORE = os.getenv('SOLR_SVC_FOLLOWER_CORE', 'bor_follower')
+    SOLR_SVC_LEADER_URL = os.getenv('SOLR_SVC_LEADER_URL', 'http://localhost:8883/solr')
+    SOLR_SVC_FOLLOWER_URL = os.getenv('SOLR_SVC_FOLLOWER_URL', 'http://localhost:8884/solr')
+
     BOR_API_URL = os.getenv('BOR_API_INTERNAL_URL', 'http://')
     BOR_API_V1 = os.getenv('BOR_API_VERSION', '')
 

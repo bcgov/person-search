@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bor-solr-importer"
-version = "1.0.0a1.dev8"
+version = "1.0.0b1.dev1"
 description = ""
 authors = ["Kial Jinnah"]
 license = "LICENSE"

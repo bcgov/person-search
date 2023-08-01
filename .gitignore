@@ -124,9 +124,7 @@ htmlcov/
 bor-ui/public/config/local.configuration.json
 
 # local solr index
-bor-solr/bitnami/solr/server/solr/bor/data/*
-# local test solr (for api unit tests)
-bor-solr/test_solr
+bor-solr/solr/bor/data/*
 
 .idea/
 

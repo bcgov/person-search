@@ -12,26 +12,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Manages util methods for reindexing."""
+from datetime import datetime, timezone
 from http import HTTPStatus
 from time import sleep
 
 import requests
 from flask import current_app
+from bor_api.exceptions import SolrException
 from bor_api.services import bor_solr
 from bor_api.services.authz import get_bearer_token
+
+
+def get_replication_detail(field: str, leader: bool):
+    """Verify the replication detail for the core."""
+    resp = bor_solr.replication('details', leader)
+    if leader:
+        return resp.json()['details'][field]
+    return resp.json()['details']['follower'][field]
 
 
 def reindex_prep(is_preload: bool):
     """Execute reindex operations needed before index is reloaded."""
     if not is_preload:
         # backup leader index
+        backup_trigger_time = (datetime.utcnow()).replace(tzinfo=timezone.utc)
         backup = bor_solr.replication('backup', True)
         current_app.logger.debug(backup.json())
         # disable follower polling during reindex
-        disable_polling = bor_solr.replication('disablepolling', False)
+        disable_polling = bor_solr.replication('disablepoll', False)
         current_app.logger.debug(disable_polling.json())
         # await 10 seconds in case a poll was in progress
         sleep(10)
+        # disable leader replication for reindex duration
+        disable_replication = bor_solr.replication('disablereplication', True)
+        current_app.logger.debug(disable_replication.json())
+        # verify current backup is from just now and was successful in case of failure
+        backup_detail = get_replication_detail('backup', True)
+        backup_start_time = datetime.fromisoformat(backup_detail['startTime'])
+        if not (backup_detail['status'] == 'success' and backup_trigger_time < backup_start_time):
+            current_app.logger.debug('Backup detail: %s', backup_detail)
+            raise SolrException('Failed to backup leader index', str(backup_detail), HTTPStatus.INTERNAL_SERVER_ERROR)
+        # verify follower polling disabled so it doesn't update until reindex is complete
+        is_polling_disabled = get_replication_detail('isPollingDisabled', False)
+        if not bool(is_polling_disabled):
+            current_app.logger.debug('is_polling_disabled: %s', is_polling_disabled)
+            raise SolrException('Failed disable polling on follower',
+                                str(is_polling_disabled),
+                                HTTPStatus.INTERNAL_SERVER_ERROR)
+
     # delete existing index
     current_app.logger.debug('REINDEX_CORE set: deleting current solr index...')
     bor_solr.delete_all_docs()
@@ -56,11 +84,16 @@ def reindex_prep(is_preload: bool):
 
 def reindex_post():
     """Execute post reindex operations on the follower index."""
+    # reenable leader replication
+    enable_replication = bor_solr.replication('enablereplication', True)
+    current_app.logger.debug(enable_replication.json())
+    sleep(5)
     # force the follwer to fetch the new index
     fetch_new_idx = bor_solr.replication('fetchindex', False)
     current_app.logger.debug(fetch_new_idx.json())
+    sleep(10)
     # renable polling
-    enable_polling = bor_solr.replication('enablepolling', False)
+    enable_polling = bor_solr.replication('enablepoll', False)
     current_app.logger.debug(enable_polling.json())
 
 
@@ -74,6 +107,9 @@ def reindex_recovery():
         status = bor_solr.replication('restorestatus', True)
         if (status.json())['status'] == 'success':
             current_app.logger.debug('restore complete.')
+            enable_replication = bor_solr.replication('enablereplication', True)
+            current_app.logger.debug(enable_replication.json())
+            sleep(5)
             enable_polling = bor_solr.replication('enablepolling', False)
             current_app.logger.debug(enable_polling.json())
             return

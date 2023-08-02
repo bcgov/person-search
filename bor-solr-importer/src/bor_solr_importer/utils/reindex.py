@@ -43,9 +43,6 @@ def reindex_prep(is_preload: bool):
         current_app.logger.debug(disable_polling.json())
         # await 10 seconds in case a poll was in progress
         sleep(10)
-        # disable leader replication for reindex duration
-        disable_replication = bor_solr.replication('disablereplication', True)
-        current_app.logger.debug(disable_replication.json())
         # verify current backup is from just now and was successful in case of failure
         backup_detail = get_replication_detail('backup', True)
         backup_start_time = datetime.fromisoformat(backup_detail['startTime'])
@@ -59,6 +56,9 @@ def reindex_prep(is_preload: bool):
             raise SolrException('Failed disable polling on follower',
                                 str(is_polling_disabled),
                                 HTTPStatus.INTERNAL_SERVER_ERROR)
+        # disable leader replication for reindex duration (important to do this after polling disabled)
+        disable_replication = bor_solr.replication('disablereplication', True)
+        current_app.logger.debug(disable_replication.json())
 
     # delete existing index
     current_app.logger.debug('REINDEX_CORE set: deleting current solr index...')

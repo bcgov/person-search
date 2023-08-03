@@ -24,11 +24,19 @@ from bor_api.services.authz import get_bearer_token
 
 
 def get_replication_detail(field: str, leader: bool):
-    """Verify the replication detail for the core."""
-    resp = bor_solr.replication('details', leader)
+    """Return the replication detail for the core."""
+    details = (bor_solr.replication('details', leader)).json()['details']
+    # remove data unwanted in the logs
+    if field != 'commits' and 'commits' in details:
+        del details['commits']
+    if not leader and field != 'leaderDetails' and 'leaderDetails' in details['follower']:
+        del details['follower']['leaderDetails']
+
+    # log full details and return data element
+    current_app.logger.debug('Full replication details: %s', details)
     if leader:
-        return resp.json()['details'][field]
-    return resp.json()['details']['follower'][field]
+        return details[field]
+    return details['follower'][field]
 
 
 def reindex_prep(is_preload: bool):
@@ -41,8 +49,8 @@ def reindex_prep(is_preload: bool):
         # disable follower polling during reindex
         disable_polling = bor_solr.replication('disablepoll', False)
         current_app.logger.debug(disable_polling.json())
-        # await 10 seconds in case a poll was in progress
-        sleep(10)
+        # await 60 seconds in case a poll was in progress and to give time for backup to complete
+        sleep(60)
         # verify current backup is from just now and was successful in case of failure
         backup_detail = get_replication_detail('backup', True)
         backup_start_time = datetime.fromisoformat(backup_detail['startTime'])

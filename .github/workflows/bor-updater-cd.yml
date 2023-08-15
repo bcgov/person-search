@@ -37,7 +37,7 @@ jobs:
       - name: Login Openshift
         shell: bash
         run: |
-          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN}}
+          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN_DEV}}
 
       - name: CD Flow
         shell: bash
@@ -45,22 +45,11 @@ jobs:
           OPS_REPOSITORY: ${{ secrets.OPS_REPOSITORY }}
           OPENSHIFT_DOCKER_REGISTRY: ${{ secrets.OPENSHIFT_DOCKER_REGISTRY }}
           OPENSHIFT_SA_NAME: ${{ secrets.OPENSHIFT_SA_NAME }}
-          OPENSHIFT_SA_TOKEN: ${{ secrets.OPENSHIFT_SA_TOKEN }}
+          OPENSHIFT_SA_TOKEN_DEV: ${{ secrets.OPENSHIFT_SA_TOKEN_DEV }}
           OPENSHIFT_REPOSITORY: ${{ secrets.OPENSHIFT_REPOSITORY }}
           TAG_NAME: ${{ env.TAG_NAME }}
         run: |
           make cd
-
-      - name: Rocket.Chat Notification
-        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
-        if: failure()
-        with:
-          type: ${{ job.status }}
-          job_name: "*BOR UPDATER Built for ${{env.TAG_NAME}}*"
-          channel: "#registries-bot"
-          url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
-          commit: true
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   bor-updater-cd-by-dispatch:
     runs-on: ubuntu-20.04
@@ -75,10 +64,23 @@ jobs:
         run: |
           echo "TAG_NAME=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
 
-      - name: Login Openshift
+      - name: Login Openshift Dev
+        if: env.TAG_NAME == 'dev'
         shell: bash
         run: |
-          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN}}
+          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN_DEV}}
+
+      - name: Login Openshift Test
+        if: env.TAG_NAME == 'test'
+        shell: bash
+        run: |
+          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN_TEST}}
+
+      - name: Login Openshift Prod
+        if: env.TAG_NAME == 'prod'
+        shell: bash
+        run: |
+          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN_PROD}}
 
       - name: CD Flow
         shell: bash
@@ -86,19 +88,10 @@ jobs:
           OPS_REPOSITORY: ${{ secrets.OPS_REPOSITORY }}
           OPENSHIFT_DOCKER_REGISTRY: ${{ secrets.OPENSHIFT_DOCKER_REGISTRY }}
           OPENSHIFT_SA_NAME: ${{ secrets.OPENSHIFT_SA_NAME }}
-          OPENSHIFT_SA_TOKEN: ${{ secrets.OPENSHIFT_SA_TOKEN }}
+          OPENSHIFT_SA_TOKEN_DEV: ${{ secrets.OPENSHIFT_SA_TOKEN_DEV }}
+          OPENSHIFT_SA_TOKEN_TEST: ${{ secrets.OPENSHIFT_SA_TOKEN_TEST }}
+          OPENSHIFT_SA_TOKEN_PROD: ${{ secrets.OPENSHIFT_SA_TOKEN_PROD }}
           OPENSHIFT_REPOSITORY: ${{ secrets.OPENSHIFT_REPOSITORY }}
           TAG_NAME: ${{ env.TAG_NAME }}
         run: |
           make cd
-
-      - name: Rocket.Chat Notification
-        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
-        if: failure()
-        with:
-          type: ${{ job.status }}
-          job_name: "*BOR UPDATER Built for ${{env.TAG_NAME}}*"
-          channel: "#registries-bot"
-          url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
-          commit: true
-          token: ${{ secrets.GITHUB_TOKEN }}

@@ -80,7 +80,7 @@ mac-cov: test ## Run the coverage report and display in a browser window (mac)
 # expects the terminal to be openshift login
 # expects export OPENSHIFT_DOCKER_REGISTRY=""
 # expects export OPENSHIFT_SA_NAME="$(oc whoami)"
-# expects export OPENSHIFT_SA_TOKEN="$(oc whoami -t)"
+# expects export OPENSHIFT_SA_TOKEN_DEV/TEST/PROD="$(oc whoami -t)"
 # expects export OPENSHIFT_REPOSITORY=""
 # expects export TAG_NAME="dev/test/prod"
 # expects export OPS_REPOSITORY=""                                                        #
@@ -108,7 +108,7 @@ build-nc: ## Build the docker container without caching
 
 REGISTRY_IMAGE=$(OPENSHIFT_DOCKER_REGISTRY)/$(OPENSHIFT_REPOSITORY)-tools/$(DOCKER_NAME)
 push: #build ## Push the docker container to the registry & tag latest
-	@echo "$(OPENSHIFT_SA_TOKEN)" | docker login $(OPENSHIFT_DOCKER_REGISTRY) -u $(OPENSHIFT_SA_NAME) --password-stdin ;\
+	@echo "$(OPENSHIFT_SA_TOKEN_DEV)" | docker login $(OPENSHIFT_DOCKER_REGISTRY) -u $(OPENSHIFT_SA_NAME) --password-stdin ;\
     docker tag $(DOCKER_NAME) $(REGISTRY_IMAGE):latest ;\
     docker push $(REGISTRY_IMAGE):latest
 

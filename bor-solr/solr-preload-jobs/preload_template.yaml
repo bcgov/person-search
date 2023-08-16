@@ -86,7 +86,7 @@ objects:
                     secretKeyRef:
                       key: POD_NAMESPACE
                       name: bor-solr-importer-${ENV}-secret
-                - name: SOLR_SVC_URL
+                - name: SOLR_SVC_LEADER_URL
                   valueFrom:
                     secretKeyRef:
                       key: SOLR_SVC_PRELOAD_URL
@@ -117,12 +117,12 @@ objects:
                   memory: 12Gi
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
-          activeDeadlineSeconds: 6000
+          activeDeadlineSeconds: 12000
           dnsPolicy: ClusterFirst
           restartPolicy: Never
           schedulerName: default-scheduler
           securityContext: {}
-          terminationGracePeriodSeconds: 60
+          terminationGracePeriodSeconds: 300
 parameters:
   - description: Environment job will be created in
     name: ENV

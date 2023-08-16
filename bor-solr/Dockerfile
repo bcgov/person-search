@@ -3,16 +3,12 @@ USER root
 
 ARG VCS_REF="missing"
 ARG BUILD_DATE="missing"
-ARG ENVIRONMENT="dev"
 ARG CORE="bor"
-ARG LEADER_URL="missing"
 ARG SOLR_OPTS_VAR='$SOLR_OPTS'
 
 ENV VCS_REF=${VCS_REF}
 ENV BUILD_DATE=${BUILD_DATE}
-ENV ENVIRONMENT=${ENVIRONMENT}
 ENV CORE=${CORE}
-ENV LEADER_URL=${LEADER_URL}
 
 LABEL org.label-schema.vcs-ref=${VCS_REF} \
     org.label-schema.build-date=${BUILD_DATE}
@@ -31,9 +27,11 @@ COPY ./solr/${CORE}/conf/solrconfig.xml /var/solr/data/${CORE}/conf/solrconfig.x
 COPY ./solr/solr.xml /opt/solr-9.2.1/server/solr/solr.xml
 # solr env overrides
 RUN echo "" >> /etc/default/solr.in.sh
-RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.environment=$ENVIRONMENT\" >> /etc/default/solr.in.sh
-RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.leaderUrl=$LEADER_URL\" >> /etc/default/solr.in.sh
 RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.disable.allowUrls=true\" >> /etc/default/solr.in.sh
+# NB: OPs flow is to set these afterwards so the same image can be tagged across dev/test/prod
+# RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.environment=$ENVIRONMENT\" >> /etc/default/solr.in.sh
+# RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.leaderUrl=$LEADER_URL\" >> /etc/default/solr.in.sh
+
 # jvm memory
 RUN echo SOLR_JAVA_MEM=\"-Xms1024m -Xmx1024m\" >> /etc/default/solr.in.sh
 

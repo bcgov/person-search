@@ -98,8 +98,8 @@ class Config():  # pylint: disable=too-few-public-methods
 
     # Service account details
     KEYCLOAK_AUTH_TOKEN_URL = os.getenv('KEYCLOAK_AUTH_TOKEN_URL')
-    KEYCLOAK_SERVICE_ACCOUNT_ID = os.getenv('BUSINESS_SEARCH_SERVICE_ACCOUNT_CLIENT_ID')
-    KEYCLOAK_SERVICE_ACCOUNT_SECRET = os.getenv('BUSINESS_SEARCH_SERVICE_ACCOUNT_SECRET')
+    KEYCLOAK_SERVICE_ACCOUNT_ID = os.getenv('NDS_SERVICE_ACCOUNT_CLIENT_ID')
+    KEYCLOAK_SERVICE_ACCOUNT_SECRET = os.getenv('NDS_SERVICE_ACCOUNT_SECRET')
 
 
 class DevelopmentConfig(Config):  # pylint: disable=too-few-public-methods

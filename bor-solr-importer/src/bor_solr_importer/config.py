@@ -96,8 +96,8 @@ class Config():  # pylint: disable=too-few-public-methods
 
     # Service account details
     ACCOUNT_SVC_AUTH_URL = os.getenv('KEYCLOAK_AUTH_TOKEN_URL')
-    ACCOUNT_SVC_CLIENT_ID = os.getenv('BUSINESS_SEARCH_SERVICE_ACCOUNT_CLIENT_ID')
-    ACCOUNT_SVC_CLIENT_SECRET = os.getenv('BUSINESS_SEARCH_SERVICE_ACCOUNT_SECRET')
+    ACCOUNT_SVC_CLIENT_ID = os.getenv('NDS_SERVICE_ACCOUNT_CLIENT_ID')
+    ACCOUNT_SVC_CLIENT_SECRET = os.getenv('NDS_SERVICE_ACCOUNT_SECRET')
 
     # External API Timeouts
     try:

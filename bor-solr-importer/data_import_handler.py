@@ -67,7 +67,10 @@ def load_search_core():  # pylint: disable=too-many-statements
         is_preload = current_app.config.get('PRELOADER_JOB', False)
 
         colin_data_cur = collect_colin_data()
-        colin_data = colin_data_cur.fetchall()
+        current_app.logger.debug('data collected. Fetching 10000 rows...')
+        colin_data = colin_data_cur.fetchmany(10000)
+        current_app.logger.debug('fetched rows')
+        # colin_data = colin_data_cur.fetchall()
 
         current_app.logger.debug('Prepping COLIN data...')
         prepped_colin_data = prep_data(colin_data, colin_data_cur, 'COLIN')

@@ -113,7 +113,9 @@ def reindex_recovery():
     for i in range(100):
         current_app.logger.debug(f'Checking restore status ({i + 1} of 100)...')
         status = bor_solr.replication('restorestatus', True)
-        if (status.json())['status'] == 'success':
+        current_app.logger.debug(status)
+        current_app.logger.debug(status.json())
+        if (status.json())['restorestatus']['status'] == 'success':
             current_app.logger.debug('restore complete.')
             enable_replication = bor_solr.replication('enablereplication', True)
             current_app.logger.debug(enable_replication.json())
@@ -124,4 +126,4 @@ def reindex_recovery():
         if (status.json())['status'] == 'failed':
             break
         sleep(5)
-    current_app.logger.error('Failed to restore leader index. Manual intervention required.')
+    current_app.logger.error('Possible failure to restore leader index. Manual intervention required.')

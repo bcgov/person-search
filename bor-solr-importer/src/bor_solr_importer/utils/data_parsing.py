@@ -328,10 +328,10 @@ def prep_data(data: list[dict[str, str]], cur, source: str) -> list[Entity]:  # 
         entity = prepped_data[identifier_key]
         if entity.entityAddresses and not entity.entityAddresses[0].address_q:
             missing_data['address'].append(entity)
-        elif entity.roles and not entity.roles[0].roleDates[0].start:
-            missing_data['appointment_date'].append(entity)
+        # elif entity.roles and not entity.roles[0].roleDates[0].start:
+        #     missing_data['appointment_date'].append(entity)
         resp.append(entity)
     print(f'multiple prev party ids {len(dupes)}')
     print(f"entities with missing address: {len(missing_data['address'])}")
-    print(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")
+    # print(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")
     return resp

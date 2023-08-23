@@ -15,9 +15,14 @@
 import psycopg2
 from flask import current_app
 
+from bor_solr_importer import oracle_db
 
-def collect_colin_data(offset: int, max_rows: int, cursor):
+
+def collect_colin_data(offset: int, max_rows: int):
     """Collect data from COLIN."""
+    current_app.logger.debug('Connecting to Oracle instance...')
+    cursor = oracle_db.connection.cursor()
+    current_app.logger.debug('Collecting batch from COLIN...')
     cursor.execute("""
         SELECT c.corp_num as identifier, c.corp_typ_cd as legal_type, c.bn_15 as tax_id, c.admin_email,
             cn.corp_nme as legal_name, cp.business_nme as organization_name, cp.first_nme as first_name,

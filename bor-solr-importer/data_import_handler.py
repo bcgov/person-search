@@ -22,7 +22,7 @@ from bor_api.services import bor_solr
 from bor_api.services.authz import get_bearer_token
 from bor_api.services.solr.solr_docs import Entity
 
-from bor_solr_importer import create_app, oracle_db
+from bor_solr_importer import create_app
 from bor_solr_importer.utils import (collect_colin_data, collect_lear_data, prep_data,
                                      reindex_post, reindex_prep, reindex_recovery)
 
@@ -60,25 +60,25 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
     return count
 
 
-def load_search_core():  # pylint: disable=too-many-statements
+def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,too-many-branches; will update
     """Load data from LEAR and COLIN into the search core."""
     try:
         is_reindex = current_app.config.get('REINDEX_CORE', False)
         is_preload = current_app.config.get('PRELOADER_JOB', False)
-        
+
         if is_reindex:
             reindex_prep(is_preload)
 
         try:
-            current_app.logger.debug('Connecting to Oracle instance...')
-            cursor = oracle_db.connection.cursor()
-            current_app.logger.debug('Collecting COLIN data...')
+            batch_count = 0
             count = 0
             offset = 0
             rows = current_app.config.get('BATCH_SIZE_SQL', 1000)
-            while rows > 0:
-                current_app.logger.debug(f'Collecting batch from COLIN...')
-                colin_data_cur = collect_colin_data(offset, rows, cursor)
+            current_app.logger.debug('Collecting COLIN data...')
+            while batch_count < 100:  # sanity check (should be 3 to 15 batches)
+                batch_count += 1
+                current_app.logger.debug(f'********** COLIN Batch {batch_count} **********')
+                colin_data_cur = collect_colin_data(offset, rows)
                 current_app.logger.debug('Fetching rows...')
                 colin_data = colin_data_cur.fetchall()
                 if not colin_data:
@@ -90,7 +90,7 @@ def load_search_core():  # pylint: disable=too-many-statements
 
                 prepped_colin_data = prep_data(colin_data, colin_data_cur, 'COLIN')
                 current_app.logger.debug(f'{len(prepped_colin_data)} COLIN records ready for import.')
-            
+
                 # execute update to solr in batches
                 current_app.logger.debug('Importing records from COLIN...')
                 count += update_solr(prepped_colin_data, 'COLIN')

@@ -88,7 +88,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             #     if len(missed_party_ids.keys()) > 10:
             #         break
             current_app.logger.debug('---------- Collecting COLIN Entities ----------')
-            while batch_count < 150:  # sanity check (should always be done under ~30 batches depending on env / batch size)
+            while batch_count < 150:  # sanity check (should be ~30 batches depending on data / batch_rows_max)
                 batch_count += 1
                 current_app.logger.debug(f'********** COLIN Batch {batch_count} **********')
                 current_app.logger.debug('Collecting batch data...')
@@ -98,7 +98,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 if not colin_data_descs:
                     # just need to do once
                     colin_data_descs = [desc[0].lower() for desc in colin_data_cur.description]
-                if not colin_data:
+                if not new_colin_data:
                     current_app.logger.debug('No more rows to fetch.')
                     break
                 batch_offset += batch_rows_max

@@ -85,9 +85,9 @@ def collect_colin_data(offset_party_id: int, max_party_id: int):
             and cn.end_event_id is null
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
-            and cp.corp_party_id >= :offset
-            and cp.corp_party_id < :max_rows
-        """, offset=offset_party_id, max_rows=max_party_id)
+            and cp.corp_party_id >= :offset_party_id
+            and cp.corp_party_id < :max_party_id
+        """, offset_party_id=offset_party_id, max_party_id=max_party_id)
     return cursor
 
 

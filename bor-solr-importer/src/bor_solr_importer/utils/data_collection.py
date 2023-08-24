@@ -18,10 +18,26 @@ from flask import current_app
 from bor_solr_importer import oracle_db
 
 
+# TODO: remove if ordering is fine on large data
+def collect_colin_party_ids():
+    """Collect party ids from COLIN."""
+    current_app.logger.debug('Connecting to Oracle instance...')
+    cursor = oracle_db.connection.cursor()
+    current_app.logger.debug('Collecting party ids from COLIN...')
+    cursor.execute("""
+        SELECT cp.corp_party_id as party_id
+        FROM corporation c
+        join corp_party cp on cp.corp_num = c.corp_num
+        where rownum < 50
+        """)
+    return cursor
+
+
 def collect_colin_data(offset: int, max_rows: int):
     """Collect data from COLIN."""
     current_app.logger.debug('Connecting to Oracle instance...')
     cursor = oracle_db.connection.cursor()
+
     current_app.logger.debug('Collecting batch from COLIN...')
     cursor.execute("""
         SELECT c.corp_num as identifier, c.corp_typ_cd as legal_type, c.bn_15 as tax_id, c.admin_email,
@@ -69,6 +85,7 @@ def collect_colin_data(offset: int, max_rows: int):
             and cn.end_event_id is null
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
+        ORDER BY cp.corp_party_id asc
         OFFSET :offset ROWS FETCH NEXT :max_rows ROWS ONLY
         """, offset=offset, max_rows=max_rows)
     return cursor

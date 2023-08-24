@@ -67,50 +67,91 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
         is_preload = current_app.config.get('PRELOADER_JOB', False)
 
         if is_reindex:
+            current_app.logger.debug('---------- Pre Reindex Actions ----------')
             reindex_prep(is_preload)
 
         try:
             batch_count = 0
-            count = 0
             offset = 0
-            rows = current_app.config.get('BATCH_SIZE_SQL', 1000)
-            current_app.logger.debug('Collecting COLIN data...')
-            while batch_count < 100:  # sanity check (should be 3 to 15 batches)
+            rows = current_app.config.get('BATCH_SIZE_SQL', 1000000)
+            colin_data = []
+            colin_data_descs = []
+            # TODO: remove if ordering works on large data
+            # current_app.logger.debug('---------- Collecting COLIN party ids ----------')
+            # colin_party_ids_cur = collect_colin_party_ids()
+            # current_app.logger.debug('Fetching COLIN party ids...')
+            # collected_party_ids = colin_party_ids_cur.fetchall()
+            # current_app.logger.debug(f'Total COLIN party ids: {len(collected_party_ids)}')
+            # missed_party_ids = {}
+            # for item in collected_party_ids:
+            #     missed_party_ids[item[0]] = 0
+            #     if len(missed_party_ids.keys()) > 10:
+            #         break
+            current_app.logger.debug('---------- Collecting COLIN Entities ----------')
+            while batch_count < 100:  # sanity check (should be done after around 3 to 15 batches depending on env)
                 batch_count += 1
                 current_app.logger.debug(f'********** COLIN Batch {batch_count} **********')
+                current_app.logger.debug('Collecting batch data...')
                 colin_data_cur = collect_colin_data(offset, rows)
-                current_app.logger.debug('Fetching rows...')
-                colin_data = colin_data_cur.fetchall()
+                current_app.logger.debug('Fetching batch rows...')
+                new_colin_data = colin_data_cur.fetchall()
+                if not colin_data_descs:
+                    # just need to do once
+                    colin_data_descs = [desc[0].lower() for desc in colin_data_cur.description]
                 if not colin_data:
                     current_app.logger.debug('No more rows to fetch.')
                     break
                 offset += rows
+                colin_data += new_colin_data
+                current_app.logger.debug(f'Total rows fetched so far: {len(colin_data)}')
 
-                current_app.logger.debug('Prepping batch data...')
+            # NB: need full data set to collapse parties properly otherwise we could do this per batch
+            current_app.logger.debug('---------- Mapping COLIN Entities ----------')
+            prepped_colin_data = prep_data(colin_data, colin_data_descs, 'COLIN')
+            current_app.logger.debug(f'COLIN entities ready for import: {len(prepped_colin_data)}')
+            # execute update to solr in batches
+            current_app.logger.debug('---------- Importing COLIN Entities ----------')
+            colin_count = update_solr(prepped_colin_data, 'COLIN')
+            current_app.logger.debug(f'COLIN import completed. Total COLIN entities imported: {colin_count}.')
 
-                prepped_colin_data = prep_data(colin_data, colin_data_cur, 'COLIN')
-                current_app.logger.debug(f'{len(prepped_colin_data)} COLIN records ready for import.')
+            # TODO: remove if ordering works on larger data sets
+            # current_app.logger.debug('---------- Collecting missed parties ----------')
+            # for item in colin_data:
+            #     item_dict = dict(zip([x[0].lower() for x in colin_data_cur.description], item))
+            #     if (party_id := item_dict.get('party_id')) in missed_party_ids:
+            #         del missed_party_ids[party_id]
+            #         break
 
-                # execute update to solr in batches
-                current_app.logger.debug('Importing records from COLIN...')
-                count += update_solr(prepped_colin_data, 'COLIN')
-                current_app.logger.debug('Records imported.')
+            # if missed_party_ids:
+            #     current_app.logger.debug(f'Missed {len(missed_party_ids)} party records.')
+            #     # TODO: loop through and get all records instead of capping at 1000
+            #     missed_parties_cur = collect_colin_data(0, 1000, missed_party_ids[:1000])
+            #     missed_parties = missed_parties_cur.fetchall()
+            #     colin_data += missed_parties
+            #     current_app.logger.debug('Collected missed party records.')
 
-            current_app.logger.debug(f'COLIN import completed. COLIN records imported: {count}.')
+            # current_app.logger.debug('---------- Mapping COLIN data ----------')
+            # prepped_colin_data = prep_data(colin_data, colin_data_cur, 'COLIN')
+            # current_app.logger.debug(f'{len(prepped_colin_data)} COLIN records ready for import.')
+            # # execute update to solr in batches
+            # current_app.logger.debug('---------- Importing records from COLIN ----------')
+            # count = update_solr(prepped_colin_data, 'COLIN')
+            # current_app.logger.debug(f'COLIN import completed. COLIN records imported: {count}.')
 
+            current_app.logger.debug('---------- Collecting LEAR Entities ----------')
             lear_data_cur = collect_lear_data()
             lear_data = lear_data_cur.fetchall()
 
-            current_app.logger.debug('Prepping LEAR data...')
-            prepped_lear_data = prep_data(lear_data, lear_data_cur, 'LEAR')
+            current_app.logger.debug('---------- Mapping LEAR data ----------')
+            prepped_lear_data = prep_data(lear_data, [desc[0].lower() for desc in lear_data_cur.description], 'LEAR')
             current_app.logger.debug(f'{len(prepped_lear_data)} LEAR records ready for import.')
 
             # execute update to solr in batches
-            current_app.logger.debug('Importing records from LEAR...')
-            count += update_solr(prepped_lear_data, 'LEAR')
-            current_app.logger.debug('LEAR import completed.')
+            current_app.logger.debug('---------- Importing LEAR entities ----------')
+            lear_count = update_solr(prepped_lear_data, 'LEAR')
+            current_app.logger.debug(f'LEAR import completed. Total LEAR entities imported: {lear_count}')
 
-            current_app.logger.debug(f'Total records imported: {count}')
+            current_app.logger.debug(f'Total entities imported: {colin_count + lear_count}')
         except Exception as err:  # noqa: B902
             if is_reindex and not is_preload:
                 reindex_recovery()
@@ -118,6 +159,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
 
         if not is_preload:
             try:
+                current_app.logger.debug('---------- Resync ----------')
                 current_app.logger.debug('Getting token for Resync...')
                 token = get_bearer_token()
                 headers = {'Authorization': 'Bearer ' + token}
@@ -139,6 +181,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 current_app.logger.error('Resync failed.')
 
         if is_reindex and not is_preload:
+            current_app.logger.debug('---------- Post Reindex Actions ----------')
             reindex_post()
 
         current_app.logger.debug('SOLR import finished successfully.')

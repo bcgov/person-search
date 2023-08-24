@@ -15,6 +15,7 @@
 import re
 from datetime import datetime
 
+from flask import current_app
 from bor_api.services.solr.solr_docs import Address, Entity, EntityRole, DateRange
 
 from bor_solr_importer.enums import ColinPartyTypeCode
@@ -222,7 +223,7 @@ def party_cleanup(prepped_data: dict[str, Entity], party_links: dict[str, str]):
                         prepped_data[prev_id].roles[0].roleDates[0].start
                 # remove child record from prepped data
                 del prepped_data[prev_id]
-    print(f'skipped_ids {skipped_ids}')
+    current_app.logger.debug(f'skipped_ids {skipped_ids}')
 
 
 def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-many-arguments
@@ -283,7 +284,9 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
     event_link.setdefault(parent_id, start_event_id)
 
 
-def prep_data(data: list[dict[str, str]], cur, source: str) -> list[Entity]:  # pylint: disable=too-many-locals
+def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals; TODO: pull out missing data log to fn
+              data_descs: list[str],
+              source: str) -> list[Entity]:
     """Return the list of Entity docs for the given raw db data."""
     prepped_data: dict[str, Entity] = {}
     child_link: dict[str, dict[str, str]] = {}  # corp_num -> child -> parent
@@ -292,7 +295,7 @@ def prep_data(data: list[dict[str, str]], cur, source: str) -> list[Entity]:  # 
     dupes = []
 
     for item in data:
-        item_dict = dict(zip([x[0].lower() for x in cur.description], item))
+        item_dict = dict(zip(data_descs, item))
         if needs_bc_prefix(item_dict['identifier'], item_dict['legal_type']):
             item_dict['identifier'] = 'BC' + item_dict['identifier']
 
@@ -323,15 +326,15 @@ def prep_data(data: list[dict[str, str]], cur, source: str) -> list[Entity]:  # 
     if source == 'COLIN':
         party_cleanup(prepped_data, parent_link)
     missing_data: dict[str, list[Entity]] = {'address': [], 'appointment_date': []}
-    resp = []
+    entities = []
     for identifier_key in prepped_data:
         entity = prepped_data[identifier_key]
         if entity.entityAddresses and not entity.entityAddresses[0].address_q:
             missing_data['address'].append(entity)
         # elif entity.roles and not entity.roles[0].roleDates[0].start:
         #     missing_data['appointment_date'].append(entity)
-        resp.append(entity)
-    print(f'multiple prev party ids {len(dupes)}')
-    print(f"entities with missing address: {len(missing_data['address'])}")
-    # print(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")
-    return resp
+        entities.append(entity)
+    current_app.logger.debug(f'multiple prev party ids {len(dupes)}')
+    current_app.logger.debug(f"entities with missing address: {len(missing_data['address'])}")
+    # current_app.logger.debug(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")
+    return entities

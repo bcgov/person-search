@@ -50,8 +50,10 @@ def reindex_prep(is_preload: bool):
         disable_polling = bor_solr.replication('disablepoll', False)
         current_app.logger.debug(disable_polling.json())
         # await 60 seconds in case a poll was in progress and to give time for backup to complete
+        current_app.logger.debug('Pausing 60s for SOLR to complete reindex prep...')
         sleep(60)
         # verify current backup is from just now and was successful in case of failure
+        current_app.logger.debug('Verifying SOLR reindex prep...')
         backup_detail = get_replication_detail('backup', True)
         backup_start_time = datetime.fromisoformat(backup_detail['startTime'])
         if not (backup_detail['status'] == 'success' and backup_trigger_time < backup_start_time):

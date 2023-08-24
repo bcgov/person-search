@@ -18,21 +18,6 @@ from flask import current_app
 from bor_solr_importer import oracle_db
 
 
-# TODO: remove if ordering is fine on large data
-def collect_colin_party_ids():
-    """Collect party ids from COLIN."""
-    current_app.logger.debug('Connecting to Oracle instance...')
-    cursor = oracle_db.connection.cursor()
-    current_app.logger.debug('Collecting party ids from COLIN...')
-    cursor.execute("""
-        SELECT cp.corp_party_id as party_id
-        FROM corporation c
-        join corp_party cp on cp.corp_num = c.corp_num
-        where rownum < 50
-        """)
-    return cursor
-
-
 def collect_colin_data(offset_party_id: int, max_party_id: int = 0):
     """Collect data from COLIN."""
     max_party_id_clause = f'and cp.corp_party_id < {max_party_id}' if max_party_id > 0 else ''

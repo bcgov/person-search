@@ -284,9 +284,24 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
     event_link.setdefault(parent_id, start_event_id)
 
 
-def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals; TODO: pull out missing data log to fn
-              data_descs: list[str],
-              source: str) -> list[Entity]:
+def get_entities(prepped_data: dict[str, Entity]) -> list[Entity]:
+    """Return the entities within the prepped data and log info on data issues."""
+    missing_data: dict[str, list[Entity]] = {'address': [], 'appointment_date': []}
+    entities = []
+    for identifier_key in prepped_data:
+        entity = prepped_data[identifier_key]
+        if entity.entityAddresses and not entity.entityAddresses[0].address_q:
+            missing_data['address'].append(entity)
+        # elif entity.roles and not entity.roles[0].roleDates[0].start:
+        #     missing_data['appointment_date'].append(entity)
+        entities.append(entity)
+
+    current_app.logger.debug(f"entities with missing address: {len(missing_data['address'])}")
+    # current_app.logger.debug(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")
+    return entities
+
+
+def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) -> list[Entity]:
     """Return the list of Entity docs for the given raw db data."""
     prepped_data: dict[str, Entity] = {}
     child_link: dict[str, dict[str, str]] = {}  # corp_num -> child -> parent
@@ -325,16 +340,6 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals; TO
 
     if source == 'COLIN':
         party_cleanup(prepped_data, parent_link)
-    missing_data: dict[str, list[Entity]] = {'address': [], 'appointment_date': []}
-    entities = []
-    for identifier_key in prepped_data:
-        entity = prepped_data[identifier_key]
-        if entity.entityAddresses and not entity.entityAddresses[0].address_q:
-            missing_data['address'].append(entity)
-        # elif entity.roles and not entity.roles[0].roleDates[0].start:
-        #     missing_data['appointment_date'].append(entity)
-        entities.append(entity)
+
     current_app.logger.debug(f'multiple prev party ids {len(dupes)}')
-    current_app.logger.debug(f"entities with missing address: {len(missing_data['address'])}")
-    # current_app.logger.debug(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")
-    return entities
+    return get_entities(prepped_data)

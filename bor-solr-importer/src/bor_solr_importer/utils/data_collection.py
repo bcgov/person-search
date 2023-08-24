@@ -33,7 +33,7 @@ def collect_colin_party_ids():
     return cursor
 
 
-def collect_colin_data(offset: int, max_rows: int):
+def collect_colin_data(offset_party_id: int, max_party_id: int):
     """Collect data from COLIN."""
     current_app.logger.debug('Connecting to Oracle instance...')
     cursor = oracle_db.connection.cursor()
@@ -85,9 +85,9 @@ def collect_colin_data(offset: int, max_rows: int):
             and cn.end_event_id is null
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
-        ORDER BY cp.corp_party_id asc
-        OFFSET :offset ROWS FETCH NEXT :max_rows ROWS ONLY
-        """, offset=offset, max_rows=max_rows)
+            and cp.corp_party_id >= :offset
+            and cp.corp_party_id < :max_rows
+        """, offset=offset_party_id, max_rows=max_party_id)
     return cursor
 
 

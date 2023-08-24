@@ -72,8 +72,8 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
 
         try:
             batch_count = 0
-            offset = 0
-            rows = current_app.config.get('BATCH_SIZE_SQL', 1000000)
+            batch_offset = 0
+            batch_rows_max = current_app.config.get('BATCH_SIZE_SQL', 500000)
             colin_data = []
             colin_data_descs = []
             # TODO: remove if ordering works on large data
@@ -88,11 +88,11 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             #     if len(missed_party_ids.keys()) > 10:
             #         break
             current_app.logger.debug('---------- Collecting COLIN Entities ----------')
-            while batch_count < 100:  # sanity check (should be done after around 3 to 15 batches depending on env)
+            while batch_count < 150:  # sanity check (should always be done under ~30 batches depending on env / batch size)
                 batch_count += 1
                 current_app.logger.debug(f'********** COLIN Batch {batch_count} **********')
                 current_app.logger.debug('Collecting batch data...')
-                colin_data_cur = collect_colin_data(offset, rows)
+                colin_data_cur = collect_colin_data(batch_offset, batch_rows_max*batch_count)
                 current_app.logger.debug('Fetching batch rows...')
                 new_colin_data = colin_data_cur.fetchall()
                 if not colin_data_descs:
@@ -101,7 +101,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 if not colin_data:
                     current_app.logger.debug('No more rows to fetch.')
                     break
-                offset += rows
+                batch_offset += batch_rows_max
                 colin_data += new_colin_data
                 current_app.logger.debug(f'Total rows fetched so far: {len(colin_data)}')
 

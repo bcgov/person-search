@@ -88,7 +88,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             #     if len(missed_party_ids.keys()) > 10:
             #         break
             current_app.logger.debug('---------- Collecting COLIN Entities ----------')
-            while batch_count < 150:  # sanity check (should be ~30 batches depending on data / batch_rows_max)
+            while batch_count < 3:  # sanity check (should be ~30 batches depending on data / batch_rows_max)
                 batch_count += 1
                 current_app.logger.debug(f'********** COLIN Batch {batch_count} **********')
                 current_app.logger.debug('Collecting batch data...')
@@ -98,12 +98,21 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 if not colin_data_descs:
                     # just need to do once
                     colin_data_descs = [desc[0].lower() for desc in colin_data_cur.description]
-                if not new_colin_data:
-                    current_app.logger.debug('No more rows to fetch.')
-                    break
-                batch_offset += batch_rows_max
+                if new_colin_data:
+                    batch_offset += batch_rows_max
+                    colin_data += new_colin_data
+                    current_app.logger.debug(f'Total rows fetched so far: {len(colin_data)}')
+                    continue
+
+                # final check for any ids greater than the batch_rows_max*batch_count
+                current_app.logger.debug('No rows to found. Checking for any remaining records...')
+                colin_data_cur = collect_colin_data(batch_offset)
+                current_app.logger.debug('Fetching remaining rows...')
+                new_colin_data = colin_data_cur.fetchall()
                 colin_data += new_colin_data
-                current_app.logger.debug(f'Total rows fetched so far: {len(colin_data)}')
+                current_app.logger.debug(f'Total rows fetched: {len(colin_data)}')
+                current_app.logger.debug('No more rows to fetch.')
+                break
 
             # NB: need full data set to collapse parties properly otherwise we could do this per batch
             current_app.logger.debug('---------- Mapping COLIN Entities ----------')

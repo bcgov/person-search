@@ -72,52 +72,34 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
 
         try:
             current_app.logger.debug('---------- Collecting/Importing COLIN Entities ----------')
-            # PROD numbers for parties grouped by business number:
-            #     - 0        to 0500000  ~3,000,000
-            #     - 0500000  to A0000000 ~3,750,000
+            # PROD numbers for parties grouped by business identifier:
+            #     - 0        to 0250000  ~1,200,000
+            #     - 0250000  to 0500000  ~1,800,000
+            #     - 0500000  to 0750000  ~2,000,000
+            #     - 0750000  to A0000000 ~1,750,000
             #     - A0000000 to S0000000 ~2,350,000
-            #     - S0000000 to .        ~3,400,000
+            #     - S0000000 to S0025000 ~1,400,000
+            #     - S0025000 to *        ~2,000,000
             # Split load based on above numbers to keep memory usage lower
             total_colin_count = 0
             corp_num_limits = [
-                {'min': '0000000', 'max': '0500000'},
-                {'min': '0500000', 'max': 'A0000000'},
+                {'min': '0000000', 'max': '0250000'},
+                {'min': '0250000', 'max': '0500000'},
+                {'min': '0500000', 'max': '0750000'},
+                {'min': '0750000', 'max': 'A0000000'},
                 {'min': 'A0000000', 'max': 'S0000000'},
-                {'min': 'S0000000', 'max': None}]
-            party_batch_rows_max = current_app.config.get('BATCH_SIZE_SQL', 500000)
+                {'min': 'S0000000', 'max': 'S0025000'},
+                {'min': 'S0025000', 'max': None}]
             colin_data_descs = []
             for corp_num_limit in corp_num_limits:
-                current_app.logger.debug(f'********** COLIN Corp Num Batch {corp_num_limit} **********')
-                party_batch_count = 0
-                party_batch_offset = 0
-                colin_data = []
-                while party_batch_count < 100:  # sanity check (expecting < 10 batches depending on data)
-                    party_batch_count += 1
-                    current_app.logger.debug(f'++++++++++ COLIN Party Batch {party_batch_count} ++++++++++')
-                    current_app.logger.debug('Collecting party batch data...')
-                    colin_data_cur = collect_colin_data(corp_num_limit,
-                                                        party_batch_offset,
-                                                        party_batch_rows_max*party_batch_count)
-                    current_app.logger.debug('Fetching party batch rows...')
-                    new_colin_data = colin_data_cur.fetchall()
-                    if not colin_data_descs:
-                        # just need to do once
-                        colin_data_descs = [desc[0].lower() for desc in colin_data_cur.description]
-                    if new_colin_data:
-                        party_batch_offset += party_batch_rows_max
-                        colin_data += new_colin_data
-                        current_app.logger.debug(f'Total corp num batch rows fetched so far: {len(colin_data)}')
-                        continue
-
-                    # final check for any ids greater than the batch_rows_max*batch_count
-                    current_app.logger.debug('No rows to found. Checking for any remaining records...')
-                    colin_data_cur = collect_colin_data(corp_num_limit, party_batch_offset)
-                    current_app.logger.debug('Fetching remaining rows...')
-                    new_colin_data = colin_data_cur.fetchall()
-                    colin_data += new_colin_data
-                    current_app.logger.debug(f'Total rows fetched: {len(colin_data)}')
-                    current_app.logger.debug('No more rows to fetch.')
-                    break
+                range_str = f"{corp_num_limit['min']} to {corp_num_limit['max'] or '*'}"
+                current_app.logger.debug(f'********** COLIN Corp Batch {range_str} **********')
+                colin_data_cur = collect_colin_data(corp_num_limit['min'], corp_num_limit['max'])
+                current_app.logger.debug('Fetching corp batch rows...')
+                colin_data = colin_data_cur.fetchall()
+                if not colin_data_descs:
+                    # just need to do once
+                    colin_data_descs = [desc[0].lower() for desc in colin_data_cur.description]
 
                 # NB: need full data set under each corp num to collapse parties properly
                 current_app.logger.debug('********** Mapping COLIN Entities **********')
@@ -127,7 +109,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 current_app.logger.debug('********** Importing COLIN Entities **********')
                 corp_num_batch_count = update_solr(prepped_colin_data, 'COLIN')
                 current_app.logger.debug(
-                    f'COLIN import completed for corp num batch. Entities imported: {corp_num_batch_count}.')
+                    f'COLIN Corp Batch import completed. Entities imported: {corp_num_batch_count}.')
                 total_colin_count += corp_num_batch_count
                 current_app.logger.debug(f'Total COLIN entities imported so far: {total_colin_count}.')
 

@@ -54,7 +54,6 @@ class Config():  # pylint: disable=too-few-public-methods
     SENTRY_DSN = os.getenv('SENTRY_DSN', None)
     SENTRY_TSR = os.getenv('SENTRY_TSR', '1.0')
 
-    BATCH_SIZE_SQL = int(os.getenv('SQL_BATCH_QUERY_SIZE', '500000'))
     BATCH_SIZE_SOLR = int(os.getenv('SOLR_BATCH_UPDATE_SIZE', '1000'))
     REINDEX_CORE = os.getenv('REINDEX_CORE', 'False') == 'True'
     PRELOADER_JOB = os.getenv('PRELOADER_JOB', 'False') == 'True'

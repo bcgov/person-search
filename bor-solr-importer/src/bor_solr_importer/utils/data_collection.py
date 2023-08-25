@@ -18,8 +18,9 @@ from flask import current_app
 from bor_solr_importer import oracle_db
 
 
-def collect_colin_data(offset_party_id: int, max_party_id: int = 0):
+def collect_colin_data(corp_num_limit: dict[str, str], offset_party_id: int, max_party_id: int = 0):
     """Collect data from COLIN."""
+    max_corp_num_clause = f"and c.corp_num < '{corp_num_limit['max']}'" if corp_num_limit['max'] else ''
     max_party_id_clause = f'and cp.corp_party_id < {max_party_id}' if max_party_id > 0 else ''
     current_app.logger.debug('Connecting to Oracle instance...')
     cursor = oracle_db.connection.cursor()
@@ -72,8 +73,10 @@ def collect_colin_data(offset_party_id: int, max_party_id: int = 0):
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
             and cp.corp_party_id >= :offset_party_id
+            and c.corp_num >= :offset_corp_num
             {max_party_id_clause}
-        """, offset_party_id=offset_party_id)
+            {max_corp_num_clause}
+        """, offset_party_id=offset_party_id, offset_corp_num=corp_num_limit['min'])
     return cursor
 
 

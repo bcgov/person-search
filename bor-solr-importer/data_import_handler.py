@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The BOR solr data import service."""
+import gc
 import sys
 from http import HTTPStatus
 
@@ -100,7 +101,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 if not colin_data_descs:
                     # just need to do once
                     colin_data_descs = [desc[0].lower() for desc in colin_data_cur.description]
-
+                colin_data_cur.close()
                 # NB: need full data set under each corp num to collapse parties properly
                 current_app.logger.debug('********** Mapping COLIN Entities **********')
                 prepped_colin_data = prep_data(colin_data, colin_data_descs, 'COLIN')
@@ -112,6 +113,9 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                     f'COLIN Corp Batch import completed. Entities imported: {corp_num_batch_count}.')
                 total_colin_count += corp_num_batch_count
                 current_app.logger.debug(f'Total COLIN entities imported so far: {total_colin_count}.')
+                # free up memory
+                del colin_data_cur, colin_data, prepped_colin_data
+                gc.collect()
 
             current_app.logger.debug(f'COLIN import completed. Total COLIN entities imported: {total_colin_count}.')
 

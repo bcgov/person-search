@@ -114,7 +114,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 total_colin_count += corp_num_batch_count
                 current_app.logger.debug(f'Total COLIN entities imported so far: {total_colin_count}.')
                 # free up memory
-                del colin_data_cur, colin_data, prepped_colin_data
+                del colin_data, prepped_colin_data
                 gc.collect()
 
             current_app.logger.debug(f'COLIN import completed. Total COLIN entities imported: {total_colin_count}.')

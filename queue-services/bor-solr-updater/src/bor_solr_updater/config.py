@@ -95,6 +95,10 @@ class Config():  # pylint: disable=too-few-public-methods
         BUSINESS_API_TIMEOUT = int(os.getenv('BUSINESS_API_TIMEOUT', '30'))
     except:  # pylint: disable=bare-except; # noqa: B901, E722
         BUSINESS_API_TIMEOUT = 30
+    try:
+        BOR_API_TIMEOUT = int(os.getenv('BOR_UPDATER_BOR_API_TIMEOUT', '30'))
+    except:  # pylint: disable=bare-except; # noqa: B901, E722
+        BOR_API_TIMEOUT = 30
 
     # Service account details
     KEYCLOAK_AUTH_TOKEN_URL = os.getenv('KEYCLOAK_AUTH_TOKEN_URL')

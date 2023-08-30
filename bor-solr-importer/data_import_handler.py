@@ -36,7 +36,7 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
     retry_count = 0
     erred_record_count = 0
     while count < len(base_docs) and rows > 0 and len(base_docs) - offset > 0:
-        batch_amount = min(rows, len(base_docs) - offset)
+        batch_amount = min(rows, len(base_docs) - offset) / (retry_count + 1)
         count += batch_amount
         # send batch to solr
         try:
@@ -77,8 +77,9 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             #     - 0        to 0250000  ~1,200,000
             #     - 0250000  to 0500000  ~1,800,000
             #     - 0500000  to 0750000  ~2,000,000
-            #     - 0750000  to A0000000 ~1,750,000
-            #     - A0000000 to S0000000 ~2,350,000
+            #     - 0750000  to 0950000  ~1,500,000
+            #     - 0950000  to A0000000 ~2,150,000
+            #     - A0000000 to S0000000 ~500,000
             #     - S0000000 to S0025000 ~1,400,000
             #     - S0025000 to *        ~2,000,000
             # Split load based on above numbers to keep memory usage lower
@@ -87,12 +88,15 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 {'min': '0000000', 'max': '0250000'},
                 {'min': '0250000', 'max': '0500000'},
                 {'min': '0500000', 'max': '0750000'},
-                {'min': '0750000', 'max': 'A0000000'},
+                {'min': '0750000', 'max': '0950000'},
+                {'min': '0950000', 'max': 'A0000000'},
                 {'min': 'A0000000', 'max': 'S0000000'},
                 {'min': 'S0000000', 'max': 'S0025000'},
                 {'min': 'S0025000', 'max': None}]
             colin_data_descs = []
-            for corp_num_limit in corp_num_limits:
+            start = current_app.config.get('CORP_NUM_LIMITS_START')
+            end = current_app.config.get('CORP_NUM_LIMITS_END')
+            for corp_num_limit in corp_num_limits[start:end]:
                 range_str = f"{corp_num_limit['min']} to {corp_num_limit['max'] or '*'}"
                 current_app.logger.debug(f'********** COLIN Corp Batch {range_str} **********')
                 colin_data_cur = collect_colin_data(corp_num_limit['min'], corp_num_limit['max'])

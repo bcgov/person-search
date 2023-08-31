@@ -14,6 +14,7 @@
 """The BOR solr data import service."""
 import gc
 import sys
+import time
 from http import HTTPStatus
 
 import requests
@@ -120,6 +121,10 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 # free up memory
                 del colin_data, prepped_colin_data
                 gc.collect()
+                if corp_num_batch_count < 50000:
+                    # should only happen in dev/test
+                    current_app.logger.debug('Waiting 1 min to give time for ORA connection closure.')
+                    time.sleep(60)
 
             current_app.logger.debug(f'COLIN import completed. Total COLIN entities imported: {total_colin_count}.')
 

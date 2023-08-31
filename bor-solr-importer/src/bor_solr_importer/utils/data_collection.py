@@ -97,8 +97,8 @@ def collect_lear_data():
             p_a.postal_code as party_postal_code,
             CASE when b.state = 'LIQUIDATION' then 'ACTIVE' else b.state END state
         FROM businesses b
-            LEFT JOIN party_roles pr on pr.business_id = b.id
-            LEFT JOIN parties p on p.id = pr.party_id
+            JOIN party_roles pr on pr.business_id = b.id
+            JOIN parties p on p.id = pr.party_id
             LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
         WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
         """)

@@ -36,11 +36,11 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
     retry_count = 0
     erred_record_count = 0
     while count < len(base_docs) and rows > 0 and len(base_docs) - offset > 0:
-        batch_amount = min(rows, len(base_docs) - offset) / (retry_count + 1)
+        batch_amount = int(min(rows, len(base_docs) - offset) / (retry_count + 1))
         count += batch_amount
         # send batch to solr
         try:
-            bor_solr.create_or_replace_docs(base_docs[offset:count])
+            bor_solr.create_or_replace_docs(base_docs[offset:count], timeout=90)
             retry_count = 0
         except SolrException as err:  # pylint: disable=bare-except;
             current_app.logger.debug(err)

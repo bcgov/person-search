@@ -101,5 +101,6 @@ def collect_lear_data():
             JOIN parties p on p.id = pr.party_id
             LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
         WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
+            AND pr.role != ''
         """)
     return cur

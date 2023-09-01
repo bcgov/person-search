@@ -127,5 +127,5 @@ def reindex_recovery():
             return
         if (status.json())['status'] == 'failed':
             break
-        sleep(5)
+        sleep(10 + (i*2))
     current_app.logger.error('Possible failure to restore leader index. Manual intervention required.')

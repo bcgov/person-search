@@ -23,7 +23,7 @@ from bor_solr_importer.enums import ColinPartyTypeCode
 
 def get_party_name(item_dict: dict[str, str]) -> str:
     """Return the parsed name of the party in the given doc info."""
-    if item_dict['organization_name']:
+    if item_dict.get('organization_name', None):
         return item_dict['organization_name'].strip()
     person_name = ''
     if item_dict['first_name']:
@@ -157,7 +157,9 @@ def set_party_entity(item_dict: dict[str, str], prepped_data: dict[str, Entity],
 
     item_dict['role'] = item_dict['role'].replace('_', ' ').upper()
     if not item_dict.get('party_type'):
-        item_dict['party_type'] = 'organization' if item_dict['organization_name'] else 'person'
+        item_dict['party_type'] = 'person'
+        if item_dict.get('organization_name', None):
+            item_dict['party_type'] = 'organization'
     # set party role
     role_date_range = DateRange(start=None, end=None)
     if appointment_date := item_dict['appointment_date']:
@@ -314,7 +316,8 @@ def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) ->
         if needs_bc_prefix(item_dict['identifier'], item_dict['legal_type']):
             item_dict['identifier'] = 'BC' + item_dict['identifier']
 
-        set_business_entity(item_dict, prepped_data)
+        # NB: for now business entities aren't needed in director search
+        # set_business_entity(item_dict, prepped_data)
         party_entity = set_party_entity(item_dict, prepped_data, source)
 
         if party_entity and item_dict.get('prev_party_id', None):

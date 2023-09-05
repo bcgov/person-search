@@ -79,7 +79,10 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
 
 def collect_lear_data():
     """Collect data from LEAR."""
-    current_app.logger.debug('Connecting to Postgres instance...')
+    if current_app.config.get('DB_LOCATION') == 'GCP':
+        return _collect_lear_data_gcp()
+
+    current_app.logger.debug('Connecting to OCP Postgres instance...')
     conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
                             port=current_app.config.get('DB_PORT'),
                             database=current_app.config.get('DB_NAME'),
@@ -102,5 +105,38 @@ def collect_lear_data():
             LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
         WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
             AND pr.role != ''
+        """)
+    return cur
+
+
+def _collect_lear_data_gcp():
+    """Collect data from LEAR."""
+    current_app.logger.debug('Connecting to GCP Postgres instance...')
+    conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
+                            port=current_app.config.get('DB_PORT'),
+                            database=current_app.config.get('DB_NAME'),
+                            user=current_app.config.get('DB_USER'),
+                            password=current_app.config.get('DB_PASSWORD'))
+    cur = conn.cursor()
+    current_app.logger.debug('Collecting LEAR data...')
+    cur.execute("""
+        SELECT le.identifier,le.legal_name,le.entity_type as legal_type,le.tax_id,
+            er.id as role_id,er.role_type as role,er.appointment_date,er.cessation_date,
+            rle.first_name,rle.middle_initial,rle.last_name,rle.id as party_id,
+            rle_a.street as party_street,rle_a.street_additional as party_street_additional,
+            rle_a.city as party_city,rle_a.country as party_country,rle_a.region as party_region,
+            rle_a.postal_code as party_postal_code,
+            CASE when le.state = 'LIQUIDATION' then 'ACTIVE' else le.state END state
+        FROM legal_entities le
+            JOIN (SELECT id,role_type,appointment_date,cessation_date,legal_entity_id,related_entity_id
+                    FROM entity_roles
+                  UNION
+                  SELECT id,role_type,appointment_date,cessation_date,legal_entity_id,related_entity_id
+                    FROM entity_roles_history where cessation_date is not null
+                  ) AS er ON er.legal_entity_id = le.id
+            JOIN legal_entities rle ON rle.id = er.related_entity_id
+            LEFT JOIN addresses rle_a ON rle_a.id = rle.delivery_address_id
+        WHERE le.entity_type in ('BEN', 'CP', 'SP', 'GP')
+            AND rle.entity_type='person'
         """)
     return cur

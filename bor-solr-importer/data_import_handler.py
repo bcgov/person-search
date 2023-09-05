@@ -93,7 +93,8 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 {'min': '0950000', 'max': 'A0000000'},
                 {'min': 'A0000000', 'max': 'S0000000'},
                 {'min': 'S0000000', 'max': 'S0025000'},
-                {'min': 'S0025000', 'max': None}]
+                {'min': 'S0025000', 'max': None}
+            ]
             colin_data_descs = []
             start = current_app.config.get('CORP_NUM_LIMITS_START')
             end = current_app.config.get('CORP_NUM_LIMITS_END')

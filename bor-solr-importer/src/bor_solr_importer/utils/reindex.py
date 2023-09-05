@@ -54,11 +54,20 @@ def reindex_prep(is_preload: bool):
         sleep(60)
         # verify current backup is from just now and was successful in case of failure
         current_app.logger.debug('Verifying SOLR reindex prep...')
-        backup_detail = get_replication_detail('backup', True)
-        backup_start_time = datetime.fromisoformat(backup_detail['startTime'])
-        if not (backup_detail['status'] == 'success' and backup_trigger_time < backup_start_time):
+        backup_succeeded = False
+        for i in range(20):
+            current_app.logger.debug(f'Checking new backup {i + 1} of 20...')
+            backup_detail = get_replication_detail('backup', True)
+            backup_start_time = datetime.fromisoformat(backup_detail['startTime'])
+            if backup_detail['status'] == 'success' and backup_trigger_time < backup_start_time:
+                backup_succeeded = True
+                break
+            # retry repeatedly (new backup in prod will take a couple minutes)
+            sleep(30 + (i*2))
+        if not backup_succeeded:
             current_app.logger.debug('Backup detail: %s', backup_detail)
             raise SolrException('Failed to backup leader index', str(backup_detail), HTTPStatus.INTERNAL_SERVER_ERROR)
+        current_app.logger.debug('Backup succeeded. Checking polling disabled...')
         # verify follower polling disabled so it doesn't update until reindex is complete
         is_polling_disabled = get_replication_detail('isPollingDisabled', False)
         if not bool(is_polling_disabled):
@@ -66,6 +75,7 @@ def reindex_prep(is_preload: bool):
             raise SolrException('Failed disable polling on follower',
                                 str(is_polling_disabled),
                                 HTTPStatus.INTERNAL_SERVER_ERROR)
+        current_app.logger.debug('Polling disabled. Disabling leader replication...')
         # disable leader replication for reindex duration (important to do this after polling disabled)
         disable_replication = bor_solr.replication('disablereplication', True)
         current_app.logger.debug(disable_replication.json())

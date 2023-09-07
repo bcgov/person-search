@@ -59,6 +59,7 @@ class Config():  # pylint: disable=too-few-public-methods
     BATCH_SIZE_SOLR = int(os.getenv('SOLR_BATCH_UPDATE_SIZE', '1000'))
     REINDEX_CORE = os.getenv('REINDEX_CORE', 'False') == 'True'
     PRELOADER_JOB = os.getenv('PRELOADER_JOB', 'False') == 'True'
+    RESYNC_OFFSET = os.getenv('RESYNC_OFFSET', '130')
 
     # ORACLE - CDEV/CTST/CPRD
     ORACLE_USER = os.getenv('ORACLE_USER', '')
@@ -70,7 +71,7 @@ class Config():  # pylint: disable=too-few-public-methods
     # POSTGRESQL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    DB_LOCATION = os.getenv('DB_LOCATION', 'OCP')
+    DB_LOCATION = os.getenv('DATABASE_LOCATION', 'OCP')
 
     DB_USER = os.getenv('DATABASE_USERNAME', '')
     DB_PASSWORD = os.getenv('DATABASE_PASSWORD', '')

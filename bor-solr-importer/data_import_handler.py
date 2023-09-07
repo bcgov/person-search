@@ -159,7 +159,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
                 resync_resp = requests.post(url=f'{api_url}/internal/solr/update/resync',
                                             headers=headers,
-                                            json={'minutesOffset': current_app.config.get('RESYNC_OFFSET', '130')})
+                                            json={'minutesOffset': current_app.config.get('RESYNC_OFFSET')})
                 if resync_resp.status_code != HTTPStatus.CREATED:
                     if resync_resp.status_code == HTTPStatus.GATEWAY_TIMEOUT:
                         current_app.logger.debug('Resync timed out -- check api for any individual failures.')

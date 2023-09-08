@@ -165,28 +165,27 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 reindex_recovery()
             raise err  # pass along
 
-        if not is_preload:
-            try:
-                current_app.logger.debug('---------- Resync ----------')
-                current_app.logger.debug('Getting token for Resync...')
-                token = get_bearer_token()
-                headers = {'Authorization': 'Bearer ' + token}
+        try:
+            current_app.logger.debug('---------- Resync ----------')
+            current_app.logger.debug('Getting token for Resync...')
+            token = get_bearer_token()
+            headers = {'Authorization': 'Bearer ' + token}
 
-                current_app.logger.debug('Resyncing any overwritten docs during import...')
-                api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
-                resync_resp = requests.post(url=f'{api_url}/internal/solr/update/resync',
-                                            headers=headers,
-                                            json={'minutesOffset': current_app.config.get('RESYNC_OFFSET')})
-                if resync_resp.status_code != HTTPStatus.CREATED:
-                    if resync_resp.status_code == HTTPStatus.GATEWAY_TIMEOUT:
-                        current_app.logger.debug('Resync timed out -- check api for any individual failures.')
-                    else:
-                        current_app.logger.error('Resync failed with status %s', resync_resp.status_code)
+            current_app.logger.debug('Resyncing any overwritten docs during import...')
+            api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
+            resync_resp = requests.post(url=f'{api_url}/internal/solr/update/resync',
+                                        headers=headers,
+                                        json={'minutesOffset': current_app.config.get('RESYNC_OFFSET')})
+            if resync_resp.status_code != HTTPStatus.CREATED:
+                if resync_resp.status_code == HTTPStatus.GATEWAY_TIMEOUT:
+                    current_app.logger.debug('Resync timed out -- check api for any individual failures.')
                 else:
-                    current_app.logger.debug('Resync complete.')
-            except Exception as error:  # noqa: B902
-                current_app.logger.debug(error.with_traceback(None))
-                current_app.logger.error('Resync failed.')
+                    current_app.logger.error('Resync failed with status %s', resync_resp.status_code)
+            else:
+                current_app.logger.debug('Resync complete.')
+        except Exception as error:  # noqa: B902
+            current_app.logger.debug(error.with_traceback(None))
+            current_app.logger.error('Resync failed.')
 
         if is_reindex and not is_preload:
             current_app.logger.debug('---------- Post Reindex Actions ----------')

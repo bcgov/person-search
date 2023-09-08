@@ -13,6 +13,7 @@
 # limitations under the License.
 """Data parsing functions."""
 import re
+from dataclasses import asdict
 from datetime import datetime
 
 from flask import current_app
@@ -286,7 +287,7 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
     event_link.setdefault(parent_id, start_event_id)
 
 
-def get_entities(prepped_data: dict[str, Entity]) -> list[Entity]:
+def get_entities(prepped_data: dict[str, Entity]) -> list[dict]:
     """Return the entities within the prepped data and log info on data issues."""
     missing_data: dict[str, list[Entity]] = {'address': [], 'appointment_date': []}
     entities = []
@@ -296,14 +297,14 @@ def get_entities(prepped_data: dict[str, Entity]) -> list[Entity]:
             missing_data['address'].append(entity)
         # elif entity.roles and not entity.roles[0].roleDates[0].start:
         #     missing_data['appointment_date'].append(entity)
-        entities.append(entity)
+        entities.append(asdict(entity))
 
     current_app.logger.debug(f"entities with missing address: {len(missing_data['address'])}")
     # current_app.logger.debug(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")
     return entities
 
 
-def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) -> list[Entity]:
+def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) -> list[dict]:
     """Return the list of Entity docs for the given raw db data."""
     prepped_data: dict[str, Entity] = {}
     child_link: dict[str, dict[str, str]] = {}  # corp_num -> child -> parent

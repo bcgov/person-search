@@ -20,7 +20,6 @@ from http import HTTPStatus
 import requests
 from flask import current_app
 from bor_api.exceptions import SolrException
-from bor_api.services import bor_solr
 from bor_api.services.authz import get_bearer_token
 from bor_api.services.solr.solr_docs import Entity
 
@@ -31,6 +30,11 @@ from bor_solr_importer.utils import (collect_colin_data, collect_lear_data, prep
 
 def update_solr(base_docs: list[Entity], data_name: str) -> int:
     """Import data into solr."""
+    current_app.logger.debug('Getting token for Import...')
+    token = get_bearer_token()
+    headers = {'Authorization': 'Bearer ' + token}
+    current_app.logger.debug('Token set.')
+    api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
     count = 0
     offset = 0
     rows = current_app.config.get('BATCH_SIZE_SOLR', 1000)
@@ -39,11 +43,24 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
     while count < len(base_docs) and rows > 0 and len(base_docs) - offset > 0:
         batch_amount = int(min(rows, len(base_docs) - offset) / (retry_count + 1))
         count += batch_amount
-        # send batch to solr
+        # call bor-api import endpoint
         try:
-            bor_solr.create_or_replace_docs(base_docs[offset:count], timeout=90)
+            current_app.logger.debug('Importing batch...')
+            import_resp = requests.put(url=f'{api_url}/internal/solr/import',
+                                       headers=headers,
+                                       json={'entities': base_docs[offset:count], 'timeout': '45'},
+                                       timeout=90)
+            if import_resp.status_code != HTTPStatus.CREATED:
+                if import_resp.status_code == HTTPStatus.UNAUTHORIZED:
+                    # renew token for next try
+                    current_app.logger.debug('Getting new token for Import...')
+                    token = get_bearer_token()
+                    headers = {'Authorization': 'Bearer ' + token}
+                    current_app.logger.debug('New Token set.')
+                # try again
+                raise Exception({'error': import_resp.json(), 'status_code': import_resp.status_code})
             retry_count = 0
-        except SolrException as err:  # pylint: disable=bare-except;
+        except Exception as err:  # noqa: B902; pylint: disable=bare-except;
             current_app.logger.debug(err)
             if retry_count < 3:
                 # retry
@@ -56,7 +73,7 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
                 # log error and skip
                 current_app.logger.error('Retry count exceeded for batch. Skipping batch.')
                 # add number of records in failed batch to the erred count
-                erred_record_count += (count - offset)
+                erred_record_count += batch_amount
         offset = count
         current_app.logger.debug(f'Total {data_name} base doc records imported: {count - erred_record_count}')
     return count

@@ -25,7 +25,7 @@ from bor_api.services.authz import get_bearer_token
 
 def get_replication_detail(field: str, leader: bool):
     """Return the replication detail for the core."""
-    details = (bor_solr.replication('details', leader)).json()['details']
+    details: dict = (bor_solr.replication('details', leader)).json()['details']
     # remove data unwanted in the logs
     if field != 'commits' and 'commits' in details:
         del details['commits']
@@ -35,8 +35,8 @@ def get_replication_detail(field: str, leader: bool):
     # log full details and return data element
     current_app.logger.debug('Full replication details: %s', details)
     if leader:
-        return details[field]
-    return details['follower'][field]
+        return details.get(field)
+    return details['follower'].get(field)
 
 
 def reindex_prep(is_preload: bool):
@@ -57,16 +57,15 @@ def reindex_prep(is_preload: bool):
         backup_succeeded = False
         for i in range(20):
             current_app.logger.debug(f'Checking new backup {i + 1} of 20...')
-            backup_detail = get_replication_detail('backup', True)
-            backup_start_time = datetime.fromisoformat(backup_detail['startTime'])
-            if backup_detail['status'] == 'success' and backup_trigger_time < backup_start_time:
-                backup_succeeded = True
-                break
+            if backup_detail := get_replication_detail('backup', True):
+                backup_start_time = datetime.fromisoformat(backup_detail['startTime'])
+                if backup_detail['status'] == 'success' and backup_trigger_time < backup_start_time:
+                    backup_succeeded = True
+                    break
             # retry repeatedly (new backup in prod will take a couple minutes)
             sleep(30 + (i*2))
         if not backup_succeeded:
-            current_app.logger.debug('Backup detail: %s', backup_detail)
-            raise SolrException('Failed to backup leader index', str(backup_detail), HTTPStatus.INTERNAL_SERVER_ERROR)
+            raise SolrException('Failed to backup leader index', HTTPStatus.INTERNAL_SERVER_ERROR)
         current_app.logger.debug('Backup succeeded. Checking polling disabled...')
         # verify follower polling disabled so it doesn't update until reindex is complete
         is_polling_disabled = get_replication_detail('isPollingDisabled', False)

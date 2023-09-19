@@ -180,7 +180,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 if resync_resp.status_code == HTTPStatus.GATEWAY_TIMEOUT:
                     current_app.logger.debug('Resync timed out -- check api for any individual failures.')
                 else:
-                    current_app.logger.error('Resync failed with status %s', resync_resp.status_code)
+                    current_app.logger.error('Resync failed: %s, %s', resync_resp.status_code, resync_resp.json())
             else:
                 current_app.logger.debug('Resync complete.')
         except Exception as error:  # noqa: B902

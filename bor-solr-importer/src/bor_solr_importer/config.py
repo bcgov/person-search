@@ -54,12 +54,18 @@ class Config():  # pylint: disable=too-few-public-methods
     SENTRY_DSN = os.getenv('SENTRY_DSN', None)
     SENTRY_TSR = os.getenv('SENTRY_TSR', '1.0')
 
-    CORP_NUM_LIMITS_START = int(os.getenv('CORP_NUM_LIMITS_START', '0'))
-    CORP_NUM_LIMITS_END = int(os.getenv('CORP_NUM_LIMITS_END', '10'))
     BATCH_SIZE_SOLR = int(os.getenv('SOLR_BATCH_UPDATE_SIZE', '1000'))
     REINDEX_CORE = os.getenv('REINDEX_CORE', 'False') == 'True'
     PRELOADER_JOB = os.getenv('PRELOADER_JOB', 'False') == 'True'
     RESYNC_OFFSET = os.getenv('RESYNC_OFFSET', '130')
+
+    CORP_NUM_LIMITS_START = int(os.getenv('CORP_NUM_LIMITS_START', '0'))
+    CORP_NUM_LIMITS_END = int(os.getenv('CORP_NUM_LIMITS_END', '10'))
+    DEBUG_IDENTIFIERS = os.getenv('DEBUG_IDENTIFIERS', '')
+    if DEBUG_IDENTIFIERS:
+        DEBUG_IDENTIFIERS = DEBUG_IDENTIFIERS.split(',')
+
+    IS_PARTIAL_IMPORT = DEBUG_IDENTIFIERS or CORP_NUM_LIMITS_START != 0 or CORP_NUM_LIMITS_END != 10
 
     # ORACLE - CDEV/CTST/CPRD
     ORACLE_USER = os.getenv('ORACLE_USER', '')

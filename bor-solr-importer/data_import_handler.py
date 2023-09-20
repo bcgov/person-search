@@ -85,6 +85,11 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
         is_reindex = current_app.config.get('REINDEX_CORE', False)
         is_preload = current_app.config.get('PRELOADER_JOB', False)
 
+        if is_reindex and current_app.config.get('IS_PARTIAL_IMPORT'):
+            current_app.logger.error('Attempted reindex on partial data set.')
+            current_app.logger.debug('Setting reindex to False to prevent potential data loss.')
+            is_reindex = False
+
         if is_reindex:
             current_app.logger.debug('---------- Pre Reindex Actions ----------')
             reindex_prep(is_preload)

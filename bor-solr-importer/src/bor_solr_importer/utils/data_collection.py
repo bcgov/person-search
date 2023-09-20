@@ -21,6 +21,11 @@ from bor_solr_importer import oracle_db
 def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
     """Collect data from COLIN."""
     max_corp_num_clause = f"and c.corp_num < '{corp_num_max}'" if corp_num_max else ''
+    debug_clause = ''
+    if debug_identfiers := current_app.config.get('DEBUG_IDENTIFIERS', []):
+        # will only select from identifiers we are interested in debugging
+        debug_clause = f"and c.corp_num in ({','.join(debug_identfiers)})"
+
     current_app.logger.debug('Connecting to Oracle instance...')
     cursor = oracle_db.connection.cursor()
 
@@ -73,14 +78,21 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
             and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
             and c.corp_num >= :offset_corp_num
             {max_corp_num_clause}
+            {debug_clause}
         """, offset_corp_num=corp_num_min)
     return cursor
 
 
 def collect_lear_data():
     """Collect data from LEAR."""
+    debug_clause = ''
+    if debug_identfiers := current_app.config.get('DEBUG_IDENTIFIERS', []):
+        # will only select from identifiers we are interested in debugging
+        debug_identfiers = [f"'{x}'" for x in debug_identfiers]
+        debug_clause = f"and b.identifier in ({','.join(debug_identfiers)})"
+
     if current_app.config.get('DB_LOCATION') == 'GCP':
-        return _collect_lear_data_gcp()
+        return _collect_lear_data_gcp(debug_clause.replace('b.identifier', 'le.identifier'))
 
     current_app.logger.debug('Connecting to OCP Postgres instance...')
     conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
@@ -90,7 +102,7 @@ def collect_lear_data():
                             password=current_app.config.get('DB_PASSWORD'))
     cur = conn.cursor()
     current_app.logger.debug('Collecting LEAR data...')
-    cur.execute("""
+    cur.execute(f"""
         SELECT b.identifier,b.legal_name,b.legal_type,b.tax_id,
             pr.id as party_role_id,pr.role,pr.appointment_date,pr.cessation_date,
             p.first_name,p.middle_initial,p.last_name,p.organization_name,p.party_type,
@@ -105,11 +117,12 @@ def collect_lear_data():
             LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
         WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
             AND pr.role != ''
+            {debug_clause}
         """)
     return cur
 
 
-def _collect_lear_data_gcp():
+def _collect_lear_data_gcp(debug_clause=''):
     """Collect data from LEAR."""
     current_app.logger.debug('Connecting to GCP Postgres instance...')
     conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
@@ -119,7 +132,7 @@ def _collect_lear_data_gcp():
                             password=current_app.config.get('DB_PASSWORD'))
     cur = conn.cursor()
     current_app.logger.debug('Collecting LEAR data...')
-    cur.execute("""
+    cur.execute(f"""
         SELECT le.identifier,le.legal_name,le.entity_type as legal_type,le.tax_id,
             er.id as role_id,er.role_type as role,er.appointment_date,er.cessation_date,
             rle.first_name,rle.middle_initial,rle.last_name,rle.id as party_id,
@@ -138,5 +151,6 @@ def _collect_lear_data_gcp():
             LEFT JOIN addresses rle_a ON rle_a.id = rle.delivery_address_id
         WHERE le.entity_type in ('BEN', 'CP', 'SP', 'GP')
             AND rle.entity_type='person'
+            {debug_clause}
         """)
     return cur

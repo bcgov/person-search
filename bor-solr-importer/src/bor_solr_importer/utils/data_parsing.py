@@ -143,7 +143,10 @@ def set_business_entity(item_dict: dict[str, str], prepped_data: dict[str, Entit
         prepped_data[item_dict['identifier']].bn = item_dict.get('tax_id')
 
 
-def set_party_entity(item_dict: dict[str, str], prepped_data: dict[str, Entity], source: str) -> Entity:
+def set_party_entity(item_dict: dict[str, str],
+                     prepped_data: dict[str, Entity],
+                     source: str,
+                     is_debug_identifier=False) -> Entity:
     """Set the party entity in the prepped data."""
     has_party = item_dict.get('party_id')
     party_already_added = False
@@ -204,10 +207,18 @@ def set_party_entity(item_dict: dict[str, str], prepped_data: dict[str, Entity],
 
         prepped_data[party_id] = party_entity
 
+    if is_debug_identifier:
+        current_app.logger.debug(f'party_role: {party_role}')
+        current_app.logger.debug(f'party_id: {party_id}')
+        current_app.logger.debug(f'party_already_added: {party_already_added}')
+        current_app.logger.debug(f'has_party: {has_party}')
+        current_app.logger.debug(f'is_party: {is_party}')
+        current_app.logger.debug(f'party_entity: {party_entity}')
+
     return prepped_data.get(party_id, None)
 
 
-def party_cleanup(prepped_data: dict[str, Entity], party_links: dict[str, str]):
+def party_cleanup(prepped_data: dict[str, Entity], party_links: dict[str, dict[str, str]]):
     """Add relevant data to the current party entry and remove older versions of the party."""
     skipped_ids = []
     for corp_num in party_links:
@@ -237,7 +248,8 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
                        corp_num: str,
                        new_id: str,
                        prev_id: str,
-                       start_event_id: str):
+                       start_event_id: str,
+                       is_debug_identifier=False):
     """Update/Create links between current party record and original party record."""
     # NOTE: could get multiple records out of order
     parent_id = new_id
@@ -252,6 +264,9 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
 
             if event_link[dupe_parent_id] > start_event_id:
                 # remove this middle record and move on
+                if is_debug_identifier:
+                    current_app.logger.debug(f'skipping new_id: {new_id}')
+                    current_app.logger.debug(f'skipped record: {prepped_data[new_id]}')
                 del prepped_data[new_id]
                 return
 
@@ -285,6 +300,11 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
     parent_link[corp_num][parent_id] = child_id
     # save start event id for later -- if it already exists do NOT update it
     event_link.setdefault(parent_id, start_event_id)
+    if is_debug_identifier:
+        current_app.logger.debug(f'child_link: {child_link[corp_num]}')
+        current_app.logger.debug(f'parent_link: {parent_link[corp_num]}')
+        current_app.logger.debug(f'parent_id: {parent_id}')
+        current_app.logger.debug(f'event_link: {event_link[parent_id]}')
 
 
 def get_entities(prepped_data: dict[str, Entity]) -> list[dict]:
@@ -312,14 +332,26 @@ def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) ->
     event_link: dict[str, str] = {}
     dupes = []
 
+    debug_identfiers = current_app.config.get('DEBUG_IDENTIFIERS', [])
+
     for item in data:
         item_dict = dict(zip(data_descs, item))
+
+        is_debug_identifier = item_dict['identifier'] in debug_identfiers
+
         if needs_bc_prefix(item_dict['identifier'], item_dict['legal_type']):
             item_dict['identifier'] = 'BC' + item_dict['identifier']
 
+        if is_debug_identifier:
+            current_app.logger.debug(f'item_dict: {item_dict}')
+
         # NB: for now business entities aren't needed in director search
         # set_business_entity(item_dict, prepped_data)
-        party_entity = set_party_entity(item_dict, prepped_data, source)
+        party_entity = set_party_entity(item_dict, prepped_data, source, is_debug_identifier)
+
+        if is_debug_identifier:
+            current_app.logger.debug(f'item_dict: {item_dict}')
+            current_app.logger.debug(f'party_entity: {party_entity}')
 
         if party_entity and item_dict.get('prev_party_id', None):
             update_party_links(prepped_data=prepped_data,
@@ -330,7 +362,8 @@ def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) ->
                                corp_num=party_entity.roles[0].relatedIdentifier,
                                new_id=party_entity.id,
                                prev_id=f"{source}{item_dict['prev_party_id']}",
-                               start_event_id=item_dict['start_event_id'])
+                               start_event_id=item_dict['start_event_id'],
+                               is_debug_identifier=is_debug_identifier)
 
         elif party_entity and not party_entity.roles[0].roleDates[0].start:
             # no older records to pull appointment date from so use filing_date

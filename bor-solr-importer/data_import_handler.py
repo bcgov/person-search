@@ -39,7 +39,6 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
     offset = 0
     rows = current_app.config.get('BATCH_SIZE_SOLR', 1000)
     retry_count = 0
-    erred_record_count = 0
     while count < len(base_docs) and rows > 0 and len(base_docs) - offset > 0:
         batch_amount = int(min(rows, len(base_docs) - offset) / (retry_count + 1))
         count += batch_amount
@@ -62,20 +61,33 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
             retry_count = 0
         except Exception as err:  # noqa: B902; pylint: disable=bare-except;
             current_app.logger.debug(err)
-            if retry_count < 3:
+            if retry_count < 5:
                 # retry
-                current_app.logger.debug('Failed to update solr with batch. Trying again (%s of 3)...', retry_count + 1)
+                current_app.logger.debug('Failed to update solr with batch. Trying again (%s of 5)...', retry_count + 1)
                 retry_count += 1
                 # set count back
                 count -= batch_amount
                 continue
             else:
-                # log error and skip
-                current_app.logger.error('Retry count exceeded for batch. Skipping batch.')
-                # add number of records in failed batch to the erred count
-                erred_record_count += batch_amount
+                if retry_count == 5:
+                    # wait x minutes and then try one more time
+                    current_app.logger.debug(
+                        'Max retries for batch exceeded. Awaiting 2 mins before trying one more time...')
+                    time.sleep(120)
+                    # renew token for next try
+                    current_app.logger.debug('Getting new token for Import...')
+                    token = get_bearer_token()
+                    headers = {'Authorization': 'Bearer ' + token}
+                    current_app.logger.debug('New Token set.')
+                    # try again
+                    retry_count += 1
+                    count -= batch_amount
+                    continue
+                # log and raise error
+                current_app.logger.error('Retry count exceeded for batch.')
+                raise SolrException('Retry count exceeded for updating SOLR. Aborting import.')
         offset = count
-        current_app.logger.debug(f'Total {data_name} base doc records imported: {count - erred_record_count}')
+        current_app.logger.debug(f'Total {data_name} base doc records imported: {count}')
     return count
 
 

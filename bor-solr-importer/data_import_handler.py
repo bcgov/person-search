@@ -65,6 +65,9 @@ def update_solr(base_docs: list[Entity], data_name: str) -> int:
                 # retry
                 current_app.logger.debug('Failed to update solr with batch. Trying again (%s of 5)...', retry_count + 1)
                 retry_count += 1
+                # await some time before trying again
+                current_app.logger.debug('Awaiting %s seconds before trying again...', 5 * retry_count)
+                time.sleep(5 * retry_count)
                 # set count back
                 count -= batch_amount
                 continue

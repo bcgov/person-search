@@ -137,3 +137,4 @@ __pycache__
 .history
 
 .obsidian
+internal/env.md

@@ -159,19 +159,19 @@ def set_party_entity(item_dict: dict[str, str],
                                            item_dict['legal_type'],
                                            item_dict['party_type_desc'])
 
-    item_dict['role'] = item_dict['role'].replace('_', ' ').upper()
     if not item_dict.get('party_type'):
         item_dict['party_type'] = 'person'
         if item_dict.get('organization_name', None):
             item_dict['party_type'] = 'organization'
     # set party role
     role_date_range = DateRange(start=None, end=None)
+    # NOTE: removes tzinfo due to incorrect time values stored in db
     if appointment_date := item_dict['appointment_date']:
         role_date_range.start = datetime.isoformat(appointment_date,
-                                                   timespec='seconds').replace('+00:00', 'Z')
+                                                   timespec='seconds').replace('+00:00', '')
     if cessation_date := item_dict.get('cessation_date', None):
         role_date_range.end = datetime.isoformat(cessation_date,
-                                                 timespec='seconds').replace('+00:00', 'Z')
+                                                 timespec='seconds').replace('+00:00', '')
         role_date_range.active = False
     party_role = EntityRole(relatedBN=item_dict['tax_id'],
                             relatedEmail=item_dict.get('admin_email'),
@@ -182,9 +182,10 @@ def set_party_entity(item_dict: dict[str, str],
                             relatedState=item_dict['state'],
                             roleDates=[role_date_range],
                             roleType=item_dict['role'])
-    # check if entity record already there
+
     party_id = item_dict.get('party_identifier') \
-        or f"{source}{item_dict['party_id']}{item_dict.get('party_role_id', '')}"
+        or f"{source}{item_dict['party_id']}{item_dict['role'].replace(' ', '_')}"
+    # check if entity record already there (should not be as we are adding 1 record per role)
     party_already_added = party_id in prepped_data
 
     if party_already_added:
@@ -192,6 +193,7 @@ def set_party_entity(item_dict: dict[str, str],
         if not prepped_data[party_id].roles:
             prepped_data[party_id].roles = []
         prepped_data[party_id].roles.append(party_role)
+        current_app.logger.error('Multiple roles added under party: %s', party_id)
 
     elif has_party:
         # add new entity doc for party including address and role

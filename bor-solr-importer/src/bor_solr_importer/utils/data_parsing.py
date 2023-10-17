@@ -184,7 +184,8 @@ def set_party_entity(item_dict: dict[str, str],
                             roleType=item_dict['role'])
 
     party_id = item_dict.get('party_identifier') \
-        or f"{source}{item_dict['party_id']}{item_dict['role'].replace(' ', '_')}"
+        or f"{source}{item_dict['party_id']}{item_dict['identifier']}" \
+           f"{item_dict['role'].replace(' ', '_')}".upper()
     # check if entity record already there (should not be as we are adding 1 record per role)
     party_already_added = party_id in prepped_data
 
@@ -200,7 +201,7 @@ def set_party_entity(item_dict: dict[str, str],
         use_mailing = not item_dict.get('delivery_addr_id', None) and source == 'COLIN'
         party_address = get_address(item_dict, True, use_mailing)
         is_party = item_dict['party_type'] == 'person'
-        party_entity = Entity(entityAddresses=[party_address],
+        party_entity = Entity(entityAddresses=[party_address] if party_address.address_q else None,
                               entityType='PERSON' if is_party else 'BUSINESS',
                               id=party_id,
                               identifier=None if is_party else party_id,

@@ -163,6 +163,11 @@ def set_party_entity(item_dict: dict[str, str],
         item_dict['party_type'] = 'person'
         if item_dict.get('organization_name', None):
             item_dict['party_type'] = 'organization'
+
+    if item_dict['party_type'] != 'person':
+        # ignoring business parties for now
+        return None
+
     # set party role
     role_date_range = DateRange(start=None, end=None)
     # NOTE: removes tzinfo due to incorrect time values stored in db
@@ -194,7 +199,6 @@ def set_party_entity(item_dict: dict[str, str],
         if not prepped_data[party_id].roles:
             prepped_data[party_id].roles = []
         prepped_data[party_id].roles.append(party_role)
-        current_app.logger.error('Multiple roles added under party: %s', party_id)
 
     elif has_party:
         # add new entity doc for party including address and role
@@ -320,7 +324,21 @@ def get_entities(prepped_data: dict[str, Entity]) -> list[dict]:
             missing_data['address'].append(entity)
         # elif entity.roles and not entity.roles[0].roleDates[0].start:
         #     missing_data['appointment_date'].append(entity)
-        entities.append(asdict(entity))
+        # add 1 entity per role in (UI doesn't handle multiple roles per entity yet)
+        for index, role in enumerate(entity.roles):
+            single_role_entity = Entity(
+                id=entity.id + str(index),
+                entityAddresses=entity.entityAddresses,
+                entityType=entity.entityType,
+                legalName=entity.legalName,
+                bn=entity.bn,
+                email=entity.email,
+                identifier=entity.identifier,
+                legalType=entity.legalType,
+                roles=[role],
+                state=entity.state
+            )
+            entities.append(asdict(single_role_entity))
 
     current_app.logger.debug(f"entities with missing address: {len(missing_data['address'])}")
     # current_app.logger.debug(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")

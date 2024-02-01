@@ -224,8 +224,8 @@ async def test_events_listener_queue(config, events_stan):
         assert m.call_count == 5
         assert kc_url in m.request_history[0].url
         assert m.request_history[1].url == bus_url + '?slim=True'
-        assert m.request_history[2].url == parties_url + '?slim=True'
-        assert m.request_history[3].url == addresses_url + '?slim=True'
+        assert m.request_history[2].url == parties_url + '?all=True'
+        assert m.request_history[3].url == addresses_url
         assert m.request_history[4].url == search_url
         update_payload = m.last_request.json()
         assert update_payload['business'] == business_json['business']

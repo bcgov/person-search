@@ -75,10 +75,10 @@ def get_bearer_token():
         raise QueueException(HTTPStatus.INTERNAL_SERVER_ERROR, 'Unable to get service account token from auth.')
 
 
-def get_business_info(url: str, headers: Dict[str, str]):
+def get_business_info(url: str, headers: Dict[str, str], params: dict = None):
     """Get business data from the legal-api."""
     try:
-        resp = requests.get(url=url, headers=headers, params={'slim': True}, timeout=APP_CONFIG.BUSINESS_API_TIMEOUT)
+        resp = requests.get(url=url, headers=headers, params=params, timeout=APP_CONFIG.BUSINESS_API_TIMEOUT)
         if resp.status_code != HTTPStatus.OK:
             raise QueueException(resp.status_code, 'Unable to get business data from legal-api.')
         return resp

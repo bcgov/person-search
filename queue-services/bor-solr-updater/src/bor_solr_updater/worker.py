@@ -100,8 +100,8 @@ async def process_business_event(event_message: Dict[str, any]):  # pylint: disa
     business_info_url = f'{APP_CONFIG.LEAR_SVC_URL}/businesses/{identifier}'
     parties_info_url = f'{APP_CONFIG.LEAR_SVC_URL}/businesses/{identifier}/parties'
     address_info_url = f'{APP_CONFIG.LEAR_SVC_URL}/businesses/{identifier}/addresses'
-    business_resp = get_business_info(business_info_url, headers)
-    parties_resp = get_business_info(parties_info_url, headers)
+    business_resp = get_business_info(business_info_url, headers, {'slim': True})
+    parties_resp = get_business_info(parties_info_url, headers, {'all': True})
     address_resp = get_business_info(address_info_url, headers)
 
     parties = []

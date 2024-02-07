@@ -1,6 +1,6 @@
 {
   "initArgs":{"ignoreCase":true},
-  "initializedOn":"2023-06-26T23:39:01.572Z",
+  "initializedOn":"2024-02-06T22:22:07.930Z",
   "managedMap":{
     "1":[
       "1",
@@ -68324,9 +68324,9 @@
       "stephens"],
     "stephens":[
       "stafanie",
+      "stephan",
       "stephanie",
       "stephany",
-      "stephan",
       "stephen",
       "stephena",
       "stephene",
@@ -71264,6 +71264,9 @@
       "tracy",
       "tresa",
       "treza"],
+    "test synonym":[
+      "ble bla",
+      "test synonym"],
     "tetty":[
       "bes",
       "bet",

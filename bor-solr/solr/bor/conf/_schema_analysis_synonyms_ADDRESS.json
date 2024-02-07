@@ -1,6 +1,6 @@
 {
   "initArgs":{"ignoreCase":true},
-  "initializedOn":"2023-06-21T01:02:41.197Z",
+  "initializedOn":"2024-02-06T22:22:06.989Z",
   "managedMap":{
     "//karas":[
       "//karas",
@@ -14042,6 +14042,9 @@
     "teruel":[
       "te",
       "teruel"],
+    "test synonym":[
+      "ble bla",
+      "test synonym"],
     "tet":[
       "tet",
       "tétouan"],

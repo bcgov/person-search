@@ -46,9 +46,10 @@ def reindex_prep(is_preload: bool):
         backup_trigger_time = (datetime.utcnow()).replace(tzinfo=timezone.utc)
         backup = bor_solr.replication('backup', True)
         current_app.logger.debug(backup.json())
-        # disable follower polling during reindex
-        disable_polling = bor_solr.replication('disablepoll', False)
-        current_app.logger.debug(disable_polling.json())
+        if current_app.config.get('HAS_FOLLOWER', True):
+            # disable follower polling during reindex
+            disable_polling = bor_solr.replication('disablepoll', False)
+            current_app.logger.debug(disable_polling.json())
         # await 60 seconds in case a poll was in progress and to give time for backup to complete
         current_app.logger.debug('Pausing 60s for SOLR to complete reindex prep...')
         sleep(60)
@@ -67,17 +68,18 @@ def reindex_prep(is_preload: bool):
         if not backup_succeeded:
             raise SolrException('Failed to backup leader index', HTTPStatus.INTERNAL_SERVER_ERROR)
         current_app.logger.debug('Backup succeeded. Checking polling disabled...')
-        # verify follower polling disabled so it doesn't update until reindex is complete
-        is_polling_disabled = get_replication_detail('isPollingDisabled', False)
-        if not bool(is_polling_disabled):
-            current_app.logger.debug('is_polling_disabled: %s', is_polling_disabled)
-            raise SolrException('Failed disable polling on follower',
-                                str(is_polling_disabled),
-                                HTTPStatus.INTERNAL_SERVER_ERROR)
-        current_app.logger.debug('Polling disabled. Disabling leader replication...')
-        # disable leader replication for reindex duration (important to do this after polling disabled)
-        disable_replication = bor_solr.replication('disablereplication', True)
-        current_app.logger.debug(disable_replication.json())
+        if current_app.config.get('HAS_FOLLOWER', True):
+            # verify follower polling disabled so it doesn't update until reindex is complete
+            is_polling_disabled = get_replication_detail('isPollingDisabled', False)
+            if not bool(is_polling_disabled):
+                current_app.logger.debug('is_polling_disabled: %s', is_polling_disabled)
+                raise SolrException('Failed disable polling on follower',
+                                    str(is_polling_disabled),
+                                    HTTPStatus.INTERNAL_SERVER_ERROR)
+            current_app.logger.debug('Polling disabled. Disabling leader replication...')
+            # disable leader replication for reindex duration (important to do this after polling disabled)
+            disable_replication = bor_solr.replication('disablereplication', True)
+            current_app.logger.debug(disable_replication.json())
 
     # delete existing index
     current_app.logger.debug('REINDEX_CORE set: deleting current solr index...')
@@ -103,17 +105,18 @@ def reindex_prep(is_preload: bool):
 
 def reindex_post():
     """Execute post reindex operations on the follower index."""
-    # reenable leader replication
-    enable_replication = bor_solr.replication('enablereplication', True)
-    current_app.logger.debug(enable_replication.json())
-    sleep(5)
-    # force the follwer to fetch the new index
-    fetch_new_idx = bor_solr.replication('fetchindex', False)
-    current_app.logger.debug(fetch_new_idx.json())
-    sleep(10)
-    # renable polling
-    enable_polling = bor_solr.replication('enablepoll', False)
-    current_app.logger.debug(enable_polling.json())
+    if current_app.config.get('HAS_FOLLOWER', True):
+        # reenable leader replication
+        enable_replication = bor_solr.replication('enablereplication', True)
+        current_app.logger.debug(enable_replication.json())
+        sleep(5)
+        # force the follwer to fetch the new index
+        fetch_new_idx = bor_solr.replication('fetchindex', False)
+        current_app.logger.debug(fetch_new_idx.json())
+        sleep(10)
+        # renable polling
+        enable_polling = bor_solr.replication('enablepoll', False)
+        current_app.logger.debug(enable_polling.json())
 
 
 def reindex_recovery():

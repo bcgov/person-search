@@ -1,6 +1,6 @@
 {
   "initArgs":{"ignoreCase":true},
-  "initializedOn":"2024-02-06T22:22:06.989Z",
+  "initializedOn":"2024-02-28T19:08:47.823Z",
   "managedMap":{
     "//karas":[
       "//karas",
@@ -14043,6 +14043,18 @@
       "te",
       "teruel"],
     "test synonym":[
+      "ble bla",
+      "test synonym"],
+    "test synonym276":[
+      "ble bla",
+      "test synonym"],
+    "test synonym407":[
+      "ble bla",
+      "test synonym"],
+    "test synonym700":[
+      "ble bla",
+      "test synonym"],
+    "test synonym90":[
       "ble bla",
       "test synonym"],
     "tet":[

@@ -1,6 +1,6 @@
 {
   "initArgs":{"ignoreCase":true},
-  "initializedOn":"2024-02-06T22:22:07.930Z",
+  "initializedOn":"2024-02-28T19:08:48.394Z",
   "managedMap":{
     "1":[
       "1",
@@ -71264,9 +71264,6 @@
       "tracy",
       "tresa",
       "treza"],
-    "test synonym":[
-      "ble bla",
-      "test synonym"],
     "tetty":[
       "bes",
       "bet",

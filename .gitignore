@@ -126,6 +126,8 @@ bor-ui/public/config/local.configuration.json
 # local solr index stuff
 bor-solr/solr/bor/data/*
 tmp-bo-solr/solr/bo/data/*
+**/_schema_analysis_synonyms_ADDRESS.json
+**/_schema_analysis_synonyms_NAME.json
 
 .idea/
 

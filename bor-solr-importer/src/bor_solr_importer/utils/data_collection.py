@@ -156,8 +156,14 @@ def _collect_lear_data_gcp(debug_clause=''):
     return cur
 
 
-def collect_btr_data():
+def collect_btr_data(limit: int = None, offset: int = None):
     """Collect data from BTR."""
+    limit_clause = ''
+    if limit:
+        limit_clause = f'LIMIT {limit}'
+    if offset:
+        limit_clause += f' OFFSET {offset}'
+
     debug_clause = ''
     if debug_identfiers := current_app.config.get('DEBUG_IDENTIFIERS', []):
         # will only select from identifiers we are interested in debugging
@@ -173,5 +179,5 @@ def collect_btr_data():
     cur = conn.cursor()
     current_app.logger.debug('Collecting BTR data...')
     # TODO: collect historic records too ?
-    cur.execute(f'SELECT payload FROM submission {debug_clause}')
+    cur.execute(f'SELECT payload FROM submission {debug_clause} {limit_clause}')
     return cur

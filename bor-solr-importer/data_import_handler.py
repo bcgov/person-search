@@ -114,20 +114,35 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             reindex_prep(is_preload)
 
         try:
-            prepped_btr_data: dict = None
-            btr_id_links: dict = None
+            btr_id_links: dict = {}
             if include_btr_load:
-                current_app.logger.debug('---------- Collecting BTR data ----------')
-                btr_data_cur = collect_btr_data()
-                btr_data = btr_data_cur.fetchall()
+                current_app.logger.debug('---------- Collecting/Importing BTR Data ----------')
+                btr_count = 0
+                btr_fetch_count = 0
+                batch_limit = current_app.config.get('BTR_BATCH_LIMIT')
+                loop_count = 0
 
-                current_app.logger.debug('---------- Mapping BTR data ----------')
-                prepped_btr_data, btr_id_links = prep_data_btr(btr_data)
-                current_app.logger.debug(f'{len(prepped_btr_data)} BTR records ready for import.')
+                while loop_count < 100:  # NOTE: should never get to this condition
+                    loop_count += 1
+                    current_app.logger.debug('********** Collecting BTR data **********')
+                    btr_data_cur = collect_btr_data(batch_limit, btr_fetch_count)
+                    btr_data = btr_data_cur.fetchall()
+                    btr_fetch_count += len(btr_data)
+                    btr_data_cur.close()
+                    if not btr_data:
+                        break
 
-                current_app.logger.debug('---------- Importing BTR entities ----------')
-                btr_count = update_solr(prepped_btr_data, 'BTR', True)
-                current_app.logger.debug(f'BTR import completed. Total BTR entities imported: {btr_count}')
+                    current_app.logger.debug('********** Mapping BTR data **********')
+                    prepped_btr_data, batch_btr_id_links = prep_data_btr(btr_data)
+                    btr_id_links = {**btr_id_links, **batch_btr_id_links}
+                    current_app.logger.debug(f'{len(prepped_btr_data)} BTR records ready for import.')
+
+                    current_app.logger.debug('********** Importing BTR entities **********')
+                    btr_count += update_solr(prepped_btr_data, 'BTR', True)
+                    current_app.logger.debug(f'BTR batch import completed. Records imported: {btr_count}.')
+                    del btr_data, prepped_btr_data, batch_btr_id_links
+
+                current_app.logger.debug(f'BTR import completed. Total BTR records imported: {btr_count}')
 
             current_app.logger.debug('---------- Collecting/Importing COLIN Entities ----------')
             # PROD numbers for parties grouped by business identifier:

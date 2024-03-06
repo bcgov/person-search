@@ -61,8 +61,11 @@ class Config():  # pylint: disable=too-few-public-methods
     INCLUDE_BTR_LOAD = os.getenv('INCLUDE_BTR_LOAD', 'False') == 'True'
     RESYNC_OFFSET = os.getenv('RESYNC_OFFSET', '130')
 
+    BTR_BATCH_LIMIT = int(os.getenv('BTR_BATCH_LIMIT', '100000'))
+
     CORP_NUM_LIMITS_START = int(os.getenv('CORP_NUM_LIMITS_START', '0'))
     CORP_NUM_LIMITS_END = int(os.getenv('CORP_NUM_LIMITS_END', '10'))
+
     DEBUG_IDENTIFIERS = os.getenv('DEBUG_IDENTIFIERS', '')
     if DEBUG_IDENTIFIERS:
         DEBUG_IDENTIFIERS = DEBUG_IDENTIFIERS.split(',')

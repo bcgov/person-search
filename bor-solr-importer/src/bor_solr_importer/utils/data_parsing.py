@@ -17,7 +17,8 @@ from dataclasses import asdict
 from datetime import datetime
 
 from flask import current_app
-from bor_api.services.solr.solr_docs import Address, Entity, EntityRole, DateRange
+from bor_api.services.bor_solr.doc_models import Address, Entity, EntityRole, DateRange
+from bor_api.utils.data_converters import get_btr_owner
 
 from bor_solr_importer.enums import ColinPartyTypeCode
 
@@ -178,7 +179,13 @@ def set_party_entity(item_dict: dict[str, str],
         role_date_range.end = datetime.isoformat(cessation_date,
                                                  timespec='seconds').replace('+00:00', '')
         role_date_range.active = False
-    party_role = EntityRole(relatedBN=item_dict['tax_id'],
+
+    party_id = item_dict.get('party_identifier') \
+        or f"{source}{item_dict['party_id']}{item_dict['identifier']}" \
+           f"{item_dict['role'].replace(' ', '_')}".upper()
+
+    party_role = EntityRole(id=party_id + '/roles0',
+                            relatedBN=item_dict['tax_id'],
                             relatedEmail=item_dict.get('admin_email'),
                             relatedEntityType='BUSINESS',
                             relatedIdentifier=item_dict['identifier'],
@@ -188,9 +195,6 @@ def set_party_entity(item_dict: dict[str, str],
                             roleDates=[role_date_range],
                             roleType=item_dict['role'])
 
-    party_id = item_dict.get('party_identifier') \
-        or f"{source}{item_dict['party_id']}{item_dict['identifier']}" \
-           f"{item_dict['role'].replace(' ', '_')}".upper()
     # check if entity record already there (should not be as we are adding 1 record per role)
     party_already_added = party_id in prepped_data
 
@@ -345,13 +349,17 @@ def get_entities(prepped_data: dict[str, Entity]) -> list[dict]:
     return entities
 
 
-def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) -> list[dict]:
+def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals
+              data_descs: list[str],
+              source: str,
+              btr_id_links: list[dict[str, list[str]]]) -> tuple[list[dict], list[dict]]:
     """Return the list of Entity docs for the given raw db data."""
     prepped_data: dict[str, Entity] = {}
     child_link: dict[str, dict[str, str]] = {}  # corp_num -> child -> parent
     parent_link: dict[str, dict[str, str]] = {}  # corp_num -> parent -> child
     event_link: dict[str, str] = {}
     dupes = []
+    partial_btr_updates = []
 
     debug_identfiers = current_app.config.get('DEBUG_IDENTIFIERS', [])
 
@@ -365,6 +373,25 @@ def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) ->
 
         if is_debug_identifier:
             current_app.logger.debug(f'item_dict: {item_dict}')
+
+        # add partial business update to BTR SI record if applicable
+        if (identifier := item_dict['identifier']) in btr_id_links:  # pylint: disable=superfluous-parens
+            for btr_id in btr_id_links[identifier]:
+                # add the business info to a partial role doc
+                partial_btr_updates.append({
+                    '_root_': btr_id,
+                    'id': btr_id + identifier + 'SIGNIFICANT_INDIVIDUAL',
+                    'relatedBN': {'set': item_dict['tax_id']},
+                    'relatedEmail': {'set': item_dict.get('admin_email')},
+                    'relatedLegalType': {'set': item_dict['legal_type']},
+                    'relatedName': {'set': item_dict['legal_name']},
+                    'relatedState': {'set': item_dict['state']}
+                })
+
+            del btr_id_links[identifier]
+
+        if is_debug_identifier:
+            current_app.logger.debug(f'partial_btr_updates: {partial_btr_updates}')
 
         # NB: for now business entities aren't needed in director search
         # set_business_entity(item_dict, prepped_data)
@@ -400,4 +427,49 @@ def prep_data(data: list[dict[str, str]], data_descs: list[str], source: str) ->
         party_cleanup(prepped_data, parent_link)
 
     current_app.logger.debug(f'multiple prev party ids {len(dupes)}')
-    return get_entities(prepped_data)
+    return get_entities(prepped_data), partial_btr_updates
+
+
+def prep_data_btr(data: list[dict]) -> tuple[dict, dict]:
+    """Return the list of Entity docsn and the party/business id links from the btr db data."""
+    prepped_data: list[Entity] = []
+    id_links: dict[str, list[str]] = {}
+
+    debug_identfiers = current_app.config.get('DEBUG_IDENTIFIERS', [])
+
+    for item in data:
+        submission = item[0]
+        identifier = submission['businessIdentifier']
+
+        if identifier in debug_identfiers:
+            current_app.logger.debug(f'submission: {submission}')
+
+        # minimal business record. Will be updated with full details later.
+        business = Entity(id=identifier,
+                          identifier=identifier,
+                          entityType='BUSINESS',
+                          entityAddresses=None,
+                          legalName=submission.get('entityStatement', {}).get('name', ''))
+
+        # collect current parties.
+        # TODO: handle same party across submissions (not needed until collapsing people into 1 record)
+        parties = {}
+        for person in submission.get('personStatements', []):
+            person_id = person['statementID']
+            parties[person_id] = person
+
+        # combine ownership details and parties
+        for ownership_info in submission.get('ownershipOrControlStatements', []):
+            party_id = ownership_info['interestedParty']['describedByPersonStatement']
+            ownership_info['interestedParty'] = {
+                'describedByPersonStatement': party_id,
+                **parties[party_id]
+            }
+            parsed_owner = asdict(get_btr_owner(ownership_info, business))
+            prepped_data.append(parsed_owner)
+            id_links.setdefault(business.id, []).append(party_id)
+
+            if identifier in debug_identfiers:
+                current_app.logger.debug(f'entity parsed: {parsed_owner}')
+
+    return prepped_data, id_links

@@ -40,12 +40,6 @@ class Config():  # pylint: disable=too-few-public-methods
 
     PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
-    SOLR_SVC_LEADER_CORE = os.getenv('SOLR_SVC_LEADER_CORE', 'bor')
-    SOLR_SVC_FOLLOWER_CORE = os.getenv('SOLR_SVC_FOLLOWER_CORE', 'bor_follower')
-    SOLR_SVC_LEADER_URL = os.getenv('SOLR_SVC_LEADER_URL', 'http://localhost:8883/solr')
-    SOLR_SVC_FOLLOWER_URL = os.getenv('SOLR_SVC_FOLLOWER_URL', 'http://localhost:8884/solr')
-    HAS_FOLLOWER = SOLR_SVC_FOLLOWER_URL != SOLR_SVC_LEADER_URL
-
     BOR_API_URL = os.getenv('BOR_API_INTERNAL_URL', 'http://')
     BOR_API_V1 = os.getenv('BOR_API_VERSION', '')
 
@@ -58,6 +52,7 @@ class Config():  # pylint: disable=too-few-public-methods
     BATCH_SIZE_SOLR = int(os.getenv('SOLR_BATCH_UPDATE_SIZE', '1000'))
     REINDEX_CORE = os.getenv('REINDEX_CORE', 'False') == 'True'
     PRELOADER_JOB = os.getenv('PRELOADER_JOB', 'False') == 'True'
+    INCLUDE_BTR_LOAD = os.getenv('INCLUDE_BTR_LOAD', 'False') == 'True'
     RESYNC_OFFSET = os.getenv('RESYNC_OFFSET', '130')
 
     CORP_NUM_LIMITS_START = int(os.getenv('CORP_NUM_LIMITS_START', '0'))
@@ -93,10 +88,11 @@ class Config():  # pylint: disable=too-few-public-methods
         DB_HOST = os.getenv('DATABASE_HOST_GCP', '')
         DB_PORT = os.getenv('DATABASE_PORT_GCP', '5432')
 
-    if DB_UNIX_SOCKET := os.getenv('DATABASE_UNIX_SOCKET', None):
-        SQLALCHEMY_DATABASE_URI = f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?host={DB_UNIX_SOCKET}'
-    else:
-        SQLALCHEMY_DATABASE_URI = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    BTR_DB_USER = os.getenv('DATABASE_USERNAME_BTR', '')
+    BTR_DB_PASSWORD = os.getenv('DATABASE_PASSWORD_BTR', '')
+    BTR_DB_NAME = os.getenv('DATABASE_NAME_BTR', '')
+    BTR_DB_HOST = os.getenv('DATABASE_HOST_BTR', '')
+    BTR_DB_PORT = os.getenv('DATABASE_PORT_BTR', '5432')
 
     # Connection pool settings
     DB_MIN_POOL_SIZE = os.getenv('DATABASE_MIN_POOL_SIZE', '2')

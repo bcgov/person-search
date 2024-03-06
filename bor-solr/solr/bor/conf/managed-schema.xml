@@ -341,22 +341,30 @@
   <field name="_version_" type="plong" indexed="false" stored="false"/>
   <!-- base entity docs -->
   <field name="id" type="string" indexed="true" required="true" stored="true"/>
+  <field name="alternateName" type="string" indexed="false" stored="true"/>
+  <field name="birthDate" type="string" indexed="false" stored="true"/>
   <field name="bn" type="string" indexed="false" stored="true"/>
   <field name="bn_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="deathDate" type="string" indexed="false" stored="true"/>
   <field name="email" type="string" indexed="false" stored="true"/>
   <field name="email_q" type="email_ngram" indexed="true" stored="false"/>
   <field name="entityAddresses" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="entityType" type="string" docValues="true" indexed="true" stored="true"/>
+  <field name="externalInfluence" type="string" indexed="false" stored="true"/>
   <field name="identifier" type="string" indexed="false" stored="true"/>
   <field name="identifier_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="isPermanentResident" type="boolean" indexed="false" stored="true"/>
   <field name="legalName" type="string" indexed="false" stored="true"/>
   <field name="legalName_q" type="text_stemmed" indexed="true" stored="false"/>
   <field name="legalName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="legalName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="legalName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
   <field name="legalType" type="string" docValues="true" indexed="true" stored="true"/>
+  <field name="nationalities" type="string" multiValued="true" indexed="false" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="state" type="string" docValues="true" indexed="true" stored="true"/>
+  <field name="taxNumber" type="string" indexed="false" stored="true"/>
+  <field name="taxResidencies" type="string" multiValued="true" indexed="false" stored="true"/>
   <!-- child address docs -->
   <field name="addressType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="addressCity" type="string" docValues="true" indexed="true" stored="true"/>
@@ -364,8 +372,10 @@
   <field name="addressRegion" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="address_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="address_synonym_q" type="synonym_address" indexed="true" stored="false"/>
+  <field name="locationDescription" type="string" indexed="false" stored="true"/>
   <field name="postalCode" type="string" indexed="false" stored="true"/>
   <field name="streetAddress" type="string" indexed="false" stored="true"/>
+  <field name="streetAdditional" type="string" indexed="false" stored="true"/>
   <!-- child entity role docs -->
   <field name="related_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="relatedBN" type="string" indexed="false" stored="true"/>
@@ -375,6 +385,7 @@
   <field name="relatedEntityType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="relatedIdentifier" type="string" indexed="false" stored="true"/>
   <field name="relatedIdentifier_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="relatedInterests" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="relatedLegalType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="relatedName" type="string" indexed="false" stored="true"/>
   <field name="relatedName_q" type="text_stemmed" indexed="true" stored="false"/>
@@ -388,6 +399,13 @@
   <field name="start" type="datetime" indexed="true" stored="true"/>
   <field name="end" type="datetime" indexed="true" stored="true"/>
   <field name="active" type="boolean" docValues="true" indexed="true" stored="true"/>
+  <!-- child interest fields -->
+  <field name="details" type="string" indexed="false" stored="true"/>
+  <field name="directOrIndirect" type="string" indexed="false" stored="true"/>
+  <field name="interestType" type="string" indexed="false" stored="true"/>
+  <field name="sharesExact" type="pfloat" indexed="false" stored="true"/>
+  <field name="sharesMax" type="pfloat" indexed="false" stored="true"/>
+  <field name="sharesMin" type="pfloat" indexed="false" stored="true"/>
   <!-- auto generated dynamic fields -->
   <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight" indexed="true" stored="true"/>
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>

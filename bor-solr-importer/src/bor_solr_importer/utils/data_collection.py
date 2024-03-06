@@ -94,7 +94,7 @@ def collect_lear_data():
     if current_app.config.get('DB_LOCATION') == 'GCP':
         return _collect_lear_data_gcp(debug_clause.replace('b.identifier', 'le.identifier'))
 
-    current_app.logger.debug('Connecting to OCP Postgres instance...')
+    current_app.logger.debug('Connecting to LEAR OCP Postgres instance...')
     conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
                             port=current_app.config.get('DB_PORT'),
                             database=current_app.config.get('DB_NAME'),
@@ -124,7 +124,7 @@ def collect_lear_data():
 
 def _collect_lear_data_gcp(debug_clause=''):
     """Collect data from LEAR."""
-    current_app.logger.debug('Connecting to GCP Postgres instance...')
+    current_app.logger.debug('Connecting to LEAR GCP Postgres instance...')
     conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
                             port=current_app.config.get('DB_PORT'),
                             database=current_app.config.get('DB_NAME'),
@@ -153,4 +153,25 @@ def _collect_lear_data_gcp(debug_clause=''):
             AND rle.entity_type='person'
             {debug_clause}
         """)
+    return cur
+
+
+def collect_btr_data():
+    """Collect data from BTR."""
+    debug_clause = ''
+    if debug_identfiers := current_app.config.get('DEBUG_IDENTIFIERS', []):
+        # will only select from identifiers we are interested in debugging
+        debug_identfiers = [f"'{x}'" for x in debug_identfiers]
+        debug_clause = f"WHERE business_identifier IN ({','.join(debug_identfiers)})"
+
+    current_app.logger.debug('Connecting to BTR GCP Postgres instance...')
+    conn = psycopg2.connect(host=current_app.config.get('BTR_DB_HOST'),
+                            port=current_app.config.get('BTR_DB_PORT'),
+                            database=current_app.config.get('BTR_DB_NAME'),
+                            user=current_app.config.get('BTR_DB_USER'),
+                            password=current_app.config.get('BTR_DB_PASSWORD'))
+    cur = conn.cursor()
+    current_app.logger.debug('Collecting BTR data...')
+    # TODO: collect historic records too ?
+    cur.execute(f'SELECT payload FROM submission {debug_clause}')
     return cur

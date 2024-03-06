@@ -22,7 +22,7 @@ from http import HTTPStatus
 
 import sentry_sdk  # noqa: I001; pylint: disable=ungrouped-imports; conflicts with Flake8
 from sentry_sdk.integrations.flask import FlaskIntegration  # noqa: I001
-from bor_api.services import bor_solr  # noqa: I001
+from bor_api.services import solr  # noqa: I001
 from dotenv import load_dotenv
 from flask import Flask  # noqa: I001
 
@@ -71,7 +71,7 @@ def create_app(config_name: str = os.getenv('APP_ENV') or 'production'):
             traces_sample_rate=app.config.get('SENTRY_TSR'))
 
     oracle_db.init_app(app)
-    bor_solr.init_app(app)
+    solr.init_app(app)
 
     register_shellcontext(app)
 

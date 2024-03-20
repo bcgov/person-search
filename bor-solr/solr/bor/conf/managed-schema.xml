@@ -342,6 +342,10 @@
   <!-- base entity docs -->
   <field name="id" type="string" indexed="true" required="true" stored="true"/>
   <field name="alternateName" type="string" indexed="false" stored="true"/>
+  <field name="alternateName_q" type="text_stemmed" indexed="true" stored="false"/>
+  <field name="alternateName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="alternateName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
+  <field name="alternateName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
   <field name="birthDate" type="string" indexed="false" stored="true"/>
   <field name="bn" type="string" indexed="false" stored="true"/>
   <field name="bn_q" type="phrase_ngram" indexed="true" stored="false"/>
@@ -452,6 +456,10 @@
   <copyField source="bn" dest="bn_q"/>
   <copyField source="email" dest="email_q"/>
   <copyField source="identifier" dest="identifier_q"/>
+  <copyField source="alternateName" dest="alternateName_q"/>
+  <copyField source="alternateName" dest="alternateName_single_term_q"/>
+  <copyField source="alternateName" dest="alternateName_stem_agro_q"/>
+  <copyField source="alternateName" dest="alternateName_synonym_q"/>
   <copyField source="legalName" dest="legalName_q"/>
   <copyField source="legalName" dest="legalName_single_term_q"/>
   <copyField source="legalName" dest="legalName_stem_agro_q"/>

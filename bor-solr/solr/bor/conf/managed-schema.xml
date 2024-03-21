@@ -367,7 +367,10 @@
   <field name="nationalities" type="string" multiValued="true" indexed="false" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="state" type="string" docValues="true" indexed="true" stored="true"/>
+
   <field name="taxNumber" type="string" indexed="false" stored="true"/>
+  <field name="taxNumber_q" type="phrase_ngram" indexed="true" stored="false"/>
+
   <field name="taxResidencies" type="string" multiValued="true" indexed="false" stored="true"/>
   <!-- child address docs -->
   <field name="addressType" type="string" docValues="true" indexed="true" stored="true"/>
@@ -464,6 +467,7 @@
   <copyField source="legalName" dest="legalName_single_term_q"/>
   <copyField source="legalName" dest="legalName_stem_agro_q"/>
   <copyField source="legalName" dest="legalName_synonym_q"/>
+  <copyField source="taxNumber" dest="taxNumber_q"/>
   <!-- entity roles -->
   <copyField source="relatedBN" dest="relatedBN_q"/>
   <copyField source="relatedEmail" dest="relatedEmail_q"/>

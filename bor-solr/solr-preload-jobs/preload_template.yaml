@@ -34,68 +34,178 @@ objects:
                 - name: ORACLE_USER
                   valueFrom:
                     secretKeyRef:
-                      key: ORACLE_USER
                       name: bor-solr-importer-${ENV}-secret
+                      key: ORACLE_USER
                 - name: ORACLE_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      key: ORACLE_PASSWORD
                       name: bor-solr-importer-${ENV}-secret
+                      key: ORACLE_PASSWORD
                 - name: ORACLE_DB_NAME
                   valueFrom:
                     secretKeyRef:
-                      key: ORACLE_DB_NAME
                       name: bor-solr-importer-${ENV}-secret
+                      key: ORACLE_DB_NAME
                 - name: ORACLE_HOST
                   valueFrom:
                     secretKeyRef:
-                      key: ORACLE_HOST
                       name: bor-solr-importer-${ENV}-secret
+                      key: ORACLE_HOST
                 - name: ORACLE_PORT
                   valueFrom:
                     secretKeyRef:
-                      key: ORACLE_PORT
                       name: bor-solr-importer-${ENV}-secret
+                      key: ORACLE_PORT
                 - name: DATABASE_HOST_LEAR
                   valueFrom:
                     secretKeyRef:
-                      name: bor-solr-importer-dev-secret
+                      name: bor-solr-importer-${ENV}-secret
                       key: DATABASE_HOST_LEAR
                 - name: DATABASE_NAME
                   valueFrom:
                     secretKeyRef:
-                      key: DATABASE_NAME
                       name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_NAME
                 - name: DATABASE_PASSWORD
                   valueFrom:
                     secretKeyRef:
-                      key: DATABASE_PASSWORD
                       name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_PASSWORD
                 - name: DATABASE_PORT
                   valueFrom:
                     secretKeyRef:
-                      key: DATABASE_PORT
                       name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_PORT
                 - name: DATABASE_USERNAME
                   valueFrom:
                     secretKeyRef:
-                      key: DATABASE_USERNAME
                       name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_USERNAME
                 - name: POD_NAMESPACE
                   valueFrom:
                     secretKeyRef:
-                      key: POD_NAMESPACE
                       name: bor-solr-importer-${ENV}-secret
+                      key: POD_NAMESPACE
+                - name: SOLR_SVC_FOLLOWER_CORE
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: SOLR_SVC_FOLLOWER_CORE
+                - name: SOLR_SVC_FOLLOWER_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: SOLR_SVC_FOLLOWER_URL
+                - name: SOLR_SVC_LEADER_CORE
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: SOLR_SVC_LEADER_CORE
                 - name: SOLR_SVC_LEADER_URL
                   valueFrom:
                     secretKeyRef:
-                      key: SOLR_SVC_PRELOAD_URL
                       name: bor-solr-importer-${ENV}-secret
+                      key: SOLR_SVC_LEADER_URL
                 - name: SOLR_BATCH_UPDATE_SIZE
                   valueFrom:
                     secretKeyRef:
-                      key: SOLR_BATCH_UPDATE_SIZE
                       name: bor-solr-importer-${ENV}-secret
+                      key: SOLR_BATCH_UPDATE_SIZE
+                - name: BOR_API_INTERNAL_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: BOR_API_INTERNAL_URL
+                - name: BOR_API_VERSION
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: BOR_API_VERSION
+                - name: KEYCLOAK_AUTH_TOKEN_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: KEYCLOAK_AUTH_TOKEN_URL
+                - name: NDS_SERVICE_ACCOUNT_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: NDS_SERVICE_ACCOUNT_CLIENT_ID
+                - name: NDS_SERVICE_ACCOUNT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: NDS_SERVICE_ACCOUNT_SECRET
+                - name: DATABASE_LOCATION
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_LOCATION
+                - name: DATABASE_HOST_GCP
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_HOST_GCP
+                - name: DATABASE_NAME_GCP
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_NAME_GCP
+                - name: DATABASE_PASSWORD_GCP
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_PASSWORD_GCP
+                - name: DATABASE_PORT_GCP
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_PORT_GCP
+                - name: DATABASE_USERNAME_GCP
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_USERNAME_GCP
+                - name: RESYNC_OFFSET
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: RESYNC_OFFSET
+                - name: SENTRY_DSN
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: SENTRY_DSN
+                - name: INCLUDE_BTR_LOAD
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: INCLUDE_BTR_LOAD
+                - name: DATABASE_HOST_BTR
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_HOST_BTR
+                - name: DATABASE_NAME_BTR
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_NAME_BTR
+                - name: DATABASE_PASSWORD_BTR
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_PASSWORD_BTR
+                - name: DATABASE_PORT_BTR
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_PORT_BTR
+                - name: DATABASE_USERNAME_BTR
+                  valueFrom:
+                    secretKeyRef:
+                      name: bor-solr-importer-${ENV}-secret
+                      key: DATABASE_USERNAME_BTR
                 - name: REINDEX_CORE
                   value: "True"
                 - name: PRELOADER_JOB

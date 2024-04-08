@@ -333,6 +333,22 @@
       <filter name="porterStem"/>
     </analyzer>
   </fieldType>
+  <fieldType name="text_classic" class="solr.TextField" positionIncrementGap="100">
+    <analyzer type="index">
+      <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
+      <tokenizer name="classic"/>
+      <filter name="lowercase"/>
+      <filter name="asciiFolding"/>
+      <filter name="classic"/>
+    </analyzer>
+    <analyzer type="query">
+      <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
+      <tokenizer name="classic"/>
+      <filter name="lowercase"/>
+      <filter name="asciiFolding"/>
+      <filter name="classic"/>
+    </analyzer>
+  </fieldType>
   <!-- custom fields / needed for custom fields -->
   <field name="_nest_parent_" type="string" indexed="true" stored="true"/>
   <field name="_nest_path_" type="_nest_path_"/>
@@ -346,6 +362,7 @@
   <field name="alternateName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="alternateName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="alternateName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
+  <field name="alternateName_xtra_q" type="text_classic" indexed="true" stored="false"/>
   <field name="birthDate" type="string" indexed="false" stored="true"/>
   <field name="bn" type="string" indexed="false" stored="true"/>
   <field name="bn_q" type="phrase_ngram" indexed="true" stored="false"/>
@@ -363,6 +380,7 @@
   <field name="legalName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
   <field name="legalName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="legalName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
+  <field name="legalName_xtra_q" type="text_classic" indexed="true" stored="false"/>
   <field name="legalType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="nationalities" type="string" multiValued="true" indexed="false" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
@@ -463,10 +481,12 @@
   <copyField source="alternateName" dest="alternateName_single_term_q"/>
   <copyField source="alternateName" dest="alternateName_stem_agro_q"/>
   <copyField source="alternateName" dest="alternateName_synonym_q"/>
+  <copyField source="alternateName" dest="alternateName_xtra_q"/>
   <copyField source="legalName" dest="legalName_q"/>
   <copyField source="legalName" dest="legalName_single_term_q"/>
   <copyField source="legalName" dest="legalName_stem_agro_q"/>
   <copyField source="legalName" dest="legalName_synonym_q"/>
+  <copyField source="legalName" dest="legalName_xtra_q"/>
   <copyField source="taxNumber" dest="taxNumber_q"/>
   <!-- entity roles -->
   <copyField source="relatedBN" dest="relatedBN_q"/>

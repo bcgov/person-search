@@ -22,6 +22,9 @@
         <b>Actions</b>
       </div>
     </template>
+    <template #header-filter-slot-personControl>
+      <CommonHeadersPersonControlDetailsFilter :clear-filter="clearPersonDetailsFilter" />
+    </template>
     <template #header-filter-slot-date>
       <CommonHeadersDateRangeFilter :date-range-reset="dateRangeReset" />
     </template>
@@ -73,7 +76,7 @@
 import {
   CommonHeadersActionFilter, CommonItemsAction, CommonItemsBusinessDetails, CommonItemsPersonControl,
   CommonHeadersDateRangeFilter, CommonItemsName, CommonTitleExport, CommonItemsInformation, CommonItemsEffectiveDates,
-  CommonItemsCitizenship
+  CommonItemsCitizenship, CommonHeadersPersonControlDetailsFilter
 } from './common'
 import { getPersonHeadersExtended } from '@/utils'
 
@@ -101,9 +104,11 @@ onMounted(() => { props.updateTableHeaderFilters(headers) })
 // filter clearing
 const resetFiltersTrigger = ref(false)
 const dateRangeReset = ref(false)
+const clearPersonDetailsFilter = ref(false)
 const clearFilters = () => {
   resetFiltersTrigger.value = !resetFiltersTrigger.value
   dateRangeReset.value = !dateRangeReset.value
+  clearPersonDetailsFilter.value = !clearPersonDetailsFilter.value
   // search on reset filters
   search.filterSearch(null, null, true)
 }

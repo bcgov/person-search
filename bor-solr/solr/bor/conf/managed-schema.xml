@@ -382,7 +382,7 @@
   <field name="legalName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
   <field name="legalName_xtra_q" type="text_classic" indexed="true" stored="false"/>
   <field name="legalType" type="string" docValues="true" indexed="true" stored="true"/>
-  <field name="nationalities" type="string" multiValued="true" indexed="false" stored="true"/>
+  <field name="nationalities" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="state" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="name_q" type="text_ngram" indexed="true" stored="false"/>
@@ -426,7 +426,8 @@
   <field name="end" type="datetime" indexed="true" stored="true"/>
   <field name="active" type="boolean" docValues="true" indexed="true" stored="true"/>
   <!-- child interest fields -->
-  <field name="details" type="string" indexed="false" stored="true"/>
+  <field name="details" type="string" indexed="true" stored="true" docValues="true"/>
+  <field name="otherReason" type="string" indexed="false" stored="true"/>
   <field name="directOrIndirect" type="string" indexed="false" stored="true"/>
   <field name="interestType" type="string" indexed="false" stored="true"/>
   <field name="sharesExact" type="pfloat" indexed="false" stored="true"/>

@@ -27,7 +27,7 @@ from bor_solr_importer.utils import (collect_btr_data, collect_colin_data, colle
                                      prep_data_btr, reindex_post, reindex_prep, reindex_recovery)
 
 
-def update_solr(docs: list[dict], data_name: str, extended=False, partial=False) -> int:
+def update_solr(docs: list[dict], data_name: str, partial=False) -> int:
     """Import data into solr."""
     current_app.logger.debug('Getting token for Import...')
     token = get_bearer_token()
@@ -44,8 +44,7 @@ def update_solr(docs: list[dict], data_name: str, extended=False, partial=False)
         # call bor-api import endpoint
         try:
             current_app.logger.debug('Importing batch...')
-            path = '/internal/solr/import/extended' if extended else '/internal/solr/import'
-            import_resp = requests.put(url=f'{api_url}{path}',
+            import_resp = requests.put(url=f'{api_url}/internal/solr/import',
                                        headers=headers,
                                        json={'entities': docs[offset:count],
                                              'timeout': '45',
@@ -138,7 +137,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                     current_app.logger.debug(f'{len(prepped_btr_data)} BTR records ready for import.')
 
                     current_app.logger.debug('********** Importing BTR entities **********')
-                    btr_count += update_solr(prepped_btr_data, 'BTR', True)
+                    btr_count += update_solr(prepped_btr_data, 'BTR')
                     current_app.logger.debug(f'BTR batch import completed. Records imported: {btr_count}.')
                     del btr_data, prepped_btr_data, batch_btr_id_links
 
@@ -189,14 +188,13 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 # execute update to solr in batches
                 current_app.logger.debug('********** Importing COLIN Entities **********')
                 corp_num_batch_count = update_solr(prepped_colin_data, 'COLIN')
-                update_solr(prepped_colin_data, 'COLIN', True)  # TODO: remove this once using same solr instance
                 current_app.logger.debug(
                     f'COLIN Corp Batch import completed. Entities imported: {corp_num_batch_count}.')
                 total_colin_count += corp_num_batch_count
                 current_app.logger.debug(f'Total COLIN entities imported so far: {total_colin_count}.')
 
                 current_app.logger.debug(f'COLIN partial entities ready for import: {len(partial_btr_updates)}')
-                colin_btr_update_count = update_solr(partial_btr_updates, 'COLIN-BTR Business Update', True, True)
+                colin_btr_update_count = update_solr(partial_btr_updates, 'COLIN-BTR Business Update', True)
                 current_app.logger.debug(f'COLIN partial entities imported: {colin_btr_update_count}')
 
                 # free up memory
@@ -227,7 +225,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             current_app.logger.debug(f'LEAR import completed. Total LEAR entities imported: {lear_count}')
 
             current_app.logger.debug(f'LEAR partial entities ready for import: {len(partial_btr_updates)}')
-            lear_btr_update_count = update_solr(partial_btr_updates, 'LEAR-BTR Business Update', True, True)
+            lear_btr_update_count = update_solr(partial_btr_updates, 'LEAR-BTR Business Update', True)
             current_app.logger.debug(f'LEAR partial entities imported: {lear_btr_update_count}')
 
             current_app.logger.debug(f'Total entities imported: {btr_count + total_colin_count + lear_count}')

@@ -341,6 +341,7 @@
   <field name="_root_" type="string" docValues="false" indexed="true" stored="false"/>
   <field name="_text_" type="text_general" multiValued="true" indexed="true" stored="false"/>
   <field name="_version_" type="plong" indexed="false" stored="false"/>
+
   <!-- base entity docs -->
   <field name="id" type="string" indexed="true" required="true" stored="true"/>
   <field name="alternateName" type="string" indexed="false" stored="true"/>
@@ -371,25 +372,26 @@
   <field name="nationalities" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="state" type="string" docValues="true" indexed="true" stored="true"/>
-  <!-- NOTE: stored="true" is required for these ones because these are not populated by copyfield and we update child docs atomically -->
+  <field name="taxNumber" type="string" indexed="false" stored="true"/>
+  <field name="taxNumber_q" type="single_word_ngram" indexed="true" stored="false"/>
+  <field name="taxResidencies" type="string" multiValued="true" indexed="false" stored="true"/>
+  <!-- NOTE: stored="true" is required for these ones because these are not populated by copyfield and we update partial docs atomically -->
   <field name="name_q" type="multi_word_ngram" indexed="true" stored="true"/>
   <field name="info_q" type="base_ngram" indexed="true" stored="true"/>
 
-  <field name="taxNumber" type="string" indexed="false" stored="true"/>
-  <field name="taxNumber_q" type="single_word_ngram" indexed="true" stored="false"/>
-
-  <field name="taxResidencies" type="string" multiValued="true" indexed="false" stored="true"/>
   <!-- child address docs -->
   <field name="addressType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="addressCity" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="addressCountry" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="addressRegion" type="string" docValues="true" indexed="true" stored="true"/>
-  <field name="address_q" type="multi_word_ngram" indexed="true" stored="false"/>
+  <!-- NOTE: stored="true" is required for address_q because it is not populated by copyfield and we update partial docs atomically -->
+  <field name="address_q" type="multi_word_ngram" indexed="true" stored="true"/>
   <field name="address_synonym_q" type="synonym_address" indexed="true" stored="false"/>
   <field name="locationDescription" type="string" indexed="false" stored="true"/>
   <field name="postalCode" type="string" indexed="false" stored="true"/>
   <field name="streetAddress" type="string" indexed="false" stored="true"/>
   <field name="streetAdditional" type="string" indexed="false" stored="true"/>
+
   <!-- child entity role docs -->
   <field name="related_q" type="multi_word_ngram" indexed="true" stored="false"/>
   <field name="relatedBN" type="string" indexed="false" stored="true"/>
@@ -409,10 +411,12 @@
   <field name="relatedState" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="roleDates" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="roleType" type="string" docValues="true" indexed="true" stored="true"/>
+
   <!-- child date range fields -->
   <field name="start" type="datetime" indexed="true" stored="true"/>
   <field name="end" type="datetime" indexed="true" stored="true"/>
   <field name="active" type="boolean" docValues="true" indexed="true" stored="true"/>
+
   <!-- child interest fields -->
   <field name="details" type="string" indexed="true" stored="true" docValues="true"/>
   <field name="otherReason" type="string" indexed="false" stored="true"/>
@@ -421,6 +425,7 @@
   <field name="sharesExact" type="pfloat" indexed="false" stored="true"/>
   <field name="sharesMax" type="pfloat" indexed="false" stored="true"/>
   <field name="sharesMin" type="pfloat" indexed="false" stored="true"/>
+
   <!-- auto generated dynamic fields -->
   <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight" indexed="true" stored="true"/>
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
@@ -460,6 +465,7 @@
   <dynamicField name="*_f" type="pfloat" indexed="true" stored="true"/>
   <dynamicField name="*_d" type="pdouble" indexed="true" stored="true"/>
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
+
   <!-- custom copy fields -->
   <!-- address -->
   <copyField source="address_q" dest="address_synonym_q"/>

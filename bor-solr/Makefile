@@ -5,6 +5,7 @@
 
 DOCKER_NAME_LEADER:=bor-solr-leader
 DOCKER_NAME_FOLLOWER:=bor-solr-follower
+DOCKER_NAME_LOCAL:=bor-solr-local
 
 #################################################################################
 # COMMANDS -- Setup                                                             #
@@ -12,10 +13,6 @@ DOCKER_NAME_FOLLOWER:=bor-solr-follower
 
 #################################################################################
 # COMMANDS - CD                                                                 #
-
-# expects the following provided:
-# export TAG_NAME=$TAG_NAME
-# export LEADER_URL=$LEADER_URL
 #################################################################################
 build: build-leader build-follower
 build-follower:
@@ -23,14 +20,24 @@ build-follower:
 	    --platform linux/amd64 \
 	    --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 	    --build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ") \
-			--build-arg CORE=bor_follower
+			--build-arg CORE=bor_follower \
+			--build-arg JVM_MEM=2g
 
 build-leader:
 	docker build . -t $(DOCKER_NAME_LEADER) \
 	    --platform linux/amd64 \
 	    --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 	    --build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ") \
-			--build-arg CORE=bor
+			--build-arg CORE=bor \
+			--build-arg JVM_MEM=12g
+
+build-local:
+	docker build . -t $(DOCKER_NAME_LOCAL) \
+	    --platform linux/amd64 \
+	    --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
+	    --build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ") \
+			--build-arg CORE=bor \
+			--build-arg JVM_MEM=512m
 
 #################################################################################
 # COMMANDS - Local                                                              #

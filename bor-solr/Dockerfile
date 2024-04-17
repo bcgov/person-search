@@ -5,10 +5,12 @@ ARG VCS_REF="missing"
 ARG BUILD_DATE="missing"
 ARG CORE="bor"
 ARG SOLR_OPTS_VAR='$SOLR_OPTS'
+ARG JVM_MEM="1g"
 
 ENV VCS_REF=${VCS_REF}
 ENV BUILD_DATE=${BUILD_DATE}
 ENV CORE=${CORE}
+ENV JVM_MEM=${JVM_MEM}
 
 LABEL org.label-schema.vcs-ref=${VCS_REF} \
     org.label-schema.build-date=${BUILD_DATE}
@@ -33,7 +35,7 @@ RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.disable.allowUrls=true\" >> /etc/defa
 # RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.leaderUrl=$LEADER_URL\" >> /etc/default/solr.in.sh
 
 # jvm memory
-RUN echo SOLR_JAVA_MEM=\"-Xms1024m -Xmx1024m\" >> /etc/default/solr.in.sh
+RUN echo SOLR_JAVA_MEM=\"-Xms$JVM_MEM -Xmx$JVM_MEM\" >> /etc/default/solr.in.sh
 
 RUN chmod -R 777 /var/solr/data
 RUN chmod -R 777 /opt/solr-9.2.1

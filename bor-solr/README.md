@@ -16,9 +16,8 @@ BC Beneficial Ownership Registry SOLR
 2. Run your solr containers
 
 - if first time or need to pickup new solr changes outside of /solr/bor directory:
-  - Set env: `export TAG_NAME=local`
-  - Build leader image: `make build-leader`
-  - Run leader image: `docker run -d -p 8883:8983 -v $PWD/solr/bor:/var/solr/data --name bor-solr-leader-local bor-solr-leader` (it will be available on port 8883)
+  - Build leader image: `make build-local`
+  - Run leader image: `docker run -d -p 8883:8983 -v $PWD/solr/bor:/var/solr/data --name bor-solr-leader-local bor-solr-local` (it will be available on port 8883)
   - Optional: setup follower node
     - Get leader IP: `docker inspect bor-solr-leader-local | grep IPAddress`
     - Use the docker IP to set the leader url: `export LEADER_URL=http://leader_IP:8883/solr/bor`

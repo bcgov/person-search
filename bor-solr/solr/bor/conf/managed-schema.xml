@@ -195,33 +195,19 @@
     </analyzer>
   </fieldType>
   <!-- custom field types -->
-  <fieldType name="email_ngram" class="solr.TextField">
+  <fieldType name="datetime" class="solr.DateRangeField"/>
+  <fieldType name="base_ngram" class="solr.TextField">
     <analyzer type="index">
-      <tokenizer name="keyword"/>
+      <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="nGram" maxGramSize="50" minGramSize="1"/>
     </analyzer>
     <analyzer type="query">
-      <tokenizer name="keyword"/>
+      <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
     </analyzer>
   </fieldType>
-  <fieldType name="datetime" class="solr.DateRangeField"/>
-  <!-- <fieldType name="phrase_basic" class="solr.TextField" positionIncrementGap="100">
-    <analyzer type="index">
-      <tokenizer name="keyword"/>
-      <filter name="lowercase"/>
-      <filter name="asciiFolding"/>
-      <filter name="classic"/>
-    </analyzer>
-    <analyzer type="query">
-      <tokenizer name="keyword"/>
-      <filter name="lowercase"/>
-      <filter name="asciiFolding"/>
-      <filter name="classic"/>
-    </analyzer>
-  </fieldType> -->
-  <fieldType name="phrase_ngram" class="solr.TextField">
+  <fieldType name="single_word_ngram" class="solr.TextField">
     <analyzer type="index">
       <tokenizer name="keyword"/>
       <filter name="lowercase"/>
@@ -233,6 +219,26 @@
       <tokenizer name="keyword"/>
       <filter name="lowercase"/>
       <filter name="wordDelimiterGraph" generateWordParts="0" splitOnNumerics="0" catenateAll="1" generateNumberParts="0"/>
+    </analyzer>
+  </fieldType>
+  <fieldType name="multi_word_ngram" class="solr.TextField">
+    <analyzer type="index">
+      <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
+      <tokenizer name="whitespace"/>
+      <filter name="lowercase"/>
+      <filter name="asciiFolding"/>
+      <filter name="classic"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
+      <filter name="flattenGraph"/>
+      <filter name="nGram" maxGramSize="15" minGramSize="1"/>
+    </analyzer>
+    <analyzer type="query">
+      <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
+      <tokenizer name="whitespace"/>
+      <filter name="lowercase"/>
+      <filter name="asciiFolding"/>
+      <filter name="classic"/>
+      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
     </analyzer>
   </fieldType>
   <fieldType name="synonym_address" class="solr.TextField">
@@ -265,26 +271,6 @@
     </analyzer>
     <analyzer type="query">
       <tokenizer name="standard"/>
-      <filter name="lowercase"/>
-      <filter name="asciiFolding"/>
-      <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
-    </analyzer>
-  </fieldType>
-  <fieldType name="text_ngram" class="solr.TextField">
-    <analyzer type="index">
-      <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
-      <tokenizer name="whitespace"/>
-      <filter name="lowercase"/>
-      <filter name="asciiFolding"/>
-      <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
-      <filter name="flattenGraph"/>
-      <filter name="nGram" maxGramSize="15" minGramSize="1"/>
-    </analyzer>
-    <analyzer type="query">
-      <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
-      <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
@@ -359,25 +345,25 @@
   <field name="id" type="string" indexed="true" required="true" stored="true"/>
   <field name="alternateName" type="string" indexed="false" stored="true"/>
   <field name="alternateName_q" type="text_stemmed" indexed="true" stored="false"/>
-  <field name="alternateName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="alternateName_single_term_q" type="multi_word_ngram" indexed="true" stored="false"/>
   <field name="alternateName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="alternateName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
   <field name="alternateName_xtra_q" type="text_classic" indexed="true" stored="false"/>
   <field name="birthDate" type="string" indexed="false" stored="true"/>
   <field name="bn" type="string" indexed="false" stored="true"/>
-  <field name="bn_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="bn_q" type="single_word_ngram" indexed="true" stored="false"/>
   <field name="deathDate" type="string" indexed="false" stored="true"/>
   <field name="email" type="string" indexed="false" stored="true"/>
-  <field name="email_q" type="email_ngram" indexed="true" stored="false"/>
+  <field name="email_q" type="base_ngram" indexed="true" stored="false"/>
   <field name="entityAddresses" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="entityType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="externalInfluence" type="string" indexed="false" stored="true"/>
   <field name="identifier" type="string" indexed="false" stored="true"/>
-  <field name="identifier_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="identifier_q" type="single_word_ngram" indexed="true" stored="false"/>
   <field name="isPermanentResident" type="boolean" indexed="false" stored="true"/>
   <field name="legalName" type="string" indexed="false" stored="true"/>
   <field name="legalName_q" type="text_stemmed" indexed="true" stored="false"/>
-  <field name="legalName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="legalName_single_term_q" type="multi_word_ngram" indexed="true" stored="false"/>
   <field name="legalName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="legalName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
   <field name="legalName_xtra_q" type="text_classic" indexed="true" stored="false"/>
@@ -385,11 +371,12 @@
   <field name="nationalities" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="state" type="string" docValues="true" indexed="true" stored="true"/>
-  <field name="name_q" type="text_ngram" indexed="true" stored="false"/>
-  <field name="info_q" type="email_ngram" indexed="true" stored="false"/>
+  <!-- NOTE: stored="true" is required for these ones because these are not populated by copyfield and we update child docs atomically -->
+  <field name="name_q" type="multi_word_ngram" indexed="true" stored="true"/>
+  <field name="info_q" type="base_ngram" indexed="true" stored="true"/>
 
   <field name="taxNumber" type="string" indexed="false" stored="true"/>
-  <field name="taxNumber_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="taxNumber_q" type="single_word_ngram" indexed="true" stored="false"/>
 
   <field name="taxResidencies" type="string" multiValued="true" indexed="false" stored="true"/>
   <!-- child address docs -->
@@ -397,26 +384,26 @@
   <field name="addressCity" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="addressCountry" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="addressRegion" type="string" docValues="true" indexed="true" stored="true"/>
-  <field name="address_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="address_q" type="multi_word_ngram" indexed="true" stored="false"/>
   <field name="address_synonym_q" type="synonym_address" indexed="true" stored="false"/>
   <field name="locationDescription" type="string" indexed="false" stored="true"/>
   <field name="postalCode" type="string" indexed="false" stored="true"/>
   <field name="streetAddress" type="string" indexed="false" stored="true"/>
   <field name="streetAdditional" type="string" indexed="false" stored="true"/>
   <!-- child entity role docs -->
-  <field name="related_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="related_q" type="multi_word_ngram" indexed="true" stored="false"/>
   <field name="relatedBN" type="string" indexed="false" stored="true"/>
-  <field name="relatedBN_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="relatedBN_q" type="single_word_ngram" indexed="true" stored="false"/>
   <field name="relatedEmail" type="string" indexed="false" stored="true"/>
-  <field name="relatedEmail_q" type="email_ngram" indexed="true" stored="false"/>
+  <field name="relatedEmail_q" type="base_ngram" indexed="true" stored="false"/>
   <field name="relatedEntityType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="relatedIdentifier" type="string" indexed="false" stored="true"/>
-  <field name="relatedIdentifier_q" type="phrase_ngram" indexed="true" stored="false"/>
+  <field name="relatedIdentifier_q" type="single_word_ngram" indexed="true" stored="false"/>
   <field name="relatedInterests" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="relatedLegalType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="relatedName" type="string" indexed="false" stored="true"/>
   <field name="relatedName_q" type="text_stemmed" indexed="true" stored="false"/>
-  <field name="relatedName_single_term_q" type="text_ngram" indexed="true" stored="false"/>
+  <field name="relatedName_single_term_q" type="multi_word_ngram" indexed="true" stored="false"/>
   <field name="relatedName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="relatedName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
   <field name="relatedState" type="string" docValues="true" indexed="true" stored="true"/>

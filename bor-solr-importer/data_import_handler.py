@@ -37,6 +37,8 @@ def update_solr(docs: list[dict], data_name: str, partial=False) -> int:
     count = 0
     offset = 0
     rows = current_app.config.get('BATCH_SIZE_SOLR', 1000)
+    if data_name == 'BTR':
+        rows = current_app.config.get('BATCH_SIZE_SOLR_SI', 1000)
     retry_count = 0
     while count < len(docs) and rows > 0 and len(docs) - offset > 0:
         batch_amount = int(min(rows, len(docs) - offset) / (retry_count + 1))
@@ -47,7 +49,7 @@ def update_solr(docs: list[dict], data_name: str, partial=False) -> int:
             import_resp = requests.put(url=f'{api_url}/internal/solr/import',
                                        headers=headers,
                                        json={'entities': docs[offset:count],
-                                             'timeout': '45',
+                                             'timeout': '60',
                                              'type': 'partial' if partial else 'full'},
                                        timeout=90)
 
@@ -68,8 +70,8 @@ def update_solr(docs: list[dict], data_name: str, partial=False) -> int:
                 current_app.logger.debug('Failed to update solr with batch. Trying again (%s of 5)...', retry_count + 1)
                 retry_count += 1
                 # await some time before trying again
-                current_app.logger.debug('Awaiting %s seconds before trying again...', 5 * retry_count)
-                time.sleep(5 * retry_count)
+                current_app.logger.debug('Awaiting %s seconds before trying again...', 20 * retry_count)
+                time.sleep(20 * retry_count)
                 # set count back
                 count -= batch_amount
                 continue
@@ -92,7 +94,7 @@ def update_solr(docs: list[dict], data_name: str, partial=False) -> int:
                 current_app.logger.error('Retry count exceeded for batch.')
                 raise SolrException('Retry count exceeded for updating SOLR. Aborting import.')
         offset = count
-        current_app.logger.debug(f'Total {data_name} doc records imported: {count}')
+        current_app.logger.debug(f'Total batch {data_name} doc records imported: {count}')
     return count
 
 
@@ -221,7 +223,6 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             # execute update to solr in batches
             current_app.logger.debug('---------- Importing LEAR entities ----------')
             lear_count = update_solr(prepped_lear_data, 'LEAR')
-            update_solr(prepped_lear_data, 'LEAR', True)  # TODO: remove this once using same solr instance for both
             current_app.logger.debug(f'LEAR import completed. Total LEAR entities imported: {lear_count}')
 
             current_app.logger.debug(f'LEAR partial entities ready for import: {len(partial_btr_updates)}')

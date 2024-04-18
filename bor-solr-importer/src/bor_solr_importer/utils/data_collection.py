@@ -163,6 +163,9 @@ def collect_btr_data(limit: int = None, offset: int = None):
         limit_clause = f'LIMIT {limit}'
     if offset:
         limit_clause += f' OFFSET {offset}'
+    if limit_clause:
+        # NOTE: needed in order to make sure we get every record when doing batch loads
+        limit_clause = f'ORDER BY id {limit_clause}'
 
     debug_clause = ''
     if debug_identfiers := current_app.config.get('DEBUG_IDENTIFIERS', []):

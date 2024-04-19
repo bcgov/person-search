@@ -60,6 +60,7 @@ class Config():  # pylint: disable=too-few-public-methods
     REINDEX_CORE = os.getenv('REINDEX_CORE', 'False') == 'True'
     PRELOADER_JOB = os.getenv('PRELOADER_JOB', 'False') == 'True'
     INCLUDE_BTR_LOAD = os.getenv('INCLUDE_BTR_LOAD', 'False') == 'True'
+    INCLUDE_COLIN_LOAD = os.getenv('INCLUDE_COLIN_LOAD', 'True') == 'True'
     RESYNC_OFFSET = os.getenv('RESYNC_OFFSET', '130')
 
     BTR_BATCH_LIMIT = int(os.getenv('BTR_BATCH_LIMIT', '100000'))

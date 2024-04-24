@@ -198,6 +198,7 @@
   <fieldType name="datetime" class="solr.DateRangeField"/>
   <fieldType name="base_ngram" class="solr.TextField">
     <analyzer type="index">
+      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="nGram" maxGramSize="50" minGramSize="1"/>
@@ -213,7 +214,7 @@
       <filter name="lowercase"/>
       <filter name="wordDelimiterGraph" generateWordParts="0" splitOnNumerics="0" catenateAll="1" generateNumberParts="0"/>
       <filter name="flattenGraph"/>
-      <filter name="nGram" maxGramSize="15" minGramSize="1"/>
+      <filter name="nGram" maxGramSize="30" minGramSize="1"/>
     </analyzer>
     <analyzer type="query">
       <tokenizer name="keyword"/>
@@ -223,14 +224,13 @@
   </fieldType>
   <fieldType name="multi_word_ngram" class="solr.TextField">
     <analyzer type="index">
+      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
-      <filter name="flattenGraph"/>
-      <filter name="nGram" maxGramSize="15" minGramSize="1"/>
+      <filter name="nGram" maxGramSize="30" minGramSize="1"/>
     </analyzer>
     <analyzer type="query">
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
@@ -238,54 +238,47 @@
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
     </analyzer>
   </fieldType>
   <fieldType name="synonym_address" class="solr.TextField">
     <analyzer type="index">
-      <tokenizer name="standard"/>
+      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
+      <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="managedSynonymGraph" managed="ADDRESS"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
-      <filter name="flattenGraph"/>
     </analyzer>
     <analyzer type="query">
-      <tokenizer name="standard"/>
+      <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
     </analyzer>
   </fieldType>
   <fieldType name="synonym_name" class="solr.TextField">
     <analyzer type="index">
-      <tokenizer name="standard"/>
+      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
+      <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="managedSynonymGraph" managed="NAME"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
-      <filter name="flattenGraph"/>
     </analyzer>
     <analyzer type="query">
-      <tokenizer name="standard"/>
+      <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
-      <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
     </analyzer>
   </fieldType>
   <fieldType name="text_stemmed" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
+      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
-      <filter name="flattenGraph"/>
       <filter name="englishMinimalStem"/>
     </analyzer>
     <analyzer type="query">
@@ -294,19 +287,17 @@
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
       <filter name="englishMinimalStem"/>
     </analyzer>
   </fieldType>
   <fieldType name="text_stemmed_agro" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
+      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
-      <filter name="flattenGraph"/>
       <filter name="porterStem"/>
     </analyzer>
     <analyzer type="query">
@@ -315,17 +306,16 @@
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
       <filter name="classic"/>
-      <filter name="wordDelimiterGraph" splitOnNumerics="0"/>
       <filter name="porterStem"/>
     </analyzer>
   </fieldType>
-  <fieldType name="text_classic" class="solr.TextField" positionIncrementGap="100">
+  <fieldType name="text_extra" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
+      <charFilter name="patternReplace" pattern="([()^{}\|.])" replacement=""/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
-      <tokenizer name="classic"/>
+      <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="asciiFolding"/>
-      <filter name="classic"/>
     </analyzer>
     <analyzer type="query">
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
@@ -349,7 +339,7 @@
   <field name="alternateName_single_term_q" type="multi_word_ngram" indexed="true" stored="false"/>
   <field name="alternateName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="alternateName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
-  <field name="alternateName_xtra_q" type="text_classic" indexed="true" stored="false"/>
+  <field name="alternateName_xtra_q" type="text_extra" indexed="true" stored="false"/>
   <field name="birthDate" type="string" indexed="false" stored="true"/>
   <field name="bn" type="string" indexed="false" stored="true"/>
   <field name="bn_q" type="single_word_ngram" indexed="true" stored="false"/>
@@ -367,7 +357,7 @@
   <field name="legalName_single_term_q" type="multi_word_ngram" indexed="true" stored="false"/>
   <field name="legalName_stem_agro_q" type="text_stemmed_agro" indexed="true" stored="false"/>
   <field name="legalName_synonym_q" type="synonym_name" indexed="true" stored="false"/>
-  <field name="legalName_xtra_q" type="text_classic" indexed="true" stored="false"/>
+  <field name="legalName_xtra_q" type="text_extra" indexed="true" stored="false"/>
   <field name="legalType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="nationalities" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>

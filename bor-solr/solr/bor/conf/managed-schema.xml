@@ -383,7 +383,7 @@
   <field name="streetAdditional" type="string" indexed="false" stored="true"/>
 
   <!-- child entity role docs -->
-  <field name="related_q" type="multi_word_ngram" indexed="true" stored="false"/>
+  <field name="related_q" type="multi_word_ngram" indexed="true" stored="true"/>
   <field name="relatedBN" type="string" indexed="false" stored="true"/>
   <field name="relatedBN_q" type="single_word_ngram" indexed="true" stored="false"/>
   <field name="relatedEmail" type="string" indexed="false" stored="true"/>

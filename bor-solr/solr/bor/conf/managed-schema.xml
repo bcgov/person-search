@@ -378,12 +378,14 @@
   <field name="address_q" type="multi_word_ngram" indexed="true" stored="true"/>
   <field name="address_synonym_q" type="synonym_address" indexed="true" stored="false"/>
   <field name="locationDescription" type="string" indexed="false" stored="true"/>
+  <field name="parentDoc" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="postalCode" type="string" indexed="false" stored="true"/>
   <field name="streetAddress" type="string" indexed="false" stored="true"/>
   <field name="streetAdditional" type="string" indexed="false" stored="true"/>
 
   <!-- child entity role docs -->
   <field name="related_q" type="multi_word_ngram" indexed="true" stored="true"/>
+  <field name="relatedAddresses" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="relatedBN" type="string" indexed="false" stored="true"/>
   <field name="relatedBN_q" type="single_word_ngram" indexed="true" stored="false"/>
   <field name="relatedEmail" type="string" indexed="false" stored="true"/>

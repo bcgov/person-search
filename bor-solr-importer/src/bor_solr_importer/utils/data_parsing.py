@@ -331,8 +331,10 @@ def get_entities(prepped_data: dict[str, Entity]) -> list[dict]:
         #     missing_data['appointment_date'].append(entity)
         # add 1 entity per role in (UI doesn't handle multiple roles per entity yet)
         for index, role in enumerate(entity.roles):
+            entity_id = entity.id + str(index)
+            role.id = f'{entity_id}/roles0'
             single_role_entity = Entity(
-                id=entity.id + str(index),
+                id=entity_id,
                 entityAddresses=entity.entityAddresses,
                 entityType=entity.entityType,
                 legalName=entity.legalName,

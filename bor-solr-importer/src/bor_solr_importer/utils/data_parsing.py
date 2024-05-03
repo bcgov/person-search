@@ -114,7 +114,7 @@ def get_address(item_dict: dict[str, str], is_party_address: bool, is_mail: bool
                    addressRegion=(item_dict[region] or '').strip() or None,
                    postalCode=(item_dict[postal] or '').strip() or None,
                    streetAddress=street_address.strip() or None,
-                   locationDescription=(item_dict[location_desc] or '').strip() or None)
+                   locationDescription=(item_dict.get(location_desc) or '').strip() or None)
 
 
 def needs_bc_prefix(identifier: str, legal_type: str) -> bool:

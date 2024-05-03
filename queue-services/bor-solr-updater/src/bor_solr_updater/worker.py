@@ -115,7 +115,11 @@ async def process_business_event(event_message: Dict[str, any]):  # pylint: disa
 
     # update solr via search-api
     try:
-        update_payload = {**business_resp.json(), 'businessAddresses': address_resp.json(), 'parties': parties}
+        update_payload = {**business_resp.json(), 'parties': parties}
+        # if business has a registered office with a deliverty address then add it to the business data
+        if ro_delivery_address := address_resp.json().get('registeredOffice', {}).get('deliveryAddress'):
+            update_payload['business']['addresses'] = [ro_delivery_address]
+
         solr_update_url = f'{APP_CONFIG.BOR_API_URL}/internal/solr/update'
         update_resp = requests.put(url=solr_update_url,
                                    headers=headers,

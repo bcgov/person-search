@@ -22,6 +22,12 @@ or by accessing this configuration directly.
 import os
 import random
 
+from dotenv import find_dotenv, load_dotenv
+
+
+# this will load all the envars from a .env file located in the project root (needed for local run)
+load_dotenv(find_dotenv())
+
 
 CONFIGURATION = {
     'development': 'bor_solr_updater.config.DevConfig',

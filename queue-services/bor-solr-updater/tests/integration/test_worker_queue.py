@@ -228,8 +228,12 @@ async def test_events_listener_queue(config, events_stan):
         assert m.request_history[3].url == addresses_url
         assert m.request_history[4].url == search_url
         update_payload = m.last_request.json()
-        assert update_payload['business'] == business_json['business']
-        assert update_payload['businessAddresses'] == addresses_json
-        # parties will not include orgs and will have an added 'source' value of LEAR
-        parties_without_orgs = [{**x, 'source': 'LEAR'} for x in parties_json['parties'] if x['officer']['partyType'] == 'person']
-        assert update_payload['parties'] == parties_without_orgs
+        person_parties = [{**x, 'source': 'LEAR'} for x in parties_json['parties'] if x['officer']['partyType'] == 'person']
+        expected_output = {
+            'business': {
+                'addresses': [addresses_json['registeredOffice']['deliveryAddress']],
+                **business_json['business']
+            },
+            'parties': person_parties
+        }
+        assert update_payload == expected_output

@@ -105,6 +105,7 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
         is_preload = current_app.config.get('PRELOADER_JOB')
         include_btr_load = current_app.config.get('INCLUDE_BTR_LOAD')
         include_colin_load = current_app.config.get('INCLUDE_COLIN_LOAD')
+        include_lear_load = current_app.config.get('INCLUDE_LEAR_LOAD')
 
         if is_reindex and current_app.config.get('IS_PARTIAL_IMPORT'):
             current_app.logger.error('Attempted reindex on partial data set.')
@@ -212,25 +213,29 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
 
                 current_app.logger.debug(f'COLIN import completed. Total COLIN entities imported: {total_colin_count}.')
 
-            current_app.logger.debug('---------- Collecting LEAR Entities ----------')
-            lear_data_cur = collect_lear_data()
-            lear_data = lear_data_cur.fetchall()
+            lear_count = 0
+            if include_lear_load:
+                current_app.logger.debug('---------- Collecting LEAR Entities ----------')
+                lear_data_cur = collect_lear_data()
+                lear_data = lear_data_cur.fetchall()
 
-            current_app.logger.debug('---------- Mapping LEAR data ----------')
-            prepped_lear_data, partial_btr_updates = prep_data(lear_data,
-                                                               [desc[0].lower() for desc in lear_data_cur.description],
-                                                               'LEAR',
-                                                               btr_id_links)
-            current_app.logger.debug(f'{len(prepped_lear_data)} LEAR records ready for import.')
+                current_app.logger.debug('---------- Mapping LEAR data ----------')
+                prepped_lear_data, partial_btr_updates = prep_data(
+                    data=lear_data,
+                    data_descs=[desc[0].lower() for desc in lear_data_cur.description],
+                    source='LEAR',
+                    btr_id_links=btr_id_links
+                )
+                current_app.logger.debug(f'{len(prepped_lear_data)} LEAR records ready for import.')
 
-            # execute update to solr in batches
-            current_app.logger.debug('---------- Importing LEAR entities ----------')
-            lear_count = update_solr(prepped_lear_data, 'LEAR')
-            current_app.logger.debug(f'LEAR import completed. Total LEAR entities imported: {lear_count}')
+                # execute update to solr in batches
+                current_app.logger.debug('---------- Importing LEAR entities ----------')
+                lear_count = update_solr(prepped_lear_data, 'LEAR')
+                current_app.logger.debug(f'LEAR import completed. Total LEAR entities imported: {lear_count}')
 
-            current_app.logger.debug(f'LEAR partial entities ready for import: {len(partial_btr_updates)}')
-            lear_btr_update_count = update_solr(partial_btr_updates, 'LEAR-BTR Business Update', True)
-            current_app.logger.debug(f'LEAR partial entities imported: {lear_btr_update_count}')
+                current_app.logger.debug(f'LEAR partial entities ready for import: {len(partial_btr_updates)}')
+                lear_btr_update_count = update_solr(partial_btr_updates, 'LEAR-BTR Business Update', True)
+                current_app.logger.debug(f'LEAR partial entities imported: {lear_btr_update_count}')
 
             current_app.logger.debug(f'Total entities imported: {total_btr_count + total_colin_count + lear_count}')
         except Exception as err:  # noqa: B902
@@ -259,13 +264,13 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
         except Exception as error:  # noqa: B902
             current_app.logger.debug(error.with_traceback(None))
             current_app.logger.error('Resync failed.')
-        
+
         try:
             current_app.logger.debug('---------- Final Commit ----------')
             current_app.logger.debug('Triggering final commit on leader to make changes visible to search...')
             update_solr([prepped_lear_data[-1]], 'LEAR')
             current_app.logger.debug('Final commit complete.')
-            
+
         except Exception as error:  # noqa: B902
             current_app.logger.debug(error.with_traceback(None))
             current_app.logger.error('Final commit failed. (This will only effect DEV).')

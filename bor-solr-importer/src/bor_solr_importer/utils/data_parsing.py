@@ -62,6 +62,7 @@ def get_address(item_dict: dict[str, str], is_party_address: bool, is_mail: bool
     street = f'{prefix}street'
     street_add = f'{prefix}street_additional'
     street_add_3 = f'{prefix}addr_line_3'
+    location_desc = f'{prefix}delivery_instructions'
 
     unit_type = f'{prefix}unit_type'
     unit_no = f'{prefix}unit_no'
@@ -108,11 +109,12 @@ def get_address(item_dict: dict[str, str], is_party_address: bool, is_mail: bool
         street_address = ' '.join([x.strip() for x in street_elements])
 
     return Address(addressType='MAILING' if is_mail else 'DELIVERY',
-                   addressCity=(item_dict[city] or '').strip(),
-                   addressCountry=(item_dict[country] or '').strip(),
-                   addressRegion=(item_dict[region] or '').strip(),
-                   postalCode=(item_dict[postal] or '').strip(),
-                   streetAddress=street_address.strip())
+                   addressCity=(item_dict[city] or '').strip() or None,
+                   addressCountry=(item_dict[country] or '').strip() or None,
+                   addressRegion=(item_dict[region] or '').strip() or None,
+                   postalCode=(item_dict[postal] or '').strip() or None,
+                   streetAddress=street_address.strip() or None,
+                   locationDescription=(item_dict[location_desc] or '').strip() or None)
 
 
 def needs_bc_prefix(identifier: str, legal_type: str) -> bool:
@@ -122,29 +124,47 @@ def needs_bc_prefix(identifier: str, legal_type: str) -> bool:
     return legal_type in ['BEN', 'BC', 'CC', 'ULC'] and re.search(numbers_only_rgx, identifier)
 
 
-def set_business_entity(item_dict: dict[str, str], prepped_data: dict[str, Entity]):
+def get_business_entity(item_dict: dict[str, str]) -> Entity:
     """Set the business entity in the prepped data."""
-    if not item_dict['identifier'] in prepped_data:
-        # add entity doc with address
-        prepped_data[item_dict['identifier']] = Entity(entityAddresses=[],
-                                                       entityType='BUSINESS',
-                                                       id=item_dict['identifier'].strip(),
-                                                       identifier=item_dict['identifier'].strip(),
-                                                       legalName=item_dict['legal_name'].strip(),
-                                                       legalType=item_dict['legal_type'].strip(),
-                                                       state=item_dict['state'].strip(),
-                                                       bn=item_dict.get('tax_id'),
-                                                       email=item_dict.get('admin_email'))
+    business_address = get_address(item_dict, False, False)
+    return Entity(entityAddresses=[business_address] if business_address.address_q else None,
+                  entityType='BUSINESS',
+                  id=item_dict['identifier'].strip(),
+                  identifier=item_dict['identifier'].strip(),
+                  legalName=item_dict['legal_name'].strip(),
+                  legalType=item_dict['legal_type'].strip(),
+                  state=item_dict['state'].strip(),
+                  bn=item_dict.get('tax_id'),
+                  email=item_dict.get('admin_email'))
 
-    elif not prepped_data[item_dict['identifier']].identifier:
-        # if business was added as a party then it won't have the identifier, legal_type, state, or bn set
-        prepped_data[item_dict['identifier']].identifier = item_dict['identifier'].strip()
-        prepped_data[item_dict['identifier']].legalType = item_dict['legal_type'].strip()
-        prepped_data[item_dict['identifier']].state = item_dict['state'].strip()
-        prepped_data[item_dict['identifier']].bn = item_dict.get('tax_id')
+
+def get_entity_role(item_dict: dict[str, str], party_id: str, business: Entity) -> EntityRole:
+    """Get the entity role for the given data."""
+    role_date_range = DateRange(start=None, end=None)
+    # NOTE: removes tzinfo due to incorrect time values stored in db
+    if appointment_date := item_dict['appointment_date']:
+        role_date_range.start = datetime.isoformat(appointment_date,
+                                                   timespec='seconds').replace('+00:00', '')
+    if cessation_date := item_dict.get('cessation_date', None):
+        role_date_range.end = datetime.isoformat(cessation_date,
+                                                 timespec='seconds').replace('+00:00', '')
+        role_date_range.active = False
+
+    return EntityRole(id=party_id + '/roles0',
+                      relatedAddresses=business.entityAddresses,
+                      relatedBN=business.bn,
+                      relatedEmail=business.email,
+                      relatedEntityType=business.entityType,
+                      relatedIdentifier=business.identifier,
+                      relatedLegalType=business.legalType,
+                      relatedName=business.legalName,
+                      relatedState=business.state,
+                      roleDates=[role_date_range],
+                      roleType=item_dict['role'])
 
 
 def set_party_entity(item_dict: dict[str, str],
+                     business: Entity,
                      prepped_data: dict[str, Entity],
                      source: str,
                      is_debug_identifier=False) -> Entity:
@@ -170,30 +190,11 @@ def set_party_entity(item_dict: dict[str, str],
         return None
 
     # set party role
-    role_date_range = DateRange(start=None, end=None)
-    # NOTE: removes tzinfo due to incorrect time values stored in db
-    if appointment_date := item_dict['appointment_date']:
-        role_date_range.start = datetime.isoformat(appointment_date,
-                                                   timespec='seconds').replace('+00:00', '')
-    if cessation_date := item_dict.get('cessation_date', None):
-        role_date_range.end = datetime.isoformat(cessation_date,
-                                                 timespec='seconds').replace('+00:00', '')
-        role_date_range.active = False
-
     party_id = item_dict.get('party_identifier') \
         or f"{source}{item_dict['party_id']}{item_dict['identifier']}" \
            f"{item_dict['role'].replace(' ', '_')}".upper()
 
-    party_role = EntityRole(id=party_id + '/roles0',
-                            relatedBN=item_dict['tax_id'],
-                            relatedEmail=item_dict.get('admin_email'),
-                            relatedEntityType='BUSINESS',
-                            relatedIdentifier=item_dict['identifier'],
-                            relatedLegalType=item_dict['legal_type'],
-                            relatedName=item_dict['legal_name'],
-                            relatedState=item_dict['state'],
-                            roleDates=[role_date_range],
-                            roleType=item_dict['role'])
+    party_role = get_entity_role(item_dict, party_id, business)
 
     # check if entity record already there (should not be as we are adding 1 record per role)
     party_already_added = party_id in prepped_data
@@ -374,28 +375,8 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals
         if is_debug_identifier:
             current_app.logger.debug(f'item_dict: {item_dict}')
 
-        # add partial business update to BTR SI record if applicable
-        if (identifier := item_dict['identifier']) in btr_id_links:  # pylint: disable=superfluous-parens
-            for btr_id in btr_id_links[identifier]:
-                # add the business info to a partial role doc
-                partial_btr_updates.append({
-                    '_root_': btr_id,
-                    'id': btr_id + identifier + 'SIGNIFICANT_INDIVIDUAL',
-                    'relatedBN': {'set': item_dict['tax_id']},
-                    'relatedEmail': {'set': item_dict.get('admin_email')},
-                    'relatedLegalType': {'set': item_dict['legal_type']},
-                    'relatedName': {'set': item_dict['legal_name']},
-                    'relatedState': {'set': item_dict['state']}
-                })
-
-            del btr_id_links[identifier]
-
-        if is_debug_identifier:
-            current_app.logger.debug(f'partial_btr_updates: {partial_btr_updates}')
-
-        # NB: for now business entities aren't needed in director search
-        # set_business_entity(item_dict, prepped_data)
-        party_entity = set_party_entity(item_dict, prepped_data, source, is_debug_identifier)
+        business_entity = get_business_entity(item_dict)
+        party_entity = set_party_entity(item_dict, business_entity, prepped_data, source, is_debug_identifier)
 
         if is_debug_identifier:
             current_app.logger.debug(f'item_dict: {item_dict}')
@@ -422,6 +403,27 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals
             if filing_date := item_dict.get('effective_dt', None) or item_dict.get('event_timestmp', None):
                 party_entity.roles[0].roleDates[0].start = datetime.isoformat(filing_date,
                                                                               timespec='seconds').replace('+00:00', 'Z')
+
+        # add partial business update to BTR SI record if applicable
+        if (identifier := item_dict['identifier']) in btr_id_links:  # pylint: disable=superfluous-parens
+            for btr_id in btr_id_links[identifier]:
+                related_entity = asdict(business_entity)
+                # add the business info to a partial role doc
+                partial_btr_updates.append({
+                    '_root_': btr_id,
+                    'id': btr_id + identifier + 'SIGNIFICANT_INDIVIDUAL',
+                    'relatedAddresses': {'set': related_entity.get('entityAddresses')},
+                    'relatedBN': {'set': related_entity.get('bn')},
+                    'relatedEmail': {'set': related_entity.get('email')},
+                    'relatedLegalType': {'set': related_entity.get('legalType')},
+                    'relatedName': {'set': related_entity.get('legalName')},
+                    'relatedState': {'set': related_entity.get('state')}
+                })
+
+            del btr_id_links[identifier]
+
+        if is_debug_identifier:
+            current_app.logger.debug(f'partial_btr_updates: {partial_btr_updates}')
 
     if source == 'COLIN':
         party_cleanup(prepped_data, parent_link)

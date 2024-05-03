@@ -58,6 +58,10 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
             cpam.route_service_no as party_mail_route_service_no,
             cpam.installation_type as party_mail_installation_type,
             cpam.installation_name as party_mail_installation_name,
+            a.province as region, a.country_typ_cd as country, a.city, a.postal_cd as postal_code,
+            a.addr_line_1 as street, a.addr_line_2 as street_additional, a.addr_line_3, a.unit_type, a.unit_no,
+            a.civic_no, a.civic_no_suffix, a.street_name, a.street_type, a.street_direction, a.address_format_type,
+            a.route_service_type, a.lock_box_no, a.route_service_no, a.installation_type, a.installation_name,
             CASE cos.op_state_typ_cd
                 when 'ACT' then 'ACTIVE' when 'HIS' then 'HISTORICAL'
                 else 'ACTIVE' END as state
@@ -71,12 +75,16 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
         left join filing cpef on cpef.event_id = cp.start_event_id
         left join address cpa on cpa.addr_id = cp.delivery_addr_id
         left join address cpam on cpam.addr_id = cp.mailing_addr_id
+        left join office o on o.corp_num = c.corp_num
+        left join address a on a.addr_id = o.delivery_addr_id
         WHERE c.corp_typ_cd not in ('BEN','CP','GP','SP')
             and cs.end_event_id is null
             and cn.end_event_id is null
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
             and c.corp_num >= :offset_corp_num
+            and o.office_typ_cd = 'RG'
+            and o.end_event_id is null
             {max_corp_num_clause}
             {debug_clause}
         """, offset_corp_num=corp_num_min)
@@ -109,14 +117,19 @@ def collect_lear_data():
             p.id as party_id,p.identifier as party_identifier,
             p_a.street as party_street,p_a.street_additional as party_street_additional,
             p_a.city as party_city,p_a.country as party_country,p_a.region as party_region,
-            p_a.postal_code as party_postal_code,
+            p_a.postal_code as party_postal_code, p_a.delivery_instructions as party_delivery_instructions,
+            a.street,a.street_additional,a.city,a.country,a.region,a.postal_code,a.delivery_instructions,
             CASE when b.state = 'LIQUIDATION' then 'ACTIVE' else b.state END state
         FROM businesses b
             JOIN party_roles pr on pr.business_id = b.id
             JOIN parties p on p.id = pr.party_id
             LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
+            LEFT JOIN offices o ON o.business_id = b.id
+            LEFT JOIN addresses a ON a.office_id = o.id
         WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
             AND pr.role != ''
+            AND o.office_type in ('registeredOffice')
+            AND a.address_type='delivery'
             {debug_clause}
         """)
     return cur

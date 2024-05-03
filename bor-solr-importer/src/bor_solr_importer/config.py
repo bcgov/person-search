@@ -61,6 +61,7 @@ class Config():  # pylint: disable=too-few-public-methods
     PRELOADER_JOB = os.getenv('PRELOADER_JOB', 'False') == 'True'
     INCLUDE_BTR_LOAD = os.getenv('INCLUDE_BTR_LOAD', 'False') == 'True'
     INCLUDE_COLIN_LOAD = os.getenv('INCLUDE_COLIN_LOAD', 'True') == 'True'
+    INCLUDE_LEAR_LOAD = os.getenv('INCLUDE_LEAR_LOAD', 'True') == 'True'
     RESYNC_OFFSET = os.getenv('RESYNC_OFFSET', '130')
 
     BTR_BATCH_LIMIT = int(os.getenv('BTR_BATCH_LIMIT', '100000'))
@@ -72,7 +73,8 @@ class Config():  # pylint: disable=too-few-public-methods
     if DEBUG_IDENTIFIERS:
         DEBUG_IDENTIFIERS = DEBUG_IDENTIFIERS.split(',')
 
-    IS_PARTIAL_IMPORT = DEBUG_IDENTIFIERS or CORP_NUM_LIMITS_START != 0 or CORP_NUM_LIMITS_END != 10
+    IS_PARTIAL_IMPORT = DEBUG_IDENTIFIERS or CORP_NUM_LIMITS_START != 0 or CORP_NUM_LIMITS_END != 10 \
+        or not INCLUDE_COLIN_LOAD or not INCLUDE_LEAR_LOAD
 
     # ORACLE - CDEV/CTST/CPRD
     ORACLE_USER = os.getenv('ORACLE_USER', '')

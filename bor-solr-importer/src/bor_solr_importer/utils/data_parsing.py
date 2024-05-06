@@ -327,25 +327,17 @@ def get_entities(prepped_data: dict[str, Entity]) -> list[dict]:
         entity = prepped_data[identifier_key]
         if entity.entityAddresses and not entity.entityAddresses[0].address_q:
             missing_data['address'].append(entity)
-        # elif entity.roles and not entity.roles[0].roleDates[0].start:
-        #     missing_data['appointment_date'].append(entity)
-        # add 1 entity per role in (UI doesn't handle multiple roles per entity yet)
-        for index, role in enumerate(entity.roles):
-            entity_id = entity.id + str(index)
-            role.id = f'{entity_id}/roles0'
-            single_role_entity = Entity(
-                id=entity_id,
-                entityAddresses=entity.entityAddresses,
-                entityType=entity.entityType,
-                legalName=entity.legalName,
-                bn=entity.bn,
-                email=entity.email,
-                identifier=entity.identifier,
-                legalType=entity.legalType,
-                roles=[role],
-                state=entity.state
-            )
-            entities.append(asdict(single_role_entity))
+
+        # update the entity to have one role with extra date ranges instead of multiple roles
+        # NOTE: entity.id = internal id + corp num + role type, so all 'multi roles' are actually 'multi dates'
+        combined_role_dates: DateRange = []
+        for role in entity.roles:
+            combined_role_dates += role.roleDates
+        # set single role
+        entity.roles[0].roleDates = combined_role_dates
+        entity.roles = [entity.roles[0]]
+        # add updated entity
+        entities.append(asdict(entity))
 
     current_app.logger.debug(f"entities with missing address: {len(missing_data['address'])}")
     # current_app.logger.debug(f"entities with missing appointment date: {len(missing_data['appointment_date'])}")

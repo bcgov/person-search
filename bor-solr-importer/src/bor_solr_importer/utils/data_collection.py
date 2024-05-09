@@ -75,7 +75,7 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
         left join filing cpef on cpef.event_id = cp.start_event_id
         left join address cpa on cpa.addr_id = cp.delivery_addr_id
         left join address cpam on cpam.addr_id = cp.mailing_addr_id
-        left join office o on o.corp_num = c.corp_num
+        left join office o on o.corp_num = c.corp_num and o.office_typ_cd = 'RG' and o.end_event_id is null
         left join address a on a.addr_id = o.delivery_addr_id
         WHERE c.corp_typ_cd not in ('BEN','CP','GP','SP')
             and cs.end_event_id is null
@@ -83,8 +83,6 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
             and cn.corp_name_typ_cd in ('CO', 'NB')
             and cp.party_typ_cd not in ('PAS','PDI','PSA','RAD','RAF','RAO','RAS','TAP','TAA','TSP')
             and c.corp_num >= :offset_corp_num
-            and o.office_typ_cd = 'RG'
-            and o.end_event_id is null
             {max_corp_num_clause}
             {debug_clause}
         """, offset_corp_num=corp_num_min)
@@ -124,12 +122,10 @@ def collect_lear_data():
             JOIN party_roles pr on pr.business_id = b.id
             JOIN parties p on p.id = pr.party_id
             LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
-            LEFT JOIN offices o ON o.business_id = b.id
-            LEFT JOIN addresses a ON a.office_id = o.id
+            LEFT JOIN offices o ON o.business_id = b.id AND o.office_type in ('registeredOffice')
+            LEFT JOIN addresses a ON a.office_id = o.id AND a.address_type='delivery'
         WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
             AND pr.role != ''
-            AND o.office_type in ('registeredOffice')
-            AND a.address_type='delivery'
             {debug_clause}
         """)
     return cur

@@ -220,12 +220,13 @@ def set_party_entity(item_dict: dict[str, str],
         prepped_data[party_id] = party_entity
 
     if is_debug_identifier:
-        current_app.logger.debug(f'party_role: {party_role}')
         current_app.logger.debug(f'party_id: {party_id}')
         current_app.logger.debug(f'party_already_added: {party_already_added}')
         current_app.logger.debug(f'has_party: {has_party}')
-        current_app.logger.debug(f'is_party: {is_party}')
-        current_app.logger.debug(f'party_entity: {party_entity}')
+        current_app.logger.debug(f'party_role: {party_role}')
+        if 'is_party' in locals() and 'party_entity' in locals():
+            current_app.logger.debug(f'is_party: {is_party}')
+            current_app.logger.debug(f'party_entity: {party_entity}')
 
     return prepped_data.get(party_id, None)
 
@@ -263,10 +264,17 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
                        start_event_id: str,
                        is_debug_identifier=False):
     """Update/Create links between current party record and original party record."""
+    if is_debug_identifier:
+        current_app.logger.debug('_____________update_party_links_____________')
+        current_app.logger.debug(f'child_link: {child_link.get(corp_num)}')
+        current_app.logger.debug(f'parent_link: {parent_link.get(corp_num)}')
+        current_app.logger.debug(f'new_id: {new_id}')
+        current_app.logger.debug(f'event_link: {event_link}')
     # NOTE: could get multiple records out of order
     parent_id = new_id
     child_id = prev_id
     if corp_num in child_link:
+        # corp num has existing child links
         if prev_id in child_link[corp_num]:
             # two records had the same prev_id (data issue?)
             if prev_id not in dupes:
@@ -285,8 +293,10 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
             # remove dupe values (it is a middle record)
             del child_link[corp_num][prev_id]
             del parent_link[corp_num][dupe_parent_id]
-            del prepped_data[dupe_parent_id]
             del event_link[dupe_parent_id]
+            if dupe_parent_id in prepped_data.keys():
+                # could've already been deleted if there was more than 1 duplicate prev_id record
+                del prepped_data[dupe_parent_id]
 
         if new_id in child_link[corp_num]:
             # get top level parent id
@@ -313,8 +323,9 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
     # save start event id for later -- if it already exists do NOT update it
     event_link.setdefault(parent_id, start_event_id)
     if is_debug_identifier:
-        current_app.logger.debug(f'child_link: {child_link[corp_num]}')
-        current_app.logger.debug(f'parent_link: {parent_link[corp_num]}')
+        current_app.logger.debug('--------------------------------------------------')
+        current_app.logger.debug(f'child_link: {child_link.get(corp_num)}')
+        current_app.logger.debug(f'parent_link: {parent_link.get(corp_num)}')
         current_app.logger.debug(f'parent_id: {parent_id}')
         current_app.logger.debug(f'event_link: {event_link[parent_id]}')
 
@@ -344,7 +355,7 @@ def get_entities(prepped_data: dict[str, Entity]) -> list[dict]:
     return entities
 
 
-def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals
+def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals,too-many-branches; Due to debug logging
               data_descs: list[str],
               source: str,
               btr_id_links: list[dict[str, list[str]]]) -> tuple[list[dict], list[dict]]:
@@ -357,6 +368,8 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals
     partial_btr_updates = []
 
     debug_identfiers = current_app.config.get('DEBUG_IDENTIFIERS', [])
+    if debug_identfiers:
+        current_app.logger.debug(f'Prepping data: {data}')
 
     for item in data:
         item_dict = dict(zip(data_descs, item))

@@ -269,6 +269,7 @@ def update_party_links(prepped_data: dict[str, Entity],  # pylint: disable=too-m
         current_app.logger.debug(f'child_link: {child_link.get(corp_num)}')
         current_app.logger.debug(f'parent_link: {parent_link.get(corp_num)}')
         current_app.logger.debug(f'new_id: {new_id}')
+        current_app.logger.debug(f'prev_id: {prev_id}')
         current_app.logger.debug(f'event_link: {event_link}')
     # NOTE: could get multiple records out of order
     parent_id = new_id
@@ -384,10 +385,6 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals,too
 
         business_entity = get_business_entity(item_dict)
         party_entity = set_party_entity(item_dict, business_entity, prepped_data, source, is_debug_identifier)
-
-        if is_debug_identifier:
-            current_app.logger.debug(f'item_dict: {item_dict}')
-            current_app.logger.debug(f'party_entity: {party_entity}')
 
         if party_entity and item_dict.get('prev_party_id', None):
             update_party_links(prepped_data=prepped_data,

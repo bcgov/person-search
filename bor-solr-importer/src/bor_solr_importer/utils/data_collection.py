@@ -18,13 +18,21 @@ from flask import current_app
 from bor_solr_importer import oracle_db
 
 
+def _get_stringified_list_for_sql(config_value: str) -> str:
+    """Return the values from the config in a format usable for the execute statement."""
+    if items := current_app.config.get(config_value, []):
+        return ','.join([f"'{x}'" for x in items]).replace(')', '')
+
+    return ''
+
+
 def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
     """Collect data from COLIN."""
     max_corp_num_clause = f"and c.corp_num < '{corp_num_max}'" if corp_num_max else ''
     debug_clause = ''
-    if debug_identfiers := current_app.config.get('DEBUG_IDENTIFIERS', []):
+    if debug_identfiers := _get_stringified_list_for_sql(config_value='DEBUG_IDENTIFIERS'):
         # will only select from identifiers we are interested in debugging
-        debug_clause = f"and c.corp_num in ({','.join(debug_identfiers)})"
+        debug_clause = f'and c.corp_num in ({debug_identfiers})'
 
     current_app.logger.debug('Connecting to Oracle instance...')
     cursor = oracle_db.connection.cursor()
@@ -77,7 +85,7 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
         left join address cpam on cpam.addr_id = cp.mailing_addr_id
         left join office o on o.corp_num = c.corp_num and o.office_typ_cd = 'RG' and o.end_event_id is null
         left join address a on a.addr_id = o.delivery_addr_id
-        WHERE c.corp_typ_cd not in ('BEN','CP','GP','SP')
+        WHERE c.corp_typ_cd not in ({_get_stringified_list_for_sql('MODERNIZED_LEGAL_TYPES')})
             and cs.end_event_id is null
             and cn.end_event_id is null
             and cn.corp_name_typ_cd in ('CO', 'NB')
@@ -92,10 +100,9 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
 def collect_lear_data():
     """Collect data from LEAR."""
     debug_clause = ''
-    if debug_identfiers := current_app.config.get('DEBUG_IDENTIFIERS', []):
+    if debug_identfiers := _get_stringified_list_for_sql('DEBUG_IDENTIFIERS'):
         # will only select from identifiers we are interested in debugging
-        debug_identfiers = [f"'{x}'" for x in debug_identfiers]
-        debug_clause = f"and b.identifier in ({','.join(debug_identfiers)})"
+        debug_clause = f'and b.identifier in ({debug_identfiers})'
 
     if current_app.config.get('DB_LOCATION') == 'GCP':
         return _collect_lear_data_gcp(debug_clause.replace('b.identifier', 'le.identifier'))
@@ -124,7 +131,7 @@ def collect_lear_data():
             LEFT JOIN addresses p_a ON p_a.id = p.delivery_address_id
             LEFT JOIN offices o ON o.business_id = b.id AND o.office_type in ('registeredOffice')
             LEFT JOIN addresses a ON a.office_id = o.id AND a.address_type='delivery'
-        WHERE b.legal_type in ('BEN', 'CP', 'SP', 'GP')
+        WHERE b.legal_type in ({_get_stringified_list_for_sql('MODERNIZED_LEGAL_TYPES')})
             AND pr.role != ''
             {debug_clause}
         """)
@@ -158,7 +165,7 @@ def _collect_lear_data_gcp(debug_clause=''):
                   ) AS er ON er.legal_entity_id = le.id
             JOIN legal_entities rle ON rle.id = er.related_entity_id
             LEFT JOIN addresses rle_a ON rle_a.id = rle.delivery_address_id
-        WHERE le.entity_type in ('BEN', 'CP', 'SP', 'GP')
+        WHERE le.entity_type in ({_get_stringified_list_for_sql('MODERNIZED_LEGAL_TYPES')})
             AND rle.entity_type='person'
             {debug_clause}
         """)
@@ -177,10 +184,9 @@ def collect_btr_data(limit: int = None, offset: int = None):
         limit_clause = f'ORDER BY id {limit_clause}'
 
     debug_clause = ''
-    if debug_identfiers := current_app.config.get('DEBUG_IDENTIFIERS', []):
+    if debug_identfiers := _get_stringified_list_for_sql('DEBUG_IDENTIFIERS'):
         # will only select from identifiers we are interested in debugging
-        debug_identfiers = [f"'{x}'" for x in debug_identfiers]
-        debug_clause = f"WHERE business_identifier IN ({','.join(debug_identfiers)})"
+        debug_clause = f'WHERE business_identifier IN ({debug_identfiers})'
 
     current_app.logger.debug('Connecting to BTR GCP Postgres instance...')
     conn = psycopg2.connect(host=current_app.config.get('BTR_DB_HOST'),

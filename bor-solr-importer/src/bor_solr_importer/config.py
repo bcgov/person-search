@@ -66,6 +66,8 @@ class Config():  # pylint: disable=too-few-public-methods
 
     BTR_BATCH_LIMIT = int(os.getenv('BTR_BATCH_LIMIT', '100000'))
 
+    MODERNIZED_LEGAL_TYPES = os.getenv('MODERNIZED_LEGAL_TYPES', 'BEN,CBEN,CP,GP,SP').upper().split(',')
+
     CORP_NUM_LIMITS_START = int(os.getenv('CORP_NUM_LIMITS_START', '0'))
     CORP_NUM_LIMITS_END = int(os.getenv('CORP_NUM_LIMITS_END', '10'))
 

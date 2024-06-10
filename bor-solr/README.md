@@ -18,6 +18,7 @@ BC Beneficial Ownership Registry SOLR
 - if first time or need to pickup new solr changes outside of /solr/bor directory:
   - Build leader image: `make build-local`
   - Run leader image: `docker run -d -p 8883:8983 -v $PWD/solr/bor:/var/solr/data --name bor-solr-leader-local bor-solr-local` (it will be available on port 8883)
+    _NOTE: if you don't care about having the data persist then omit the '-v ...'_
   - Optional: setup follower node
     - Get leader IP: `docker inspect bor-solr-leader-local | grep IPAddress`
     - Use the docker IP to set the leader url: `export LEADER_URL=http://leader_IP:8883/solr/bor`
@@ -39,6 +40,7 @@ BC Beneficial Ownership Registry SOLR
 - http://localhost:8883/solr
 
 5. Load the leader index with data
+
 - Data import via the solr importer with REINDEX=True (for persistent index only)
   - see https://github.com/bcgov-registries/beneficial-ownership/tree/main/bor-solr-importer and you will need:
     - run local COLIN oracle db OR setup VPN connection to COLIN dev OR comment out the COLIN load

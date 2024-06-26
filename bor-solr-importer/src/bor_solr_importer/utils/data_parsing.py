@@ -461,19 +461,19 @@ def prep_data_btr(data: list[dict]) -> tuple[dict, dict]:
         # TODO: handle same party across submissions (not needed until collapsing people into 1 record)
         parties = {}
         for person in submission.get('personStatements', []):
-            person_id = person['statementID']
-            parties[person_id] = person
+            person_statement_id = person['statementID']
+            parties[person_statement_id] = person
 
         # combine ownership details and parties
         for ownership_info in submission.get('ownershipOrControlStatements', []):
-            party_id = ownership_info['interestedParty']['describedByPersonStatement']
+            party_statement_id = ownership_info['interestedParty']['describedByPersonStatement']
             ownership_info['interestedParty'] = {
-                'describedByPersonStatement': party_id,
-                **parties[party_id]
+                'describedByPersonStatement': party_statement_id,
+                **parties[party_statement_id]
             }
             parsed_owner = asdict(get_btr_owner(ownership_info, business))
             prepped_data.append(parsed_owner)
-            id_links.setdefault(business.id, []).append(party_id)
+            id_links.setdefault(business.id, []).append(parties[party_statement_id]['uuid'])
 
             if identifier in debug_identfiers:
                 current_app.logger.debug(f'entity parsed: {parsed_owner}')

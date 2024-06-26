@@ -70,8 +70,9 @@ def update_solr(docs: list[dict], data_name: str, partial=False) -> int:
                 current_app.logger.debug('Failed to update solr with batch. Trying again (%s of 5)...', retry_count + 1)
                 retry_count += 1
                 # await some time before trying again
-                current_app.logger.debug('Awaiting %s seconds before trying again...', 20 * retry_count)
-                time.sleep(20 * retry_count)
+                base_wait_time = 60 if '408' in err.args[0]['error']['detail'] else 20
+                current_app.logger.debug('Awaiting %s seconds before trying again...', base_wait_time * retry_count)
+                time.sleep(base_wait_time * retry_count)
                 # set count back
                 count -= batch_amount
                 continue

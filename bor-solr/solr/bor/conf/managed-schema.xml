@@ -360,6 +360,10 @@
   <field name="legalName_xtra_q" type="text_extra" indexed="true" stored="false"/>
   <field name="legalType" type="string" docValues="true" indexed="true" stored="true"/>
   <field name="nationalities" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="obscureAll" type="boolean" docValues="true" indexed="true" stored="true"/>
+  <field name="obscureBirth" type="boolean" docValues="true" indexed="true" stored="true"/>
+  <field name="obscureNationalities" type="boolean" docValues="true" indexed="true" stored="true"/>
+  <field name="obscureName" type="boolean" docValues="true" indexed="true" stored="true"/>
   <field name="phoneNumber" type="string" indexed="false" stored="true"/>
   <field name="roles" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="state" type="string" docValues="true" indexed="true" stored="true"/>

@@ -11,7 +11,7 @@ BC Beneficial Ownership Registry SOLR
 
 1. Pull the base solr docker image
 
-- `docker pull solr:9.2.1`
+- `docker pull solr:9.6.1`
 
 2. Run your solr containers
 

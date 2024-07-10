@@ -1,6 +1,7 @@
 FROM solr:9.6.1
 USER root
 
+ARG SOLR_VERSION="9.6.1"
 ARG VCS_REF="missing"
 ARG BUILD_DATE="missing"
 ARG CORE="bor"
@@ -16,17 +17,17 @@ LABEL org.label-schema.vcs-ref=${VCS_REF} \
     org.label-schema.build-date=${BUILD_DATE}
 
 # copy files into leader / follower configsets
-COPY ./solr/bor/conf /opt/solr-9.2.1/server/solr/configsets/bor/conf
-COPY ./solr/bor/conf /opt/solr-9.2.1/server/solr/configsets/bor_follower/conf
-# copy bor_follower specific config into configset
-COPY ./solr/bor_follower/conf/solrconfig.xml /opt/solr-9.2.1/server/solr/configsets/bor_follower/conf/solrconfig.xml
+COPY ./solr/${CORE}/conf /opt/solr-${SOLR_VERSION}/server/solr/configsets/${CORE}/conf
+COPY ./solr/${CORE}/conf /opt/solr-${SOLR_VERSION}/server/solr/configsets/${CORE}_follower/conf
+# copy follower specific config into configset
+COPY ./solr/${CORE}_follower/conf/solrconfig.xml /opt/solr-${SOLR_VERSION}/server/solr/configsets/${CORE}_follower/conf/solrconfig.xml
 # copy in starting core
-COPY ./solr/bor/conf /var/solr/data/${CORE}/conf
+COPY ./solr/${CORE}/conf /var/solr/data/${CORE}/conf
 COPY ./solr/${CORE}/core.properties /var/solr/data/${CORE}/core.properties
 # copy core specific config into starting core
 COPY ./solr/${CORE}/conf/solrconfig.xml /var/solr/data/${CORE}/conf/solrconfig.xml
 # copy solr.xml (will be used by both leader and followers)
-COPY ./solr/solr.xml /opt/solr-9.2.1/server/solr/solr.xml
+COPY ./solr/solr.xml /opt/solr-${SOLR_VERSION}/server/solr/solr.xml
 # solr env overrides
 RUN echo "" >> /etc/default/solr.in.sh
 RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.disable.allowUrls=true\" >> /etc/default/solr.in.sh
@@ -38,7 +39,7 @@ RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.disable.allowUrls=true\" >> /etc/defa
 RUN echo SOLR_JAVA_MEM=\"-Xms$JVM_MEM -Xmx$JVM_MEM\" >> /etc/default/solr.in.sh
 
 RUN chmod -R 777 /var/solr/data
-RUN chmod -R 777 /opt/solr-9.2.1
+RUN chmod -R 777 /opt/solr-${SOLR_VERSION}
 
 USER 1001
 

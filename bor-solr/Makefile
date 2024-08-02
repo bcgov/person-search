@@ -21,6 +21,8 @@ build-follower:
 	    --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 	    --build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ") \
 			--build-arg CORE=bor_follower \
+			--build-arg FOLLOWER_CORE=bor_follower \
+			--build-arg LEADER_CORE=bor \
 			--build-arg JVM_MEM=2g
 
 build-leader:
@@ -29,6 +31,8 @@ build-leader:
 	    --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 	    --build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ") \
 			--build-arg CORE=bor \
+			--build-arg FOLLOWER_CORE=bor_follower \
+			--build-arg LEADER_CORE=bor \
 			--build-arg JVM_MEM=12g
 
 build-local:
@@ -37,6 +41,8 @@ build-local:
 	    --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 	    --build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ") \
 			--build-arg CORE=bor \
+			--build-arg FOLLOWER_CORE=bor_follower \
+			--build-arg LEADER_CORE=bor \
 			--build-arg JVM_MEM=512m
 
 #################################################################################

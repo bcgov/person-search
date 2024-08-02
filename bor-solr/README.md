@@ -38,11 +38,3 @@ BC Beneficial Ownership Registry SOLR
 4. Go to admin UI in browser and check the solr core is there (it will be empty)
 
 - http://localhost:8883/solr
-
-5. Load the leader index with data
-
-- Data import via the solr importer with REINDEX=True (for persistent index only)
-  - see https://github.com/bcgov-registries/beneficial-ownership/tree/main/bor-solr-importer and you will need:
-    - run local COLIN oracle db OR setup VPN connection to COLIN dev OR comment out the COLIN load
-    - run local LEAR db OR port-forward to dev instance OR comment out LEAR load
-- OR alternatively you can use the bor-api internal update calls to add businesses/parties (see the bor-api postman collection for examples)

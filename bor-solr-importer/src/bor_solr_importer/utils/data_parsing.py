@@ -436,7 +436,7 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals,too
     return get_entities(prepped_data), partial_btr_updates
 
 
-def prep_data_btr(data: list[dict]) -> tuple[dict, dict]:
+def prep_data_btr(data: list[dict], data_descs: list[str]) -> tuple[dict, dict]:
     """Return the list of Entity docsn and the party/business id links from the btr db data."""
     prepped_data: list[Entity] = []
     id_links: dict[str, list[str]] = {}
@@ -444,38 +444,34 @@ def prep_data_btr(data: list[dict]) -> tuple[dict, dict]:
     debug_identfiers = current_app.config.get('DEBUG_IDENTIFIERS', [])
 
     for item in data:
-        submission = item[0]
-        identifier = submission['businessIdentifier']
+        item_dict = dict(zip(data_descs, item))
+        # submission = item[0]
+        identifier = item_dict['business_identifier']
 
         if identifier in debug_identfiers:
-            current_app.logger.debug(f'submission: {submission}')
+            current_app.logger.debug(f'SI data: {item_dict}')
 
         # minimal business record. Will be updated with full details later.
         business = Entity(id=identifier,
                           identifier=identifier,
                           entityType='BUSINESS',
                           entityAddresses=None,
-                          legalName=submission.get('entityStatement', {}).get('name', ''))
+                          legalName='N/A')
 
-        # collect current parties.
+        # combine person and ownership info for search.
         # TODO: handle same party across submissions (not needed until collapsing people into 1 record)
-        parties = {}
-        for person in submission.get('personStatements', []):
-            person_statement_id = person['statementID']
-            parties[person_statement_id] = person
+        person_details = item_dict['person_json']
+        ownership_info = item_dict['ownership_json']
+        ownership_info['interestedParty'] = {
+            **ownership_info['interestedParty'],  # describedByPersonStatement
+            **person_details
+        }
 
-        # combine ownership details and parties
-        for ownership_info in submission.get('ownershipOrControlStatements', []):
-            party_statement_id = ownership_info['interestedParty']['describedByPersonStatement']
-            ownership_info['interestedParty'] = {
-                'describedByPersonStatement': party_statement_id,
-                **parties[party_statement_id]
-            }
-            parsed_owner = asdict(get_btr_owner(ownership_info, business))
-            prepped_data.append(parsed_owner)
-            id_links.setdefault(business.id, []).append(parties[party_statement_id]['uuid'])
+        parsed_owner = asdict(get_btr_owner(ownership_info, business))
+        prepped_data.append(parsed_owner)
+        id_links.setdefault(business.id, []).append(person_details['statementID'])
 
-            if identifier in debug_identfiers:
-                current_app.logger.debug(f'entity parsed: {parsed_owner}')
+        if identifier in debug_identfiers:
+            current_app.logger.debug(f'SI parsed: {parsed_owner}')
 
     return prepped_data, id_links

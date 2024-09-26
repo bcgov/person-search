@@ -53,19 +53,23 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 btr_fetch_count = 0
                 batch_limit = current_app.config.get('BTR_BATCH_LIMIT')
                 loop_count = 0
-
+                btr_data_descs = []
                 while loop_count < 100:  # NOTE: should never get to this condition
                     loop_count += 1
                     current_app.logger.debug('********** Collecting BTR data **********')
                     btr_data_cur = collect_btr_data(batch_limit, btr_fetch_count)
                     btr_data = btr_data_cur.fetchall()
                     btr_fetch_count += len(btr_data)
+                    if not btr_data_descs:
+                        # just need to do once
+                        btr_data_descs = [desc[0].lower() for desc in btr_data_cur.description]
                     btr_data_cur.close()
                     if not btr_data:
+                        # this should be the condition that breaks the loop (BTR_BATCH_LIMIT should be set high enough)
                         break
 
                     current_app.logger.debug('********** Mapping BTR data **********')
-                    prepped_btr_data, batch_btr_id_links = prep_data_btr(btr_data)
+                    prepped_btr_data, batch_btr_id_links = prep_data_btr(btr_data, btr_data_descs)
                     btr_id_links = {**btr_id_links, **batch_btr_id_links}
                     current_app.logger.debug(f'{len(prepped_btr_data)} BTR records ready for import.')
 

@@ -515,6 +515,21 @@ async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
 
 [[package]]
+name = "flask-caching"
+version = "2.0.1"
+description = "Adds caching support to Flask applications."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "Flask-Caching-2.0.1.tar.gz", hash = "sha256:10df200a03f032af60077befe41779dd94898b67c82040d34e87210b71ba2638"},
+    {file = "Flask_Caching-2.0.1-py3-none-any.whl", hash = "sha256:703df847cbe904d8ddffd5f5fb320e236a31cb7bebac4a93d6b1701dd16dbf37"},
+]
+
+[package.dependencies]
+cachelib = ">=0.9.0"
+Flask = "<3"
+
+[[package]]
 name = "flask-cors"
 version = "4.0.0"
 description = "A Flask extension adding a decorator for CORS support"
@@ -1615,4 +1630,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.2"
-content-hash = "11f5a3f8a49870f041a2ef4c617f8cc0ce5e0fcb771efbae76d296f2a0801dc3"
+content-hash = "744c72eb612e758f32b384257e655ed97624602d9a0afdde56ec75c0d2e7ffea"

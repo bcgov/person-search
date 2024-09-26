@@ -181,12 +181,12 @@ def collect_btr_data(limit: int = None, offset: int = None):
         limit_clause += f' OFFSET {offset}'
     if limit_clause:
         # NOTE: needed in order to make sure we get every record when doing batch loads
-        limit_clause = f'ORDER BY id {limit_clause}'
+        limit_clause = f'ORDER BY p.id {limit_clause}'
 
     debug_clause = ''
     if debug_identfiers := _get_stringified_list_for_sql('DEBUG_IDENTIFIERS'):
         # will only select from identifiers we are interested in debugging
-        debug_clause = f'WHERE business_identifier IN ({debug_identfiers})'
+        debug_clause = f'WHERE s.business_identifier IN ({debug_identfiers})'
 
     current_app.logger.debug('Connecting to BTR GCP Postgres instance...')
     conn = psycopg2.connect(host=current_app.config.get('BTR_DB_HOST'),
@@ -196,6 +196,11 @@ def collect_btr_data(limit: int = None, offset: int = None):
                             password=current_app.config.get('BTR_DB_PASSWORD'))
     cur = conn.cursor()
     current_app.logger.debug('Collecting BTR data...')
-    # TODO: collect historic records too ?
-    cur.execute(f'SELECT payload FROM submission {debug_clause} {limit_clause}')
+    cur.execute(f"""
+                SELECT s.business_identifier, o.ownership_json, p.person_json
+                FROM submission s
+                JOIN ownership o on s.id = o.submission_id
+                JOIN person p on p.id = o.person_id
+                {debug_clause} {limit_clause}
+                """)
     return cur

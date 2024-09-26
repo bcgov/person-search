@@ -135,6 +135,13 @@ class Config():  # pylint: disable=too-few-public-methods
     except:  # pylint: disable=bare-except; # noqa: B901, E722
         ACCOUNT_SVC_TIMEOUT = 20
 
+    # Cache stuff
+    CACHE_TYPE = os.getenv('CACHE_TYPE', 'SimpleCache')
+    try:
+        CACHE_DEFAULT_TIMEOUT = int(os.getenv('CACHE_DEFAULT_TIMEOUT', '300'))
+    except (TypeError, ValueError):
+        CACHE_DEFAULT_TIMEOUT = 300
+
 
 class DevelopmentConfig(Config):  # pylint: disable=too-few-public-methods
     """Config object for development environment."""

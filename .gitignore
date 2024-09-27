@@ -141,3 +141,5 @@ __pycache__
 
 .obsidian
 internal/env_*.md
+
+**/cache

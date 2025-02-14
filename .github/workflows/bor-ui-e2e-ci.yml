@@ -1,0 +1,45 @@
+name: BOR UI E2E CI
+
+on:
+  pull_request:
+    types: [assigned, synchronize]
+    paths:
+      - "bor-ui/**"
+
+jobs:
+  bor-ui-e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./bor-ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Set basic env
+        working-directory: ./bor-ui
+        run: |
+          cp .env.example .env
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          working-directory: ./bor-ui
+          build: pnpm run build:local
+          start: pnpm run preview
+          wait-on: 'http://localhost:3000'

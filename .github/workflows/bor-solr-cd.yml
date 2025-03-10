@@ -24,7 +24,7 @@ env:
 
 jobs:
   bor-solr-cd-by-push:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: "read"
@@ -92,6 +92,11 @@ jobs:
           gcloud compute instances create bor-solr-$TAG_NAME-$NEW_VERSION --source-instance-template bor-solr-$TAG_NAME --zone $ZONE --project $PROJECT_ID
           gcloud compute instance-groups unmanaged add-instances bor-solr-preload-grp-$TAG_NAME --zone=$ZONE --instances=bor-solr-$TAG_NAME-$NEW_VERSION
 
+      - name: Install CLI tools from OpenShift
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "4"
+
       - name: Login Openshift
         run: |
           oc login --server=${{secrets.OPENSHIFT4_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT4_SA_TOKEN}}
@@ -129,7 +134,7 @@ jobs:
           gcloud compute instances delete bor-solr-base-$NEW_VERSION --zone $ZONE --project $PROJECT_ID
 
   bor-solr-cd-by-dispatch:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: "read"
@@ -203,6 +208,11 @@ jobs:
         run: |
           gcloud compute instances create bor-solr-$TAG_NAME-$NEW_VERSION --source-instance-template bor-solr-$TAG_NAME --zone $ZONE --project $PROJECT_ID
           gcloud compute instance-groups unmanaged add-instances bor-solr-preload-grp-$TAG_NAME --zone=$ZONE --instances=bor-solr-$TAG_NAME-$NEW_VERSION
+
+      - name: Install CLI tools from OpenShift
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "4"
 
       - name: Login Openshift
         run: |

@@ -13,7 +13,7 @@ defaults:
 
 jobs:
   setup-job:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     if: github.repository == 'bcgov-registries/beneficial-ownership'
     
@@ -23,7 +23,7 @@ jobs:
 
   linting:
     needs: setup-job
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       matrix:
@@ -54,7 +54,7 @@ jobs:
       STAN_CLUSTER_NAME: test-cluster
       RUN_NATS_TESTS: True
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v3
@@ -79,7 +79,7 @@ jobs:
 
   build-check:
     needs: setup-job
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v3

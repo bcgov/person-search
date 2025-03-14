@@ -176,36 +176,6 @@ objects:
                     secretKeyRef:
                       name: bor-solr-importer-${ENV}-secret
                       key: SENTRY_DSN
-                - name: INCLUDE_BTR_LOAD
-                  valueFrom:
-                    secretKeyRef:
-                      name: bor-solr-importer-${ENV}-secret
-                      key: INCLUDE_BTR_LOAD
-                - name: DATABASE_HOST_BTR
-                  valueFrom:
-                    secretKeyRef:
-                      name: bor-solr-importer-${ENV}-secret
-                      key: DATABASE_HOST_BTR
-                - name: DATABASE_NAME_BTR
-                  valueFrom:
-                    secretKeyRef:
-                      name: bor-solr-importer-${ENV}-secret
-                      key: DATABASE_NAME_BTR
-                - name: DATABASE_PASSWORD_BTR
-                  valueFrom:
-                    secretKeyRef:
-                      name: bor-solr-importer-${ENV}-secret
-                      key: DATABASE_PASSWORD_BTR
-                - name: DATABASE_PORT_BTR
-                  valueFrom:
-                    secretKeyRef:
-                      name: bor-solr-importer-${ENV}-secret
-                      key: DATABASE_PORT_BTR
-                - name: DATABASE_USERNAME_BTR
-                  valueFrom:
-                    secretKeyRef:
-                      name: bor-solr-importer-${ENV}-secret
-                      key: DATABASE_USERNAME_BTR
                 - name: REINDEX_CORE
                   value: "True"
                 - name: PRELOADER_JOB
@@ -221,13 +191,13 @@ objects:
               resources:
                 limits:
                   cpu: '1'
-                  memory: 16Gi
+                  memory: 20Gi
                 requests:
-                  cpu: 900m
-                  memory: 12Gi
+                  cpu: 500m
+                  memory: 10Gi
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
-          activeDeadlineSeconds: 12000
+          activeDeadlineSeconds: 60000
           dnsPolicy: ClusterFirst
           restartPolicy: Never
           schedulerName: default-scheduler

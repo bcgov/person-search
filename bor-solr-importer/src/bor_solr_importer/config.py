@@ -142,6 +142,22 @@ class Config():  # pylint: disable=too-few-public-methods
     except (TypeError, ValueError):
         CACHE_DEFAULT_TIMEOUT = 300
 
+    # Updated during the import for tracking performance
+    TIME_WAITED_DATA_DB_SELECT_COLIN = 0
+    TIME_WAITED_DATA_PARSING_COLIN = 0
+
+    TIME_WAITED_DATA_DB_SELECT_LEAR = 0
+    TIME_WAITED_DATA_PARSING_LEAR = 0
+
+    TIME_WAITED_DATA_DB_SELECT_BTR = 0
+    TIME_WAITED_DATA_PARSING_BTR = 0
+
+    TIME_WAITED_IMPORT_API_CALL_PARTIAL = 0
+    TIME_WAITED_IMPORT_API_CALL_FULL = 0
+    TIME_WAITED_IMPORT_API_CALL_ERROR = 0
+
+    TIME_WAITED_AUTH_TOKEN_CALL = 0
+
 
 class DevelopmentConfig(Config):  # pylint: disable=too-few-public-methods
     """Config object for development environment."""
@@ -165,13 +181,6 @@ class UnitTestingConfig(Config):  # pylint: disable=too-few-public-methods
     DB_NAME = os.getenv('DATABASE_TEST_NAME', '')
     DB_HOST = os.getenv('DATABASE_TEST_HOST', '')
     DB_PORT = os.getenv('DATABASE_TEST_PORT', '5432')
-    SQLALCHEMY_DATABASE_URI = 'postgresql://{user}:{password}@{host}:{port}/{name}'.format(
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=int(DB_PORT),
-        name=DB_NAME,
-    )
 
 
 class ProductionConfig(Config):  # pylint: disable=too-few-public-methods

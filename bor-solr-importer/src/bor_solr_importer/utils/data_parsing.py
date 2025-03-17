@@ -13,6 +13,7 @@
 # limitations under the License.
 """Data parsing functions."""
 import re
+import time
 from dataclasses import asdict
 from datetime import datetime
 
@@ -361,6 +362,7 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals,too
               source: str,
               btr_id_links: list[dict[str, list[str]]]) -> tuple[list[dict], list[dict]]:
     """Return the list of Entity docs for the given raw db data."""
+    start = time.time()
     prepped_data: dict[str, Entity] = {}
     child_link: dict[str, dict[str, str]] = {}  # corp_num -> child -> parent
     parent_link: dict[str, dict[str, str]] = {}  # corp_num -> parent -> child
@@ -433,11 +435,13 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals,too
         party_cleanup(prepped_data, parent_link)
 
     current_app.logger.debug(f'multiple prev party ids {len(dupes)}')
+    current_app.config[f'TIME_WAITED_DATA_PARSING_{source}'] += time.time() - start
     return get_entities(prepped_data), partial_btr_updates
 
 
 def prep_data_btr(data: list[dict], data_descs: list[str]) -> tuple[dict, dict]:
     """Return the list of Entity docsn and the party/business id links from the btr db data."""
+    start = time.time()
     prepped_data: list[Entity] = []
     id_links: dict[str, list[str]] = {}
 
@@ -474,4 +478,5 @@ def prep_data_btr(data: list[dict], data_descs: list[str]) -> tuple[dict, dict]:
         if identifier in debug_identfiers:
             current_app.logger.debug(f'SI parsed: {parsed_owner}')
 
+    current_app.config['TIME_WAITED_DATA_PARSING_BTR'] += time.time() - start
     return prepped_data, id_links

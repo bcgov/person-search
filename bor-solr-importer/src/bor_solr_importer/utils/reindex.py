@@ -93,7 +93,8 @@ def reindex_prep(is_preload: bool):
             headers = {'Authorization': 'Bearer ' + token}
             current_app.logger.debug('Updating synonym lists...')
             api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
-            update_resp = requests.put(url=f'{api_url}/internal/solr/update/synonyms', headers=headers, json={})
+            update_resp = requests.put(
+                url=f'{api_url}/internal/solr/update/synonyms', headers=headers, json={}, timeout=60)
             if update_resp.status_code != HTTPStatus.OK:
                 current_app.logger.error('Synonym lists update failed with status %s', update_resp.status_code)
             else:

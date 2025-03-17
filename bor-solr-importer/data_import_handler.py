@@ -186,7 +186,8 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             api_url = f'{current_app.config.get("BOR_API_URL")}{current_app.config.get("BOR_API_V1")}'
             resync_resp = requests.post(url=f'{api_url}/internal/solr/update/resync',
                                         headers=headers,
-                                        json={'minutesOffset': current_app.config.get('RESYNC_OFFSET')})
+                                        json={'minutesOffset': current_app.config.get('RESYNC_OFFSET')},
+                                        timeout=60)
             if resync_resp.status_code != HTTPStatus.CREATED:
                 if resync_resp.status_code == HTTPStatus.GATEWAY_TIMEOUT:
                     current_app.logger.debug('Resync timed out -- check api for any individual failures.')
@@ -213,6 +214,39 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             reindex_post()
 
         current_app.logger.debug('SOLR import finished successfully.')
+        current_app.logger.debug('Time waited for getting auth token: %s',
+                                 current_app.config['TIME_WAITED_AUTH_TOKEN_CALL'])
+        current_app.logger.debug('Time waited for BTR data select: %s',
+                                 current_app.config['TIME_WAITED_DATA_DB_SELECT_BTR'])
+        current_app.logger.debug('Time waited for BTR data parse: %s',
+                                 current_app.config['TIME_WAITED_DATA_PARSING_BTR'])
+        current_app.logger.debug('Time waited for COLIN data select: %s',
+                                 current_app.config['TIME_WAITED_DATA_DB_SELECT_COLIN'])
+        current_app.logger.debug('Time waited for COLIN data parse: %s',
+                                 current_app.config['TIME_WAITED_DATA_PARSING_COLIN'])
+        current_app.logger.debug('Time waited for LEAR data select: %s',
+                                 current_app.config['TIME_WAITED_DATA_DB_SELECT_LEAR'])
+        current_app.logger.debug('Time waited for LEAR data parse: %s',
+                                 current_app.config['TIME_WAITED_DATA_PARSING_LEAR'])
+        current_app.logger.debug('Time waited for full import calls: %s',
+                                 current_app.config['TIME_WAITED_IMPORT_API_CALL_FULL'])
+        current_app.logger.debug('Time waited for partial import calls: %s',
+                                 current_app.config['TIME_WAITED_IMPORT_API_CALL_PARTIAL'])
+        current_app.logger.debug('Time waited for error import calls: %s',
+                                 current_app.config['TIME_WAITED_IMPORT_API_CALL_ERROR'])
+
+        total_data_select = (current_app.config['TIME_WAITED_DATA_DB_SELECT_BTR'] +
+                             current_app.config['TIME_WAITED_DATA_DB_SELECT_COLIN'] +
+                             current_app.config['TIME_WAITED_DATA_DB_SELECT_LEAR'])
+        total_data_parse = (current_app.config['TIME_WAITED_DATA_PARSING_BTR'] +
+                            current_app.config['TIME_WAITED_DATA_PARSING_COLIN'] +
+                            current_app.config['TIME_WAITED_DATA_PARSING_LEAR'])
+        total_import = (current_app.config['TIME_WAITED_IMPORT_API_CALL_FULL'] +
+                        current_app.config['TIME_WAITED_IMPORT_API_CALL_PARTIAL'] +
+                        current_app.config['TIME_WAITED_IMPORT_API_CALL_ERROR'])
+        current_app.logger.debug('Total time waited for data selects: %s', total_data_select)
+        current_app.logger.debug('Total time waited for data parsing: %s', total_data_parse)
+        current_app.logger.debug('Total time waited for import calls: %s', total_import)
 
     except SolrException as err:
         current_app.logger.debug(f'SOLR gave status code: {err.status_code}')
@@ -225,5 +259,7 @@ if __name__ == '__main__':
     print('Starting data importer...')
     app = create_app()  # pylint: disable=invalid-name
     with app.app_context():
+        start_time = time.time()
         load_search_core()
+        print(f'Total importer run time: {time.time() - start_time}')
         sys.exit(0)

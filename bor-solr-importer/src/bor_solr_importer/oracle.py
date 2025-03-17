@@ -59,12 +59,12 @@ class OracleDB:
         def init_session(conn, *args):  # pylint: disable=unused-argument; Extra var being passed with call
             cursor = conn.cursor()
             cursor.execute("alter session set TIME_ZONE = 'America/Vancouver'")
-
+        host = current_app.config.get('ORACLE_HOST')
+        port = current_app.config.get('ORACLE_PORT')
+        db_name = current_app.config.get('ORACLE_DB_NAME')
         return cx_Oracle.SessionPool(user=current_app.config.get('ORACLE_USER'),  # pylint:disable=c-extension-no-member
                                      password=current_app.config.get('ORACLE_PASSWORD'),
-                                     dsn='{0}:{1}/{2}'.format(current_app.config.get('ORACLE_HOST'),
-                                                              current_app.config.get('ORACLE_PORT'),
-                                                              current_app.config.get('ORACLE_DB_NAME')),
+                                     dsn=f'{host}:{port}/{db_name}',
                                      min=1,
                                      max=10,
                                      increment=1,

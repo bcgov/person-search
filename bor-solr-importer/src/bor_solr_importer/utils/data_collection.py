@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Data collection functions."""
+import time
+
 import psycopg2
 from flask import current_app
 
@@ -28,6 +30,7 @@ def _get_stringified_list_for_sql(config_value: str) -> str:
 
 def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
     """Collect data from COLIN."""
+    start = time.time()
     max_corp_num_clause = f"and c.corp_num < '{corp_num_max}'" if corp_num_max else ''
     debug_clause = ''
     if debug_identfiers := _get_stringified_list_for_sql(config_value='DEBUG_IDENTIFIERS'):
@@ -94,11 +97,13 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
             {max_corp_num_clause}
             {debug_clause}
         """, offset_corp_num=corp_num_min)
+    current_app.config['TIME_WAITED_DATA_DB_SELECT_COLIN'] += time.time() - start
     return cursor
 
 
 def collect_lear_data():
     """Collect data from LEAR."""
+    start = time.time()
     debug_clause = ''
     if debug_identfiers := _get_stringified_list_for_sql('DEBUG_IDENTIFIERS'):
         # will only select from identifiers we are interested in debugging
@@ -135,11 +140,13 @@ def collect_lear_data():
             AND pr.role != ''
             {debug_clause}
         """)
+    current_app.config['TIME_WAITED_DATA_DB_SELECT_LEAR'] += time.time() - start
     return cur
 
 
 def _collect_lear_data_gcp(debug_clause=''):
     """Collect data from LEAR."""
+    start = time.time()
     current_app.logger.debug('Connecting to LEAR GCP Postgres instance...')
     conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
                             port=current_app.config.get('DB_PORT'),
@@ -169,11 +176,13 @@ def _collect_lear_data_gcp(debug_clause=''):
             AND rle.entity_type='person'
             {debug_clause}
         """)
+    current_app.config['TIME_WAITED_DATA_DB_SELECT_LEAR'] += time.time() - start
     return cur
 
 
 def collect_btr_data(limit: int = None, offset: int = None):
     """Collect data from BTR."""
+    start = time.time()
     limit_clause = ''
     if limit:
         limit_clause = f'LIMIT {limit}'
@@ -203,4 +212,5 @@ def collect_btr_data(limit: int = None, offset: int = None):
                 JOIN person p on p.id = o.person_id
                 {debug_clause} {limit_clause}
                 """)
+    current_app.config['TIME_WAITED_DATA_DB_SELECT_BTR'] += time.time() - start
     return cur

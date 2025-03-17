@@ -57,8 +57,10 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 while loop_count < 100:  # NOTE: should never get to this condition
                     loop_count += 1
                     current_app.logger.debug('********** Collecting BTR data **********')
+                    start_time_btr = time.time()
                     btr_data_cur = collect_btr_data(batch_limit, btr_fetch_count)
                     btr_data = btr_data_cur.fetchall()
+                    current_app.config['TIME_WAITED_DATA_PARSING_BTR'] += time.time() - start_time_btr
                     btr_fetch_count += len(btr_data)
                     if not btr_data_descs:
                         # just need to do once
@@ -110,9 +112,11 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
                 for corp_num_limit in corp_num_limits[start:end]:
                     range_str = f"{corp_num_limit['min']} to {corp_num_limit['max'] or '*'}"
                     current_app.logger.debug(f'********** COLIN Corp Batch {range_str} **********')
+                    start_time_colin = time.time()
                     colin_data_cur = collect_colin_data(corp_num_limit['min'], corp_num_limit['max'])
                     current_app.logger.debug('Fetching corp batch rows...')
                     colin_data = colin_data_cur.fetchall()
+                    current_app.config['TIME_WAITED_DATA_DB_SELECT_COLIN'] += time.time() - start_time_colin
                     if not colin_data_descs:
                         # just need to do once
                         colin_data_descs = [desc[0].lower() for desc in colin_data_cur.description]
@@ -149,8 +153,10 @@ def load_search_core():  # pylint: disable=too-many-statements,too-many-locals,t
             lear_count = 0
             if include_lear_load:
                 current_app.logger.debug('---------- Collecting LEAR Entities ----------')
+                start_time_lear = time.time()
                 lear_data_cur = collect_lear_data()
                 lear_data = lear_data_cur.fetchall()
+                current_app.config['TIME_WAITED_DATA_DB_SELECT_LEAR'] += time.time() - start_time_lear
 
                 current_app.logger.debug('---------- Mapping LEAR data ----------')
                 prepped_lear_data, partial_btr_updates = prep_data(

@@ -35,9 +35,10 @@ def _get_headers() -> dict[str, str]:
 def _get_wait_interval(err: Exception):
     """Return the base wait interval for the exception."""
     if isinstance(err.args, (tuple, list)) and err.args and isinstance(err.args[0], dict):
-        if '408' in err.args[0].get('error', {}).get('detail', ''):
-            # increased base wait time for solr 408 error
-            return 60
+        if (error := err.args[0].get('error')) and isinstance(error, dict):
+            if '408' in error.get('detail', ''):
+                # increased base wait time for solr 408 error
+                return 60
     return 20
 
 

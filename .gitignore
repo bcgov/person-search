@@ -142,4 +142,8 @@ __pycache__
 .obsidian
 internal/env_*.md
 
-**/cache
+# flask-caching
+**/cache/*
+
+# ruff cache
+**/.ruff_cache

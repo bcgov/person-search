@@ -1,0 +1,44 @@
+name: e2e-qa-playwright
+
+
+on:
+  workflow_dispatch:
+      inputs:
+        environment:
+          description: "Environment (dev/test/integration/prod)"
+          required: true
+          default: "dev"
+          
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        env:
+          PLAYWRIGHT_TEST_BCSC_USERNAME: ${{ secrets.PLAYWRIGHT_TEST_BCSC_USERNAME }}
+          PLAYWRIGHT_TEST_BCSC_PASSWORD: ${{ secrets.PLAYWRIGHT_TEST_BCSC_PASSWORD }}
+          NUXT_BASE_URL: ${{ secrets.NUXT_BASE_URL }}
+        run: npx playwright test
+
+      - name: Upload Playwright HTML Report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright/playwright-report
+    

@@ -8,6 +8,12 @@
         ]
     },
     {
+        "vault": "sentry",
+        "application": [
+             "bor-backend"
+        ]
+    },
+    {
         "vault": "API",
         "application": [
             "legal-api",

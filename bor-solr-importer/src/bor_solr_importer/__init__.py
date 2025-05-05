@@ -20,8 +20,6 @@ import logging.config
 import os
 from http import HTTPStatus
 
-import sentry_sdk  # noqa: I001; pylint: disable=ungrouped-imports; conflicts with Flake8
-from sentry_sdk.integrations.flask import FlaskIntegration  # noqa: I001
 from bor_api.services import solr  # noqa: I001
 from bor_api.services.authz import auth_cache
 from dotenv import load_dotenv
@@ -31,7 +29,6 @@ from bor_solr_importer.config import config
 from bor_solr_importer.logging import setup_logging
 from bor_solr_importer.oracle import oracle_db
 from bor_solr_importer.version import __version__
-# noqa: I003; the sentry import creates a bad line count in isort
 
 setup_logging(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logging.conf'))  # important to do this first
 
@@ -61,15 +58,6 @@ def create_app(config_name: str = os.getenv('APP_ENV') or 'production'):
     """Return a configured Flask App using the Factory method."""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
-
-    # Configure Sentry
-    if dsn := app.config.get('SENTRY_DSN'):
-        sentry_sdk.init(  # pylint: disable=E0110
-            dsn=dsn,
-            integrations=[FlaskIntegration()],
-            environment=app.config.get('POD_NAMESPACE'),
-            release=f'bor-solr-importer@{get_run_version()}',
-            traces_sample_rate=app.config.get('SENTRY_TSR'))
 
     oracle_db.init_app(app)
     solr.init_app(app)

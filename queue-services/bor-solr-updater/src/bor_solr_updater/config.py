@@ -67,10 +67,6 @@ class Config():  # pylint: disable=too-few-public-methods
 
     POD_NAMESPACE = os.getenv('POD_NAMESPACE', 'unknown')
 
-    SENTRY_ENABLE = os.getenv('SENTRY_ENABLE', 'False')
-    SENTRY_DSN = os.getenv('SENTRY_DSN', None)
-    SENTRY_TSR = os.getenv('SENTRY_TSR', '1.0')
-
     NATS_CONNECTION_OPTIONS = {
         'servers': os.getenv('NATS_SERVERS', 'nats://127.0.0.1:4222').split(','),
         'name': os.getenv('NATS_BOR_SOLR_CLIENT_NAME', 'bor.solr.worker')
@@ -126,7 +122,6 @@ class UnitTestingConfig(Config):  # pylint: disable=too-few-public-methods
     DEBUG = True
     DEVELOPMENT = False
     TESTING = True
-    SENTRY_ENABLE = 'false'
     STAN_CLUSTER_NAME = 'test-cluster'
     KEYCLOAK_AUTH_TOKEN_URL = os.getenv('TEST_KEYCLOAK_AUTH_TOKEN_URL', 'http://token_url.test')
     LEAR_SVC_URL = os.getenv('TEST_LEAR_SVC_URL', 'http://lear_api_url.test')

@@ -27,11 +27,5 @@
             "base",
             "bor-service-account"
         ]
-    },
-    {
-        "vault": "sentry",
-        "application": [
-            "bor-backend"
-        ]
     }
 ]

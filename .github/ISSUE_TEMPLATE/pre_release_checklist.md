@@ -96,5 +96,4 @@ Prior to moving into production, the following steps should be completed or conf
 - [ ] load Filings UI
 - [ ] load Edit UI, eg, start change or alteration filing
 - [ ] load Create UI, eg, start an IA or registration or voluntary dissolution
-- [ ] watch [Sentry](https://sentry.io/organizations/registries/issues/?project=1533020) logs for 60 minutes
 - [ ] watch [Kibana](https://kibana.pathfinder.gov.bc.ca/) logs for 60 minutes

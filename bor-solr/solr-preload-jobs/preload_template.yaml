@@ -171,11 +171,6 @@ objects:
                     secretKeyRef:
                       name: bor-solr-importer-${ENV}-secret
                       key: RESYNC_OFFSET
-                - name: SENTRY_DSN
-                  valueFrom:
-                    secretKeyRef:
-                      name: bor-solr-importer-${ENV}-secret
-                      key: SENTRY_DSN
                 - name: REINDEX_CORE
                   value: "True"
                 - name: PRELOADER_JOB

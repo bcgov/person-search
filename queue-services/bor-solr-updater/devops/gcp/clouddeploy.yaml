@@ -50,6 +50,7 @@ serialPipeline:
       deploy-project-id: "yfjq17-dev"
       service-name: "bor-solr-updater-dev"
       container-name: "bor-solr-updater-dev"
+      clcloudsql-instances: ""
       service-account: "sa-api@yfjq17-dev.iam.gserviceaccount.com"
  - targetId: yfjq17-test
    profiles: [test]
@@ -62,8 +63,9 @@ serialPipeline:
       deploy-project-id: "yfjq17-test"
       service-name: "bor-solr-updater-test"
       container-name: "bor-solr-updater-test"
+      clcloudsql-instances: ""
       service-account: "sa-api@yfjq17-test.iam.gserviceaccount.com"
- - targetId: yfjq17-tools
+ - targetId: yfjq17-sandbox
    profiles: [sandbox]
    strategy:
     standard:
@@ -74,6 +76,7 @@ serialPipeline:
       deploy-project-id: "yfjq17-tools"
       service-name: "bor-solr-updater-sandbox"
       container-name: "bor-solr-updater-sandbox"
+      clcloudsql-instances: ""
       service-account: "sa-api@yfjq17-tools.iam.gserviceaccount.com"
  - targetId: yfjq17-prod
    profiles: [prod]
@@ -86,6 +89,7 @@ serialPipeline:
       deploy-project-id: "yfjq17-prod"
       service-name: "bor-solr-updater-prod"
       container-name: "bor-solr-updater-prod"
+      clcloudsql-instances: ""
       container-concurrency: "60"
       resources-cpu: "8000m"
       resources-memory: "4Gi"

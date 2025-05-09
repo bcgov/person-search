@@ -39,8 +39,8 @@ from flask import current_app
 from simple_cloudevent import SimpleCloudEvent
 
 from bor_solr_updater.exceptions import BusinessException
-from bor_solr_updater.services.entity import get_entity_info
 from bor_solr_updater.services.bor import update_bor
+from bor_solr_updater.services.entity import get_entity_info
 
 
 def process_business_event(ce: SimpleCloudEvent):
@@ -63,33 +63,33 @@ def process_business_event(ce: SimpleCloudEvent):
     # get extra data from lear
     business_info_path = f"/businesses/{identifier}"
     parties_info_path = f"/businesses/{identifier}/parties"
-    address_info_path = f'/businesses/{identifier}/addresses'
+    address_info_path = f"/businesses/{identifier}/addresses"
     business_resp = get_entity_info(business_info_path)
     parties_resp = get_entity_info(parties_info_path)
     address_resp = get_entity_info(address_info_path)
     parties = []
-    for party in parties_resp.json().get('parties'):
-        if party.get('officer', {}).get('partyType') != 'person':
+    for party in parties_resp.json().get("parties"):
+        if party.get("officer", {}).get("partyType") != "person":
             # skip businesses for now until LEAR reworked
             continue
         # bor_api/bor_solr needs to know if its a LEAR party vs COLIN for the unique id
-        party['source'] = 'LEAR'
+        party["source"] = "LEAR"
         parties.append(party)
 
     # update solr via bor-api
     def convert_business(business: dict):
         """Return the business info with the expected legal name."""
-        if business['legalType'] in ['SP', 'GP']:
-            for name in business.get('alternateNames', []):
-                if name['identifier'] == business['identifier']:
-                    business['legalName'] = name['name']
+        if business["legalType"] in ["SP", "GP"]:
+            for name in business.get("alternateNames", []):
+                if name["identifier"] == business["identifier"]:
+                    business["legalName"] = name["name"]
                     break
         return business
 
-    update_payload = {'business': convert_business(business_resp.json()['business']), 'parties': parties}
+    update_payload = {"business": convert_business(business_resp.json()["business"]), "parties": parties}
     # if business has a registered office with a deliverty address then add it to the business data
-    if ro_delivery_address := address_resp.json().get('registeredOffice', {}).get('deliveryAddress'):
-        update_payload['business']['addresses'] = [ro_delivery_address]
+    if ro_delivery_address := address_resp.json().get("registeredOffice", {}).get("deliveryAddress"):
+        update_payload["business"]["addresses"] = [ro_delivery_address]
 
     update_bor(update_payload)
 

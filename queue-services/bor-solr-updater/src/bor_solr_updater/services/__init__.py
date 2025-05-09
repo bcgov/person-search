@@ -32,7 +32,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 """This module wraps helper services used by the API."""
-from gcp_queue import GcpQueue
 from bor_solr_updater.services.processor import process_business_event
+from gcp_queue import GcpQueue
 
 gcp_queue = GcpQueue()

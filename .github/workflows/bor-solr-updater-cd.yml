@@ -30,6 +30,10 @@ on:
 
 jobs:
   bor-updater-cd:
+    permissions:
+      contents: "read"
+      id-token: "write"
+      
     uses: bcgov/bcregistry-sre/.github/workflows/backend-cd.yaml@main
     with:
       target: ${{ inputs.target }}

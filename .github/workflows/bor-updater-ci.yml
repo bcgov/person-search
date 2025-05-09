@@ -1,10 +1,14 @@
-name: BOR SOLR UPDATER CI
+name: BOR Solr Updater CI
 
 on:
   pull_request:
-    types: [assigned, synchronize]
+    branches:
+      - main
+      - feature*
+      - hotfix*
     paths:
       - "queue-services/bor-solr-updater/**"
+  workflow_dispatch:
 
 defaults:
   run:
@@ -12,78 +16,10 @@ defaults:
     working-directory: ./queue-services/bor-solr-updater
 
 jobs:
-  setup-job:
-    runs-on: ubuntu-24.04
+  bor-updater-ci:
+    uses: bcgov/bcregistry-sre/.github/workflows/backend-ci.yaml@main
+    with:
+      app_name: "vor-solr-updater"
+      working_directory: "./queue-services/bor-solr-updater"
+      codecov_flag: "bor-solr-updater"
 
-    if: github.repository == 'bcgov-registries/beneficial-ownership'
-    
-    steps:
-      - uses: actions/checkout@v3
-      - run: "true"
-
-  linting:
-    needs: setup-job
-    runs-on: ubuntu-24.04
-
-    strategy:
-      matrix:
-        python-version: [3.8]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          make setup
-      - name: Lint with pylint
-        id: pylint
-        run: |
-          make pylint
-      - name: Lint with flake8
-        id: flake8
-        run: |
-          make flake8
-
-  testing:
-    needs: setup-job
-    env:
-      POD_NAMESPACE: ci
-      STAN_CLUSTER_NAME: test-cluster
-      RUN_NATS_TESTS: True
-
-    runs-on: ubuntu-24.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          make setup
-      - name: Test with pytest
-        id: test
-        run: |
-          make test
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./queue-services/bor-solr-updater/coverage.xml
-          flags: bor-solr-updater
-          name: codecov-bor-solr-updater
-          fail_ci_if_error: false
-
-  build-check:
-    needs: setup-job
-    runs-on: ubuntu-24.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: build to check strictness
-        id: build
-        run: |
-          make build-nc

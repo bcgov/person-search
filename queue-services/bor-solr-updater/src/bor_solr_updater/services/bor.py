@@ -31,29 +31,43 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+"""Manages bor service interactions."""
+from http import HTTPStatus
 
-"""Version of this service in PEP440.
+import requests
+from flask import current_app
+from requests import exceptions
 
-[N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-Epoch segment: N!
-Release segment: N(.N)*
-Pre-release segment: {a|b|rc}N
-Post-release segment: .postN
-Development release segment: .devN
-"""
-import os
-
-__version__ = "2.0.0"
-
-def _get_commit_hash():
-    """Return the containers ref if present."""
-    if (commit_hash := os.getenv("VCS_REF", None)) and commit_hash != "missing":
-        return commit_hash
-    return None
+from bor_solr_updater.exceptions import ExternalServiceException
+from bor_solr_updater.services.auth import get_bearer_token
 
 
-def get_run_version():
-    """Return a formatted version string for this service."""
-    if commit_hash := _get_commit_hash():
-        return f"{__version__}-{commit_hash}"
-    return __version__
+def update_bor(payload: dict):
+    """Send data to bor for update."""
+    try:
+        headers = {
+          "Authorization": "Bearer " + get_bearer_token(),
+          "Content-Type": "application/json"
+        }
+        url = current_app.config["BOR_SVC_URL"] + "/internal/solr/update"
+        resp = requests.put(url=url,
+                            headers=headers,
+                            json=payload,
+                            timeout=current_app.config["BOR_SVC_TIMEOUT"])
+
+        if resp.status_code not in [HTTPStatus.OK, HTTPStatus.ACCEPTED]:
+            current_app.logger.debug(resp.json())
+            raise ExternalServiceException(error="Unable send business data to bor-api.",
+                                           status_code=resp.status_code)
+        return resp
+    except (exceptions.ConnectionError, exceptions.Timeout) as err:
+        current_app.logger.debug("BOR API connection failure: %s", err)
+        raise ExternalServiceException(error="Unable send business data to bor-api.",
+                                       status_code=resp.status_code) from err
+    except ExternalServiceException as err:
+        # pass along
+        raise err
+    except Exception as err:
+        current_app.logger.debug("BOR API connection failure: %s", err.with_traceback(None))
+        raise ExternalServiceException(error="Unable send business data to bor-api.",
+                                       status_code=HTTPStatus.INTERNAL_SERVER_ERROR) from err

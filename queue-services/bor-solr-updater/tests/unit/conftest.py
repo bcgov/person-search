@@ -31,29 +31,51 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-"""Version of this service in PEP440.
-
-[N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-Epoch segment: N!
-Release segment: N(.N)*
-Pre-release segment: {a|b|rc}N
-Post-release segment: .postN
-Development release segment: .devN
-"""
+"""Common setup and fixtures for the pytest suite used by this service."""
 import os
+from contextlib import contextmanager
 
-__version__ = "2.0.0"
+import pytest
+from flask import Flask
 
-def _get_commit_hash():
-    """Return the containers ref if present."""
-    if (commit_hash := os.getenv("VCS_REF", None)) and commit_hash != "missing":
-        return commit_hash
-    return None
+from bor_solr_updater import create_app
+from bor_solr_updater.services.auth import auth_cache
+from bor_solr_updater.services.entity import entity_cache
+
+os.environ['DEPLOYMENT_ENV'] = 'testing'
 
 
-def get_run_version():
-    """Return a formatted version string for this service."""
-    if commit_hash := _get_commit_hash():
-        return f"{__version__}-{commit_hash}"
-    return __version__
+@contextmanager
+def not_raises(exception):
+    """Corallary to the pytest raises builtin.
+
+    Assures that an exception is NOT thrown.
+    """
+    try:
+        yield
+    except exception:
+        raise pytest.fail(f'DID RAISE {exception}')
+
+
+@pytest.fixture(scope='session')
+def app():
+    """Return a session-wide application configured in TEST mode."""
+    _app = create_app('testing')
+    with _app.app_context():
+        yield _app
+
+
+@pytest.fixture(scope='session')
+def client(app: Flask):
+    """Return a session-wide Flask test client."""
+    return app.test_client()
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    """Clear the caches before and after each test run."""
+    auth_cache.clear()
+    entity_cache.clear()
+    yield
+    auth_cache.clear()
+    entity_cache.clear()

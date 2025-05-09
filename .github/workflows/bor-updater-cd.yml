@@ -1,108 +1,41 @@
-name: BOR SOLR UPDATER CD
+name: BOR Solr Updater CD
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "queue-services/bor-solr-updater/**"
-
+  # Manual for now
+  # push:
+  #   branches:
+  #     - main
+  #     - feature*
+  #     - hotfix*
+  #   paths:
+  #     - "queue-services/bor-solr-updater/**"
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Environment (dev/test/prod)"
+      target:
+        description: "Deploy To"
         required: true
-        default: "dev"
-
-defaults:
-  run:
-    shell: bash
-    working-directory: ./queue-services/bor-solr-updater
-
-env:
-  APP_NAME: "bor-solr-updater"
-  TAG_NAME: "dev"
+        type: choice
+        options:
+          - "dev"
+          - "test"
+          - "sandbox"
+          - "prod"
+      redeploy:
+        description: "Redeploy Application"
+        required: true
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 jobs:
-  bor-updater-cd-by-push:
-    runs-on: ubuntu-24.04
-
-    if: github.event_name == 'push' && github.repository == 'bcgov-registries/beneficial-ownership'
-    environment:
-      name: "dev"
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install CLI tools from OpenShift
-        uses: redhat-actions/openshift-tools-installer@v1
-        with:
-          oc: "4"
-
-      - name: Login Openshift
-        shell: bash
-        run: |
-          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN_DEV}}
-
-      - name: CD Flow
-        shell: bash
-        env:
-          OPS_REPOSITORY: ${{ secrets.OPS_REPOSITORY }}
-          OPENSHIFT_DOCKER_REGISTRY: ${{ secrets.OPENSHIFT_DOCKER_REGISTRY }}
-          OPENSHIFT_SA_NAME: ${{ secrets.OPENSHIFT_SA_NAME }}
-          OPENSHIFT_SA_TOKEN_DEV: ${{ secrets.OPENSHIFT_SA_TOKEN_DEV }}
-          OPENSHIFT_REPOSITORY: ${{ secrets.OPENSHIFT_REPOSITORY }}
-          TAG_NAME: ${{ env.TAG_NAME }}
-        run: |
-          make cd
-
-  bor-updater-cd-by-dispatch:
-    runs-on: ubuntu-24.04
-
-    if: github.event_name == 'workflow_dispatch' && github.repository == 'bcgov-registries/beneficial-ownership'
-    environment:
-      name: "${{ github.event.inputs.environment }}"
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install CLI tools from OpenShift
-        uses: redhat-actions/openshift-tools-installer@v1
-        with:
-          oc: "4"
-
-      - name: Set env by input
-        run: |
-          echo "TAG_NAME=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
-
-      - name: Login Openshift Dev
-        if: env.TAG_NAME == 'dev'
-        shell: bash
-        run: |
-          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN_DEV}}
-
-      - name: Login Openshift Test
-        if: env.TAG_NAME == 'test'
-        shell: bash
-        run: |
-          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN_TEST}}
-
-      - name: Login Openshift Prod
-        if: env.TAG_NAME == 'prod'
-        shell: bash
-        run: |
-          oc login --server=${{secrets.OPENSHIFT_LOGIN_REGISTRY}} --token=${{secrets.OPENSHIFT_SA_TOKEN_PROD}}
-
-      - name: CD Flow
-        shell: bash
-        env:
-          OPS_REPOSITORY: ${{ secrets.OPS_REPOSITORY }}
-          OPENSHIFT_DOCKER_REGISTRY: ${{ secrets.OPENSHIFT_DOCKER_REGISTRY }}
-          OPENSHIFT_SA_NAME: ${{ secrets.OPENSHIFT_SA_NAME }}
-          OPENSHIFT_SA_TOKEN_DEV: ${{ secrets.OPENSHIFT_SA_TOKEN_DEV }}
-          OPENSHIFT_SA_TOKEN_TEST: ${{ secrets.OPENSHIFT_SA_TOKEN_TEST }}
-          OPENSHIFT_SA_TOKEN_PROD: ${{ secrets.OPENSHIFT_SA_TOKEN_PROD }}
-          OPENSHIFT_REPOSITORY: ${{ secrets.OPENSHIFT_REPOSITORY }}
-          TAG_NAME: ${{ env.TAG_NAME }}
-        run: |
-          make cd
+  bor-updater-cd:
+    uses: bcgov/bcregistry-sre/.github/workflows/backend-cd.yaml@main
+    with:
+      target: ${{ inputs.target }}
+      app_name: "bor-solr-updater"
+      working_directory: "./queue-services/bor-solr-updater"
+      redeploy: ${{ inputs.redeploy }}
+    secrets:
+      WORKLOAD_IDENTIFY_POOLS_PROVIDER: ${{ secrets.WORKLOAD_IDENTIFY_POOLS_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}

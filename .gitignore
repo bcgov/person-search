@@ -147,3 +147,5 @@ internal/env_*.md
 
 # ruff cache
 **/.ruff_cache
+
+.history

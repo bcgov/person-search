@@ -19,7 +19,6 @@ jobs:
   bor-updater-ci:
     uses: bcgov/bcregistry-sre/.github/workflows/backend-ci.yaml@main
     with:
-      app_name: "vor-solr-updater"
+      app_name: "bor-solr-updater"
       working_directory: "./queue-services/bor-solr-updater"
       codecov_flag: "bor-solr-updater"
-

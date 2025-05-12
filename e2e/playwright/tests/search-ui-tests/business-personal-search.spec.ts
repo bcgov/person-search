@@ -1,8 +1,8 @@
 import { test } from '@playwright/test';
-import { LoginPage } from '../pages-ui/logonPage';
-import { BusinessAndPersonSearchPage } from '../pages-ui/searchPage';
-import { RegistriesDashboardPage } from '../pages-ui/dashboardPage';
-import  searchData  from '../fixtures/search-testdata.json';
+import { LoginPage } from '../../pages-ui/logonPage';
+import { BusinessAndPersonSearchPage } from '../../pages-ui/searchPage';
+import { RegistriesDashboardPage } from '../../pages-ui/dashboardPage';
+import  searchData  from '../../fixtures/search-ui/search-testdata.json';
 
 /*test('Business Search - UI validation', async ({ page }) => {
   const loginPage = new LoginPage(page);
@@ -34,7 +34,7 @@ test('Person Search - UI validation', async ({ page }) => {
     const registriesDashboardPage = new RegistriesDashboardPage(page);
     
       await loginPage.goto();
-      await loginPage.login();
+      await loginPage.login('bcsc');
       registriesDashboardPage.selectProductAndServices(searchData[0].productAndService);
       await businessAndPersonSearchPage.businessSearch(searchData[0].businessSearchText);
   

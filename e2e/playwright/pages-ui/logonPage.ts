@@ -5,20 +5,33 @@ dotenv.config();
 import { expect } from '@playwright/test';
 export class LoginPage {
   readonly page: Page;
-  readonly loginServiceCardButton: Locator;
-  readonly loginTestButton: Locator;
-  readonly continueButton: Locator;
-  readonly usernameInput: Locator;
-  readonly passwordInput: Locator;
+  readonly loginBcscButton: Locator;
+
+  readonly loginIdirButton: Locator;
+  readonly loginIdirUserName: Locator;
+  readonly loginIdirPassword: Locator;
+  readonly loginIdirContinueButton: Locator;
+
+  readonly loginBcscTestButton: Locator;
+  readonly loginBcscContinueButton: Locator;
+  readonly loginBcscUsernameInput: Locator;
+  readonly loginBcscPasswordInput: Locator;
   
 
   constructor(page: Page) {
     this.page = page;
-    this.loginServiceCardButton = page.getByRole('button', { name: 'Login with BC Services Card' });
-    this.loginTestButton = page.getByRole('button', { name: 'Log in with Test with username and password' });
-    this.usernameInput = page.locator('#username');
-    this.passwordInput = page.locator('#password');
-    this.continueButton = page.getByRole('button', { name: 'Continue' });
+    this.loginBcscButton = page.getByRole('button', { name: 'Login with BC Services Card' });
+    this.loginBcscTestButton = page.getByRole('button', { name: 'Log in with Test with username and password' });
+    this.loginBcscUsernameInput = page.locator('#username');
+    this.loginBcscPasswordInput = page.locator('#password');
+    this.loginBcscContinueButton = page.getByRole('button', { name: 'Continue' });
+
+
+    this.loginIdirButton = page.getByRole('button', { name: 'Login with IDIR' });
+    this.loginIdirUserName = page.locator('#user');
+    this.loginIdirPassword = page.locator('#password');
+    this.loginIdirContinueButton = page.getByRole('button', { name: 'Continue' });
+
   }
 
   async goto() {
@@ -27,15 +40,64 @@ export class LoginPage {
 
   }
 
-  async login() {
-    await this.loginServiceCardButton.click();
-    await this.loginTestButton.click();   
-    await this.usernameInput.fill(process.env.PLAYWRIGHT_TEST_BCSC_USERNAME);
-    await this.passwordInput.fill(process.env.PLAYWRIGHT_TEST_BCSC_PASSWORD);
-    await this.continueButton.click();
+  async login(loginType: string) {
+    if(loginType === 'bcsc') {
+      console.info(`[AuthSetup] Logging in with BCSC`)
+    await this.loginBcscButton.click();
+    await this.loginBcscTestButton.click();   
+    await this.loginBcscUsernameInput.fill(process.env.PLAYWRIGHT_TEST_BCSC_USERNAME);
+    await this.loginBcscPasswordInput.fill(process.env.PLAYWRIGHT_TEST_BCSC_PASSWORD);
+    await this.loginBcscContinueButton.click();
+  } else if (loginType === 'idir') {
+    console.info(`[AuthSetup] Logging in with IDIR`)
+    await this.loginIdirButton.click();
+    await this.loginIdirUserName.fill(process.env.PLAYWRIGHT_TEST_IDIR_USERNAME);
+    await this.loginIdirPassword.fill(process.env.PLAYWRIGHT_TEST_IDIR_PASSWORD);
+    await this.loginIdirContinueButton.click();
+  } else {
+    console.error('Invalid logi n type selected');  
+  }
+    await this.page.waitForTimeout(5000);
     await expect(this.page).toHaveTitle('BC Registries Dashboard - BC Registries and Online Services') 
     console.info(`[AuthSetup] Logged in successfully`)
     await expect(this.page).toHaveURL(process.env.NUXT_BASE_URL  + 'en-CA/dashboard');
     console.info(`[AuthSetup] Navigated to dashboard page: ${process.env.NUXT_BASE_URL }`)
   }
-}
+
+  async loginAndReturnToken(loginType: string): Promise<string> {
+    if (loginType === 'idir') {
+      console.info(`[AuthSetup] Logging in with IDIR`)
+      await this.loginIdirButton.click();
+      await this.page.waitForTimeout(5000); 
+      await this.loginIdirUserName.fill(process.env.PLAYWRIGHT_TEST_IDIR_USERNAME);
+      await this.loginIdirPassword.fill(process.env.PLAYWRIGHT_TEST_IDIR_PASSWORD);
+      await this.loginIdirContinueButton.click();
+    } else {
+      console.info(`[AuthSetup] Logging in with BCSC`)
+      await this.loginBcscButton.click();
+      await this.loginBcscTestButton.click();   
+      await this.loginBcscUsernameInput.fill(process.env.PLAYWRIGHT_TEST_BCSC_USERNAME);
+      await this.loginBcscPasswordInput.fill(process.env.PLAYWRIGHT_TEST_BCSC_PASSWORD);
+      await this.loginBcscContinueButton.click();
+    }
+    await this.page.waitForTimeout(5000);
+  
+    console.info(`[AuthSetup] Logged in successfully`)
+    console.info(`[AuthSetup] Navigated to dashboard page: ${process.env.NUXT_BASE_URL }`)
+    // Extract token from localStorage
+    //const token = await this.page.evaluate(() => {
+    //  return localStorage.getItem('access_token'); // Replace with the actual key your app uses
+    //});
+   // console.log('Token from localStorage:', token);
+    const tokenSessionStorage = await this.page.evaluate(() => {
+      return sessionStorage.getItem('KEYCLOAK_TOKEN'); // Adjust key if needed
+    });
+    console.log('Token from sessionStorage:', tokenSessionStorage);
+    
+    if (tokenSessionStorage) {
+      return tokenSessionStorage;
+    } 
+      throw new Error('No token found in localStorage or sessionStorage');
+    }
+  }
+

@@ -14,7 +14,6 @@ cx-Oracle = "8.3.0"
 psycopg2-binary = "2.9.6"
 python-dotenv = "^1.0.0"
 requests = "^2.28.2"
-sentry-sdk = {extras = ["flask"], version = "^1.17.0"}
 bor-api = {path = "../bor-api"}
 phonenumbers = "^8.13.38"
 flask-caching = "2.0.1"

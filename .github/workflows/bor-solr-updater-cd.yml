@@ -1,14 +1,13 @@
 name: BOR Solr Updater CD
 
 on:
-  # Manual for now
-  # push:
-  #   branches:
-  #     - main
-  #     - feature*
-  #     - hotfix*
-  #   paths:
-  #     - "queue-services/bor-solr-updater/**"
+  push:
+    branches:
+      - main
+      - feature*
+      - hotfix*
+    paths:
+      - "queue-services/bor-solr-updater/**"
   workflow_dispatch:
     inputs:
       target:

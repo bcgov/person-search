@@ -29,6 +29,9 @@ on:
 
 jobs:
   bor-solr-importer-cd:
+    permissions:
+        contents: "write"
+        id-token: "write"
     uses: bcgov/bcregistry-sre/.github/workflows/backend-cronjob-cd-ocp.yaml@main
     with:
       target: ${{ inputs.target }}

@@ -21,23 +21,23 @@ from bor_solr_importer import oracle_db
 def _get_stringified_list_for_sql(config_value: str) -> str:
     """Return the values from the config in a format usable for the execute statement."""
     if items := current_app.config.get(config_value, []):
-        return ','.join([f"'{x}'" for x in items]).replace(')', '')
+        return ",".join([f"'{x}'" for x in items]).replace(")", "")
 
-    return ''
+    return ""
 
 
-def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
+def collect_colin_data(corp_num_min: str, corp_num_max: str | None = None):
     """Collect data from COLIN."""
-    max_corp_num_clause = f"and c.corp_num < '{corp_num_max}'" if corp_num_max else ''
-    debug_clause = ''
-    if debug_identfiers := _get_stringified_list_for_sql(config_value='DEBUG_IDENTIFIERS'):
+    max_corp_num_clause = f"and c.corp_num < '{corp_num_max}'" if corp_num_max else ""
+    debug_clause = ""
+    if debug_identfiers := _get_stringified_list_for_sql(config_value="DEBUG_IDENTIFIERS"):
         # will only select from identifiers we are interested in debugging
-        debug_clause = f'and c.corp_num in ({debug_identfiers})'
+        debug_clause = f"and c.corp_num in ({debug_identfiers})"
 
-    current_app.logger.debug('Connecting to Oracle instance...')
+    current_app.logger.debug("Connecting to Oracle instance...")
     cursor = oracle_db.connection.cursor()
 
-    current_app.logger.debug('Collecting batch from COLIN...')
+    current_app.logger.debug("Collecting batch from COLIN...")
     cursor.execute(f"""
         SELECT c.corp_num as identifier, c.corp_typ_cd as legal_type, c.bn_15 as tax_id, c.admin_email,
             cn.corp_nme as legal_name, cp.business_nme as organization_name, cp.first_nme as first_name,
@@ -99,22 +99,19 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str = None):
 
 def collect_lear_data():
     """Collect data from LEAR."""
-    debug_clause = ''
-    if debug_identfiers := _get_stringified_list_for_sql('DEBUG_IDENTIFIERS'):
+    debug_clause = ""
+    if debug_identfiers := _get_stringified_list_for_sql("DEBUG_IDENTIFIERS"):
         # will only select from identifiers we are interested in debugging
-        debug_clause = f'and b.identifier in ({debug_identfiers})'
+        debug_clause = f"and b.identifier in ({debug_identfiers})"
 
-    if current_app.config.get('DB_LOCATION') == 'GCP':
-        return _collect_lear_data_gcp(debug_clause.replace('b.identifier', 'le.identifier'))
-
-    current_app.logger.debug('Connecting to LEAR OCP Postgres instance...')
-    conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
-                            port=current_app.config.get('DB_PORT'),
-                            database=current_app.config.get('DB_NAME'),
-                            user=current_app.config.get('DB_USER'),
-                            password=current_app.config.get('DB_PASSWORD'))
+    current_app.logger.debug("Connecting to LEAR OCP Postgres instance...")
+    conn = psycopg2.connect(host=current_app.config.get("DB_HOST"),
+                            port=current_app.config.get("DB_PORT"),
+                            database=current_app.config.get("DB_NAME"),
+                            user=current_app.config.get("DB_USER"),
+                            password=current_app.config.get("DB_PASSWORD"))
     cur = conn.cursor()
-    current_app.logger.debug('Collecting LEAR data...')
+    current_app.logger.debug("Collecting LEAR data...")
     cur.execute(f"""
         SELECT b.identifier,b.legal_name,b.legal_type,b.tax_id,
             pr.id as party_role_id,pr.role,pr.appointment_date,pr.cessation_date,
@@ -138,64 +135,30 @@ def collect_lear_data():
     return cur
 
 
-def _collect_lear_data_gcp(debug_clause=''):
-    """Collect data from LEAR."""
-    current_app.logger.debug('Connecting to LEAR GCP Postgres instance...')
-    conn = psycopg2.connect(host=current_app.config.get('DB_HOST'),
-                            port=current_app.config.get('DB_PORT'),
-                            database=current_app.config.get('DB_NAME'),
-                            user=current_app.config.get('DB_USER'),
-                            password=current_app.config.get('DB_PASSWORD'))
-    cur = conn.cursor()
-    current_app.logger.debug('Collecting LEAR data...')
-    cur.execute(f"""
-        SELECT le.identifier,le.legal_name,le.entity_type as legal_type,le.tax_id,
-            er.id as role_id,er.role_type as role,er.appointment_date,er.cessation_date,
-            rle.first_name,rle.middle_initial,rle.last_name,rle.id as party_id,
-            rle_a.street as party_street,rle_a.street_additional as party_street_additional,
-            rle_a.city as party_city,rle_a.country as party_country,rle_a.region as party_region,
-            rle_a.postal_code as party_postal_code,
-            CASE when le.state = 'LIQUIDATION' then 'ACTIVE' else le.state END state
-        FROM legal_entities le
-            JOIN (SELECT id,role_type,appointment_date,cessation_date,legal_entity_id,related_entity_id
-                    FROM entity_roles
-                  UNION
-                  SELECT id,role_type,appointment_date,cessation_date,legal_entity_id,related_entity_id
-                    FROM entity_roles_history where cessation_date is not null
-                  ) AS er ON er.legal_entity_id = le.id
-            JOIN legal_entities rle ON rle.id = er.related_entity_id
-            LEFT JOIN addresses rle_a ON rle_a.id = rle.delivery_address_id
-        WHERE le.entity_type in ({_get_stringified_list_for_sql('MODERNIZED_LEGAL_TYPES')})
-            AND rle.entity_type='person'
-            {debug_clause}
-        """)
-    return cur
-
-
-def collect_btr_data(limit: int = None, offset: int = None):
+def collect_btr_data(limit: int | None = None, offset: int | None = None):
     """Collect data from BTR."""
-    limit_clause = ''
+    limit_clause = ""
     if limit:
-        limit_clause = f'LIMIT {limit}'
+        limit_clause = f"LIMIT {limit}"
     if offset:
-        limit_clause += f' OFFSET {offset}'
+        limit_clause += f" OFFSET {offset}"
     if limit_clause:
         # NOTE: needed in order to make sure we get every record when doing batch loads
-        limit_clause = f'ORDER BY p.id {limit_clause}'
+        limit_clause = f"ORDER BY p.id {limit_clause}"
 
-    debug_clause = ''
-    if debug_identfiers := _get_stringified_list_for_sql('DEBUG_IDENTIFIERS'):
+    debug_clause = ""
+    if debug_identfiers := _get_stringified_list_for_sql("DEBUG_IDENTIFIERS"):
         # will only select from identifiers we are interested in debugging
-        debug_clause = f'WHERE s.business_identifier IN ({debug_identfiers})'
+        debug_clause = f"WHERE s.business_identifier IN ({debug_identfiers})"
 
-    current_app.logger.debug('Connecting to BTR GCP Postgres instance...')
-    conn = psycopg2.connect(host=current_app.config.get('BTR_DB_HOST'),
-                            port=current_app.config.get('BTR_DB_PORT'),
-                            database=current_app.config.get('BTR_DB_NAME'),
-                            user=current_app.config.get('BTR_DB_USER'),
-                            password=current_app.config.get('BTR_DB_PASSWORD'))
+    current_app.logger.debug("Connecting to BTR GCP Postgres instance...")
+    conn = psycopg2.connect(host=current_app.config.get("BTR_DB_HOST"),
+                            port=current_app.config.get("BTR_DB_PORT"),
+                            database=current_app.config.get("BTR_DB_NAME"),
+                            user=current_app.config.get("BTR_DB_USER"),
+                            password=current_app.config.get("BTR_DB_PASSWORD"))
     cur = conn.cursor()
-    current_app.logger.debug('Collecting BTR data...')
+    current_app.logger.debug("Collecting BTR data...")
     cur.execute(f"""
                 SELECT s.business_identifier, o.ownership_json, p.person_json
                 FROM submission s

@@ -1,10 +1,14 @@
-name: BOR SOLR IMPORTER CI
+name: BOR Solr Importer CI
 
 on:
   pull_request:
-    types: [assigned, synchronize]
+    branches:
+      - main
+      - feature*
+      - hotfix*
     paths:
       - "bor-solr-importer/**"
+  workflow_dispatch:
 
 defaults:
   run:
@@ -12,48 +16,9 @@ defaults:
     working-directory: ./bor-solr-importer
 
 jobs:
-  setup-job:
-    runs-on: ubuntu-24.04
-
-    if: github.repository == 'bcgov-registries/beneficial-ownership'
-
-    steps:
-      - uses: actions/checkout@v3
-      - run: "true"
-
-  linting:
-    needs: setup-job
-    runs-on: ubuntu-24.04
-
-    strategy:
-      matrix:
-        python-version: [3.11]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          make setup
-      - name: Lint with pylint
-        id: pylint
-        run: |
-          make pylint
-      - name: Lint with flake8
-        id: flake8
-        run: |
-          make flake8
-
-  build-check:
-    needs: setup-job
-    runs-on: ubuntu-24.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: build to check strictness
-        id: build
-        run: |
-          make build-nc
+  bor-importer-ci:
+    uses: bcgov/bcregistry-sre/.github/workflows/backend-ci.yaml@main
+    with:
+      app_name: "bor-solr-importer"
+      working_directory: "./bor-solr-importer"
+      codecov_flag: "bor-solr-importer"

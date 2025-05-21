@@ -1,136 +1,26 @@
-.PHONY: license
-.PHONY: setup
-.PHONY: ci cd
-.PHONY: run
-
-MKFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
-CURRENT_ABS_DIR:=$(patsubst %/,%,$(dir $(MKFILE_PATH)))
-
-PROJECT_NAME:=bor_solr_importer
 DOCKER_NAME:=bor-solr-importer
 
 #################################################################################
 # COMMANDS -- Setup                                                             #
 #################################################################################
-setup: install install-dev ## Setup the project
-
-clean: clean-build clean-pyc clean-test ## Clean the project
-	rm -rf .venv/
-
-clean-build: ## Clean build files
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
-	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -fr {} +
-
-clean-pyc: ## Clean cache files
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
-
-clean-test: ## clean test files
-	find . -name '.pytest_cache' -exec rm -fr {} +
-	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
-
-build-req: clean ## Upgrade requirements
-	pip install poetry
-	poetry config virtualenvs.in-project true
-	poetry update
-	. .venv/bin/activate
-
-install: clean ## Install python virtrual environment
-	pip install poetry
-	poetry config virtualenvs.in-project true
-	poetry install --only main
-	. .venv/bin/activate
-
-install-dev: ## Install local application
-	pip install poetry
-	poetry config virtualenvs.in-project true
-	poetry install --only dev
-	. .venv/bin/activate
 
 #################################################################################
 # COMMANDS - CI                                                                 #
 #################################################################################
-.PHONY: lint # grouped targets for this section
+.PHONY: build
 
-ci: pylint flake8 test ## CI flow
-
-pylint: ## Linting with pylint
-	. .venv/bin/activate && pylint --rcfile=setup.cfg src/$(PROJECT_NAME)
-	. .venv/bin/activate && pylint --rcfile=setup.cfg data_import_handler --disable=E0401
-
-flake8: ## Linting with flake8 ## tests
-	. .venv/bin/activate && flake8 src/$(PROJECT_NAME)
-	. .venv/bin/activate && flake8 data_import_handler.py
-
-lint: pylint flake8 ## run all lint type scripts
-
-test: ## Unit testing
-	@echo "RUN_SOLR_TESTS $(RUN_SOLR_TESTS) RUN_LD_TESTS $(RUN_LD_TESTS)";\
-	. .venv/bin/activate && pytest
-
-mac-cov: test ## Run the coverage report and display in a browser window (mac)
-	@open -a "Google Chrome" htmlcov/index.html
-
-#################################################################################
-# COMMANDS - CD
-# expects the terminal to be openshift login
-# expects export OPENSHIFT_DOCKER_REGISTRY=""
-# expects export OPENSHIFT_SA_NAME="$(oc whoami)"
-# expects export OPENSHIFT_SA_TOKEN_DEV/TEST/PROD="$(oc whoami -t)"
-# expects export OPENSHIFT_REPOSITORY=""
-# expects export TAG_NAME="dev/test/prod"
-# expects export OPS_REPOSITORY=""                                                        #
-#################################################################################
-cd: ## CD flow
-ifeq ($(TAG_NAME), test)
-cd: |
-	oc -n "$(OPENSHIFT_REPOSITORY)-tools" tag $(DOCKER_NAME):dev $(DOCKER_NAME):$(TAG_NAME)
-else ifeq ($(TAG_NAME), prod)
-cd: |
-	oc -n "$(OPENSHIFT_REPOSITORY)-tools" tag $(DOCKER_NAME):$(TAG_NAME) $(DOCKER_NAME):$(TAG_NAME)-$(shell date +%F)
-	oc -n "$(OPENSHIFT_REPOSITORY)-tools" tag $(DOCKER_NAME):test $(DOCKER_NAME):$(TAG_NAME)
-else
-TAG_NAME=dev
-cd: build tag
-endif
-
-build: ## Build the docker
-	rm -rf .build/
-	mkdir .build
-	cp -r ../bor-api ./.build/
+build: ## Build the docker container
 	docker build . -t $(DOCKER_NAME) \
 	    --platform linux/amd64 \
 	    --build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
 	    --build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 build-nc: ## Build the docker container without caching
-	rm -rf .build/
-	mkdir .build
-	cp -r ../bor-api ./.build/
 	docker build --no-cache -t $(DOCKER_NAME) .
-
-REGISTRY_IMAGE=$(OPENSHIFT_DOCKER_REGISTRY)/$(OPENSHIFT_REPOSITORY)-tools/$(DOCKER_NAME)
-push: #build ## Push the docker container to the registry & tag latest
-	@echo "$(OPENSHIFT_SA_TOKEN_DEV)" | docker login $(OPENSHIFT_DOCKER_REGISTRY) -u $(OPENSHIFT_SA_NAME) --password-stdin ;\
-    docker tag $(DOCKER_NAME) $(REGISTRY_IMAGE):latest ;\
-    docker push $(REGISTRY_IMAGE):latest
-
-tag: push ## tag image
-	oc -n "$(OPENSHIFT_REPOSITORY)-tools" tag $(DOCKER_NAME):latest $(DOCKER_NAME):$(TAG_NAME)
 
 #################################################################################
 # COMMANDS - Local                                                              #
 #################################################################################
-
-run: ## Run the project in local
-	. venv/bin/activate && python run.py
 
 #################################################################################
 # Self Documenting Commands                                                     #

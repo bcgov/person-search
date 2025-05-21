@@ -11,15 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""This module wraps the calls to external services used by the API."""
+from flask_jwt_oidc import JwtManager
 
-"""Version of this service in PEP440.
+from .bor_solr import BorSolr
 
-[N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-Epoch segment: N!
-Release segment: N(.N)*
-Pre-release segment: {a|b|rc}N
-Post-release segment: .postN
-Development release segment: .devN
-"""
-
-__version__ = "1.1.2"  # pylint: disable=invalid-name
+solr = BorSolr()
+jwt = JwtManager()

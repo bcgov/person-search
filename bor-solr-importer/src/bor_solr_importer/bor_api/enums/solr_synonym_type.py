@@ -11,15 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Enum for solr syonym types."""
+from enum import auto
 
-"""Version of this service in PEP440.
+from .base import BaseEnum
 
-[N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-Epoch segment: N!
-Release segment: N(.N)*
-Pre-release segment: {a|b|rc}N
-Post-release segment: .postN
-Development release segment: .devN
-"""
 
-__version__ = "1.1.2"  # pylint: disable=invalid-name
+class SolrSynonymType(BaseEnum):
+    """Enum of the solr synonym types."""
+
+    ADDRESS = auto()
+    NAME = auto()

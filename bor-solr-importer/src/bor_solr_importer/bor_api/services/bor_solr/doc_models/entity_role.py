@@ -1,0 +1,53 @@
+# Copyright © 2023 Province of British Columbia
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+"""Manages dataclass for the solr entity role doc."""
+from dataclasses import dataclass
+
+from .address import Address
+from .date_range import DateRange
+from .interest import Interest
+
+
+@dataclass
+class EntityRole:
+    """Class representation for a solr entity role doc."""
+
+    id: str
+    relatedEntityType: str
+    relatedIdentifier: str
+    relatedLegalType: str
+    relatedName: str
+    relatedState: str
+    roleDates: list[DateRange]
+    roleType: str  # i.e. director, partner, significant individual, incorporator, etc.
+    relatedAddresses: list[Address] = None
+    relatedBN: str = None
+    relatedEmail: str = None
+    relatedInterests: list[Interest] = None
+    related_q: str = None
+
+    def __post_init__(self):
+        """Set extra solr role search fields dependent on base fields."""
+        self.related_q = f"{self.relatedName} {self.relatedIdentifier} {self.relatedBN or ''}".strip()
+        self.roleType = self.roleType.replace("_", " ").upper()
+
+        for address in self.relatedAddresses or []:
+            # set parent doc to entityRole and remove address_q since we don't search over role addresses
+            if isinstance(address, dict):
+                address["parentDoc"] = "entityRole"
+                if address.get("address_q"):
+                    del address["address_q"]
+            elif isinstance(address, Address):
+                address.parentDoc = "entityRole"
+                address.address_q = None

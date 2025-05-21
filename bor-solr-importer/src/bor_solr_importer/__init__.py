@@ -15,36 +15,27 @@
 
 This module is the API for the BC Registries Registry Search system.
 """
-import logging
-import logging.config
 import os
-from http import HTTPStatus
 
-import sentry_sdk  # noqa: I001; pylint: disable=ungrouped-imports; conflicts with Flake8
-from sentry_sdk.integrations.flask import FlaskIntegration  # noqa: I001
-from bor_api.services import solr  # noqa: I001
-from bor_api.services.authz import auth_cache
-from dotenv import load_dotenv
-from flask import Flask  # noqa: I001
+from flask import Flask
 
-from bor_solr_importer.config import config
-from bor_solr_importer.logging import setup_logging
+from bor_solr_importer.bor_api.services import solr
+from bor_solr_importer.bor_api.services.authz import auth_cache
+from bor_solr_importer.config import DevelopmentConfig, ProductionConfig, UnitTestingConfig
 from bor_solr_importer.oracle import oracle_db
 from bor_solr_importer.version import __version__
-# noqa: I003; the sentry import creates a bad line count in isort
-
-setup_logging(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'logging.conf'))  # important to do this first
+from structured_logging import StructuredLogging
 
 
 def _get_build_openshift_commit_hash():
-    return os.getenv('OPENSHIFT_BUILD_COMMIT', None)
+    return os.getenv("OPENSHIFT_BUILD_COMMIT", None)
 
 
 def get_run_version():
     """Return a formatted version string for this service."""
     commit_hash = _get_build_openshift_commit_hash()
     if commit_hash:
-        return f'{__version__}-{commit_hash}'
+        return f"{__version__}-{commit_hash}"
     return __version__
 
 
@@ -52,24 +43,21 @@ def register_shellcontext(app):
     """Register shell context objects."""
     def shell_context():
         """Shell context objects."""
-        return {'app': app}
+        return {"app": app}
 
     app.shell_context_processor(shell_context)
 
 
-def create_app(config_name: str = os.getenv('APP_ENV') or 'production'):
+def create_app(config_name: str = os.getenv("DEPLOYMENT_ENV", "production") or "production"):
     """Return a configured Flask App using the Factory method."""
+    config = {
+        "development": DevelopmentConfig,
+        "production": ProductionConfig,
+        "testing": UnitTestingConfig,
+    }
     app = Flask(__name__)
-    app.config.from_object(config[config_name])
-
-    # Configure Sentry
-    if dsn := app.config.get('SENTRY_DSN'):
-        sentry_sdk.init(  # pylint: disable=E0110
-            dsn=dsn,
-            integrations=[FlaskIntegration()],
-            environment=app.config.get('POD_NAMESPACE'),
-            release=f'bor-solr-importer@{get_run_version()}',
-            traces_sample_rate=app.config.get('SENTRY_TSR'))
+    app.config.from_object(config.get(config_name, ProductionConfig))
+    app.logger = StructuredLogging(app).get_logger()
 
     oracle_db.init_app(app)
     solr.init_app(app)

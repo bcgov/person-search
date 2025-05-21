@@ -11,15 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Manages dataclass for the solr date range doc."""
+from dataclasses import dataclass
+from datetime import datetime
 
-"""Version of this service in PEP440.
 
-[N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-Epoch segment: N!
-Release segment: N(.N)*
-Pre-release segment: {a|b|rc}N
-Post-release segment: .postN
-Development release segment: .devN
-"""
+@dataclass
+class DateRange:
+    """Class representation for a solr date range."""
 
-__version__ = "1.1.2"  # pylint: disable=invalid-name
+    start: datetime = None  # query i.e. ['[2022-03-21 TO 2022-10-05]','[2023-01-01 TO *]']
+    end: datetime = None
+    active: bool = None
+
+    def __post_init__(self):
+        """Set solr date range fields dependent on base fields."""
+        self.active = not self.end

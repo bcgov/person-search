@@ -41,8 +41,8 @@ class OracleDB:
     @staticmethod
     def teardown(exc=None):
         """Oracle session pool cleans up after itself."""
-        print(f'teardown {exc}')
-        pool = g.pop('_oracle_pool', None)
+        print(f"teardown {exc}")  # noqa: T201
+        pool = g.pop("_oracle_pool", None)
 
         if pool is not None:
             try:
@@ -59,12 +59,12 @@ class OracleDB:
         def init_session(conn, *args):  # pylint: disable=unused-argument; Extra var being passed with call
             cursor = conn.cursor()
             cursor.execute("alter session set TIME_ZONE = 'America/Vancouver'")
-        host = current_app.config.get('ORACLE_HOST')
-        port = current_app.config.get('ORACLE_PORT')
-        db_name = current_app.config.get('ORACLE_DB_NAME')
-        return cx_Oracle.SessionPool(user=current_app.config.get('ORACLE_USER'),  # pylint:disable=c-extension-no-member
-                                     password=current_app.config.get('ORACLE_PASSWORD'),
-                                     dsn=f'{host}:{port}/{db_name}',
+        host = current_app.config.get("ORACLE_HOST")
+        port = current_app.config.get("ORACLE_PORT")
+        db_name = current_app.config.get("ORACLE_DB_NAME")
+        return cx_Oracle.SessionPool(user=current_app.config.get("ORACLE_USER"),  # pylint:disable=c-extension-no-member
+                                     password=current_app.config.get("ORACLE_PASSWORD"),
+                                     dsn=f"{host}:{port}/{db_name}",
                                      min=1,
                                      max=10,
                                      increment=1,
@@ -82,7 +82,7 @@ class OracleDB:
         and then return an acquired session
         :return: cx_Oracle.connection type
         """
-        if '_oracle_pool' not in g:
+        if "_oracle_pool" not in g:
             g._oracle_pool = self._create_pool()  # pylint: disable=protected-access, assigning-non-slot
 
         return g._oracle_pool.acquire()  # pylint: disable=protected-access

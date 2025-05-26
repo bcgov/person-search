@@ -48,8 +48,6 @@ class Config:  # pylint: disable=too-few-public-methods
     BOR_API_URL = os.getenv("BOR_API_INTERNAL_URL", "http://")
     BOR_API_V1 = os.getenv("BOR_API_VERSION", "")
 
-    LD_SDK_KEY = os.getenv("LD_SDK_KEY", None)
-
     BATCH_SIZE_SOLR = int(os.getenv("SOLR_BATCH_UPDATE_SIZE", "1000"))
     BATCH_SIZE_SOLR_SI = int(os.getenv("SOLR_BATCH_UPDATE_SIZE_SI", "1000"))
     REINDEX_CORE = os.getenv("REINDEX_CORE", "False") == "True"

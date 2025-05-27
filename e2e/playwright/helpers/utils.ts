@@ -19,4 +19,20 @@ export function getFormattedDate(format: string = 'YYYY-MM-DD'): string {
         return `${year}-${month}-${day}`;
     }
   }
+
+  export function getFormattedUTCDate() : string{
+  const now = new Date();
+
+  const pad = (num: number, size = 2) => String(num).padStart(size, '0');
+
+  const yyyy = now.getUTCFullYear();
+  const mm = pad(now.getUTCMonth() + 1);
+  const dd = pad(now.getUTCDate());
+  const hh = pad(now.getUTCHours());
+  const min = pad(now.getUTCMinutes());
+  const ss = pad(now.getUTCSeconds());
+  const ms = pad(now.getUTCMilliseconds(), 3);
+
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}.${ms}+00:00`;
+}
   

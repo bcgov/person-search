@@ -1,0 +1,14 @@
+[
+    {
+        "businessLegalType": "BC",
+        "incorporationApplicationLegalType": "BC",
+        "officerFistName" : "APIOfficer1FN",
+        "officerLastName" : "APIOfficer1LN",
+        "addNewOfficerFirstName" : "APIOfficer2FN",
+        "addNewOfficerLastName" : "APIOfficer2LN",
+        "ceaseOfficerFistName" : "APIOfficer1FN",
+        "ceaseOfficerLastName" : "APIOfficer1LN"
+
+    }
+    
+  ]

@@ -11,6 +11,10 @@ export class incorporationApplication{
     filingId!: string;
     todayDate!: string;
     businessIdentifier!: string;
+    legalName!: string;
+    firstName!: string;
+    lastName!: string;
+
 
 
     constructor(businessLegalType: string, accountId: number,
@@ -60,8 +64,11 @@ export class incorporationApplication{
         console.log('Filling ID:', json.filing.header.filingId);
         this.filingId = json.filing.header.filingId;
         }
-    async apiFillingIncorporationApplication() {
+    async apiFillingIncorporationApplication(officerFirstName: string, officerLastName: string) {
         this.todayDate = getFormattedDate('YYYY-MM-DD')
+        this.firstName = officerFirstName;
+        this.lastName = officerLastName;
+        
         const legalApiBaseUrl = process.env.LEGALAPI_BASEURL_TEST
         // Create a new API request context with headers
         const apiContext2 = await request.newContext({
@@ -214,20 +221,30 @@ export class incorporationApplication{
           },
         });
         console.log('Request URL:', urlGet);
-      const response3 = await apiContext3.get(urlGet);
+      const response3 = await apiContext3.get(urlGet, {
+        timeout: 100000 // 60 seconds
+        });
       
 
       console.log(urlGet);
       // Validate response
       expect(response3.status()).toBe(200);
+     // await new Promise(resolve => setTimeout(resolve, 4000));
+
       const responsejson2 = await response3.json();
       console.log(responsejson2);
       console.log('Business Identifier:', responsejson2.filing.business.identifier);
       this.businessIdentifier = responsejson2.filing.business.identifier;
-    
+      
+      this.legalName = responsejson2.filing.business.legalName;
+      console.log('Legal Name:', responsejson2.filing.business.legalName);
+
     }
 
     getBusinessIdentifier(): string {
         return this.businessIdentifier;
+    }
+    getLegalName(): string {
+        return this.legalName;
     }
 }

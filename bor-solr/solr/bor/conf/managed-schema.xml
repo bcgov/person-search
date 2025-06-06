@@ -198,7 +198,7 @@
   <fieldType name="datetime" class="solr.DateRangeField"/>
   <fieldType name="base_ngram" class="solr.TextField">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
+      <charFilter name="patternReplace" pattern="([()^{}\\|])" replacement=""/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="nGram" maxGramSize="50" minGramSize="1"/>
@@ -224,7 +224,7 @@
   </fieldType>
   <fieldType name="multi_word_ngram" class="solr.TextField">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
+      <charFilter name="patternReplace" pattern="([()^{}\\|])" replacement=""/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
@@ -242,7 +242,7 @@
   </fieldType>
   <fieldType name="synonym_address" class="solr.TextField">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
+      <charFilter name="patternReplace" pattern="([()^{}\\|])" replacement=""/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="managedSynonymGraph" managed="ADDRESS"/>
@@ -258,7 +258,7 @@
   </fieldType>
   <fieldType name="synonym_name" class="solr.TextField">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
+      <charFilter name="patternReplace" pattern="([()^{}\\|])" replacement=""/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
       <filter name="managedSynonymGraph" managed="NAME"/>
@@ -273,7 +273,7 @@
   </fieldType>
   <fieldType name="text_stemmed" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
+      <charFilter name="patternReplace" pattern="([()^{}\\|])" replacement=""/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
@@ -292,7 +292,7 @@
   </fieldType>
   <fieldType name="text_stemmed_agro" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="([()^{}\|])" replacement=""/>
+      <charFilter name="patternReplace" pattern="([()^{}\\|])" replacement=""/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>
@@ -311,7 +311,7 @@
   </fieldType>
   <fieldType name="text_extra" class="solr.TextField" positionIncrementGap="100">
     <analyzer type="index">
-      <charFilter name="patternReplace" pattern="([()^{}\|.])" replacement=""/>
+      <charFilter name="patternReplace" pattern="([()^{}\\|.])" replacement=""/>
       <charFilter name="patternReplace" pattern="([&amp;+]+)" replacement=" and "/>
       <tokenizer name="whitespace"/>
       <filter name="lowercase"/>

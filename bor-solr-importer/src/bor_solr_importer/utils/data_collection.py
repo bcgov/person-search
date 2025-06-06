@@ -113,15 +113,14 @@ def collect_lear_data():
     cur = conn.cursor()
     current_app.logger.debug("Collecting LEAR data...")
     cur.execute(f"""
-        SELECT b.identifier,b.legal_name,b.legal_type,b.tax_id,
+        SELECT b.identifier,b.legal_name,b.legal_type,b.state,b.tax_id,
             pr.id as party_role_id,pr.role,pr.appointment_date,pr.cessation_date,
             p.first_name,p.middle_initial,p.last_name,p.organization_name,p.party_type,
             p.id as party_id,p.identifier as party_identifier,
             p_a.street as party_street,p_a.street_additional as party_street_additional,
             p_a.city as party_city,p_a.country as party_country,p_a.region as party_region,
             p_a.postal_code as party_postal_code, p_a.delivery_instructions as party_delivery_instructions,
-            a.street,a.street_additional,a.city,a.country,a.region,a.postal_code,a.delivery_instructions,
-            CASE when b.state = 'LIQUIDATION' then 'ACTIVE' else b.state END state
+            a.street,a.street_additional,a.city,a.country,a.region,a.postal_code,a.delivery_instructions
         FROM businesses b
             JOIN party_roles pr on pr.business_id = b.id
             JOIN parties p on p.id = pr.party_id

@@ -18,7 +18,7 @@ These will get initialized by the application.
 from __future__ import annotations
 
 import cx_Oracle
-from flask import current_app, g
+from flask import Flask, current_app, g
 
 
 class OracleDB:
@@ -29,7 +29,7 @@ class OracleDB:
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app: Flask):
         """Create setup for the extension.
 
         :param app: Flask app
@@ -56,19 +56,19 @@ class OracleDB:
 
         :return: an instance of the OCI Session Pool
         """
-        def init_session(conn, *args):  # pylint: disable=unused-argument; Extra var being passed with call
+        def init_session(conn, *args):
             cursor = conn.cursor()
             cursor.execute("alter session set TIME_ZONE = 'America/Vancouver'")
-        host = current_app.config.get("ORACLE_HOST")
-        port = current_app.config.get("ORACLE_PORT")
-        db_name = current_app.config.get("ORACLE_DB_NAME")
-        return cx_Oracle.SessionPool(user=current_app.config.get("ORACLE_USER"),  # pylint:disable=c-extension-no-member
+
+        return cx_Oracle.SessionPool(user=current_app.config.get("ORACLE_USER"),
                                      password=current_app.config.get("ORACLE_PASSWORD"),
-                                     dsn=f"{host}:{port}/{db_name}",
+                                     dsn="{0}:{1}/{2}".format(current_app.config.get("ORACLE_HOST"),  # noqa: UP030
+                                                              current_app.config.get("ORACLE_PORT"),
+                                                              current_app.config.get("ORACLE_DB_NAME")),
                                      min=1,
                                      max=10,
                                      increment=1,
-                                     getmode=cx_Oracle.SPOOL_ATTRVAL_NOWAIT,  # pylint:disable=c-extension-no-member
+                                     getmode=cx_Oracle.SPOOL_ATTRVAL_NOWAIT,
                                      wait_timeout=1500,
                                      timeout=3600,
                                      session_callback=init_session)
@@ -83,10 +83,6 @@ class OracleDB:
         :return: cx_Oracle.connection type
         """
         if "_oracle_pool" not in g:
-            g._oracle_pool = self._create_pool()  # pylint: disable=protected-access, assigning-non-slot
+            g._oracle_pool = self._create_pool()
 
-        return g._oracle_pool.acquire()  # pylint: disable=protected-access
-
-
-# export instance of this class
-oracle_db = OracleDB()  # pylint: disable=invalid-name;
+        return g._oracle_pool.acquire()

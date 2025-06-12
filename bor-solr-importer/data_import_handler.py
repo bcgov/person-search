@@ -63,7 +63,6 @@ def load_search_core():  # noqa: PLR0915, PLR0912
                 btr_fetch_count = 0
                 batch_limit = current_app.config.get("BTR_BATCH_LIMIT")
                 loop_count = 0
-                btr_data_descs = []
                 while loop_count < 100:  # noqa: PLR2004
                     # NOTE: should never get to this condition
                     loop_count += 1
@@ -73,16 +72,13 @@ def load_search_core():  # noqa: PLR0915, PLR0912
                     btr_data = btr_data_cur.fetchall()
                     current_app.config["TIME_WAITED_DATA_PARSING_BTR"] += time.time() - start_time_btr
                     btr_fetch_count += len(btr_data)
-                    if not btr_data_descs:
-                        # just need to do once
-                        btr_data_descs = [desc[0].lower() for desc in btr_data_cur.description]
                     btr_data_cur.close()
                     if not btr_data:
                         # this should be the condition that breaks the loop (BTR_BATCH_LIMIT should be set high enough)
                         break
 
                     current_app.logger.debug("********** Mapping BTR data **********")
-                    prepped_btr_data, batch_btr_id_links = prep_data_btr(btr_data, btr_data_descs)
+                    prepped_btr_data, batch_btr_id_links = prep_data_btr(btr_data, btr_data_cur.keys())
                     btr_id_links = {**btr_id_links, **batch_btr_id_links}
                     current_app.logger.debug(f"{len(prepped_btr_data)} BTR records ready for import.")
 
@@ -172,7 +168,7 @@ def load_search_core():  # noqa: PLR0915, PLR0912
                 current_app.logger.debug("---------- Mapping LEAR data ----------")
                 prepped_lear_data, partial_btr_updates = prep_data(
                     data=lear_data,
-                    data_descs=[desc[0].lower() for desc in lear_data_cur.description],
+                    data_descs=lear_data_cur.keys(),
                     source="LEAR",
                     btr_id_links=btr_id_links
                 )

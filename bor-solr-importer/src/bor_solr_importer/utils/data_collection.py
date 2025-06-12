@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Data collection functions."""
-import psycopg2
 from flask import current_app
+from sqlalchemy import CursorResult, text
 
-from bor_solr_importer import oracle_db
+from bor_solr_importer import btr_db, lear_db, oracle_db
 
 
 def _get_stringified_list_for_sql(config_value: str) -> str:
@@ -97,7 +97,7 @@ def collect_colin_data(corp_num_min: str, corp_num_max: str | None = None):
     return cursor
 
 
-def collect_lear_data():
+def collect_lear_data() -> CursorResult:
     """Collect data from LEAR."""
     debug_clause = ""
     if debug_identfiers := _get_stringified_list_for_sql("DEBUG_IDENTIFIERS"):
@@ -105,14 +105,9 @@ def collect_lear_data():
         debug_clause = f"and b.identifier in ({debug_identfiers})"
 
     current_app.logger.debug("Connecting to LEAR OCP Postgres instance...")
-    conn = psycopg2.connect(host=current_app.config.get("DB_HOST"),
-                            port=current_app.config.get("DB_PORT"),
-                            database=current_app.config.get("DB_NAME"),
-                            user=current_app.config.get("DB_USER"),
-                            password=current_app.config.get("DB_PASSWORD"))
-    cur = conn.cursor()
+    conn = lear_db.db.engine.connect()
     current_app.logger.debug("Collecting LEAR data...")
-    cur.execute(f"""
+    return conn.execute(text(f"""
         SELECT b.identifier,b.legal_name,b.legal_type,b.state,b.tax_id,
             pr.id as party_role_id,pr.role,pr.appointment_date,pr.cessation_date,
             p.first_name,p.middle_initial,p.last_name,p.organization_name,p.party_type,
@@ -130,11 +125,10 @@ def collect_lear_data():
         WHERE b.legal_type in ({_get_stringified_list_for_sql('MODERNIZED_LEGAL_TYPES')})
             AND pr.role != ''
             {debug_clause}
-        """)
-    return cur
+        """))
 
 
-def collect_btr_data(limit: int | None = None, offset: int | None = None):
+def collect_btr_data(limit: int | None = None, offset: int | None = None) -> CursorResult:
     """Collect data from BTR."""
     limit_clause = ""
     if limit:
@@ -151,18 +145,12 @@ def collect_btr_data(limit: int | None = None, offset: int | None = None):
         debug_clause = f"WHERE s.business_identifier IN ({debug_identfiers})"
 
     current_app.logger.debug("Connecting to BTR GCP Postgres instance...")
-    conn = psycopg2.connect(host=current_app.config.get("BTR_DB_HOST"),
-                            port=current_app.config.get("BTR_DB_PORT"),
-                            database=current_app.config.get("BTR_DB_NAME"),
-                            user=current_app.config.get("BTR_DB_USER"),
-                            password=current_app.config.get("BTR_DB_PASSWORD"))
-    cur = conn.cursor()
+    conn = btr_db.db.engine.connect()
     current_app.logger.debug("Collecting BTR data...")
-    cur.execute(f"""
-                SELECT s.business_identifier, o.ownership_json, p.person_json
-                FROM submission s
-                JOIN ownership o on s.id = o.submission_id
-                JOIN person p on p.id = o.person_id
-                {debug_clause} {limit_clause}
-                """)
-    return cur
+    return conn.execute(text(f"""
+        SELECT s.business_identifier, o.ownership_json, p.person_json
+        FROM submission s
+        JOIN ownership o on s.id = o.submission_id
+        JOIN person p on p.id = o.person_id
+        {debug_clause} {limit_clause}
+        """))

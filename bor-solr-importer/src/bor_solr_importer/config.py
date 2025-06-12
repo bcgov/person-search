@@ -89,12 +89,16 @@ class Config:  # pylint: disable=too-few-public-methods
     DB_NAME = os.getenv("DATABASE_NAME", "")
     DB_HOST = os.getenv("DATABASE_HOST_LEAR", "")
     DB_PORT = os.getenv("DATABASE_PORT", "5432")
+    DB_CONNECTION_NAME = os.getenv("DATABASE_CONNECTION_NAME")
+    GOOGLE_APPLICATION_CREDENTIALS_LEAR = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_LEAR", "sa-secret/sa-importer-key-lear-dev.json")
 
     BTR_DB_USER = os.getenv("DATABASE_USERNAME_BTR", "")
     BTR_DB_PASSWORD = os.getenv("DATABASE_PASSWORD_BTR", "")
     BTR_DB_NAME = os.getenv("DATABASE_NAME_BTR", "")
     BTR_DB_HOST = os.getenv("DATABASE_HOST_BTR", "")
     BTR_DB_PORT = os.getenv("DATABASE_PORT_BTR", "5432")
+    BTR_DB_CONNECTION_NAME = os.getenv("DATABASE_CONNECTION_NAME_BTR")
+    GOOGLE_APPLICATION_CREDENTIALS_BTR = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_BTR", "sa-secret/sa-importer-key-btr-dev.json")
 
     # Connection pool settings
     DB_MIN_POOL_SIZE = os.getenv("DATABASE_MIN_POOL_SIZE", "2")
@@ -159,6 +163,10 @@ class UnitTestingConfig(Config):  # pylint: disable=too-few-public-methods
     DEBUG = True
     DEVELOPMENT = False
     TESTING = True
+    # TODO: update these when tests are ready
+    INCLUDE_BTR_LOAD = False
+    INCLUDE_COLIN_LOAD = False
+    INCLUDE_LEAR_LOAD = False
 
     SOLR_SVC_LEADER_CORE = os.getenv("TEST_SOLR_SVC_LEADER_CORE", "bor")
     SOLR_SVC_FOLLOWER_CORE = os.getenv("TEST_SOLR_SVC_FOLLOWER_CORE", "bor_follower")
@@ -180,12 +188,14 @@ class UnitTestingConfig(Config):  # pylint: disable=too-few-public-methods
     DB_NAME = os.getenv("DATABASE_TEST_NAME", "")
     DB_HOST = os.getenv("DATABASE_TEST_HOST_LEAR", "")
     DB_PORT = os.getenv("DATABASE_TEST_PORT", "5432")
+    DB_CONNECTION_NAME = os.getenv("DATABASE_TEST_CONNECTION_NAME")
 
     BTR_DB_USER = os.getenv("DATABASE_TEST_USERNAME_BTR", "")
     BTR_DB_PASSWORD = os.getenv("DATABASE_TEST_PASSWORD_BTR", "")
     BTR_DB_NAME = os.getenv("DATABASE_TEST_NAME_BTR", "")
     BTR_DB_HOST = os.getenv("DATABASE_TEST_HOST_BTR", "")
     BTR_DB_PORT = os.getenv("DATABASE_TEST_PORT_BTR", "5432")
+    BTR_DB_CONNECTION_NAME = os.getenv("DATABASE_TEST_CONNECTION_NAME_BTR")
 
     # Service account details
     ACCOUNT_SVC_AUTH_URL = "http://test.ACCOUNT_SVC_AUTH_URL.fake"

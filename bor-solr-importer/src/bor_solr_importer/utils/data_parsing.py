@@ -235,7 +235,7 @@ def set_party_entity(item_dict: dict[str, str],
 def party_cleanup(prepped_data: dict[str, Entity], party_links: dict[str, dict[str, str]]):
     """Add relevant data to the current party entry and remove older versions of the party."""
     skipped_ids = []
-    for party_link in party_links.values:
+    for party_link in party_links.values():
         for current_id in party_link:
             if current_id not in prepped_data:
                 skipped_ids.append(current_id)
@@ -439,7 +439,7 @@ def prep_data(data: list[dict[str, str]],  # pylint: disable=too-many-locals,too
 
 
 def prep_data_btr(data: list[dict], data_descs: list[str]) -> tuple[dict, dict]:
-    """Return the list of Entity docsn and the party/business id links from the btr db data."""
+    """Return the list of Entity docs and the party/business id links from the btr db data."""
     start = time.time()
     prepped_data: list[Entity] = []
     id_links: dict[str, list[str]] = {}

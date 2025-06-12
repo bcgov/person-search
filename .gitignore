@@ -149,3 +149,6 @@ internal/env_*.md
 **/.ruff_cache
 
 .history
+
+# gcp service account secrets
+**/sa-secret/**

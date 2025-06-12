@@ -22,7 +22,7 @@ from flask import Flask
 from bor_solr_importer.bor_api.services import solr
 from bor_solr_importer.bor_api.services.authz import auth_cache
 from bor_solr_importer.config import DevelopmentConfig, ProductionConfig, UnitTestingConfig
-from bor_solr_importer.oracle import oracle_db
+from bor_solr_importer.services import btr_db, lear_db, oracle_db
 from bor_solr_importer.version import __version__
 from structured_logging import StructuredLogging
 
@@ -62,6 +62,11 @@ def create_app(config_name: str = os.getenv("DEPLOYMENT_ENV", "production") or "
     oracle_db.init_app(app)
     solr.init_app(app)
     auth_cache.init_app(app)
+
+    if app.config["INCLUDE_LEAR_LOAD"]:
+        lear_db.init_app(app)
+    if app.config["INCLUDE_BTR_LOAD"]:
+        btr_db.init_app(app)
 
     register_shellcontext(app)
 

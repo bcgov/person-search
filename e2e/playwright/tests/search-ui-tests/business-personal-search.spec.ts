@@ -1,5 +1,7 @@
 import { test } from '@playwright/test';
 import { LoginPage } from '../../pages-ui/logonPage';
+import { termsOfUse } from '../../pages-ui/termsOfUsePage';
+
 import { BusinessAndPersonSearchPage } from '../../pages-ui/searchPage';
 import { RegistriesDashboardPage } from '../../pages-ui/dashboardPage';
 import  searchData  from '../../fixtures/search-ui/search-testdata.json';
@@ -32,11 +34,13 @@ test('Person Search - UI validation', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const businessAndPersonSearchPage = new BusinessAndPersonSearchPage(page);
     const registriesDashboardPage = new RegistriesDashboardPage(page);
-    
+    const termsOfUsepage = new termsOfUse(page);
+
       await loginPage.goto();
       await loginPage.login('bcsc');
-      registriesDashboardPage.selectProductAndServices(searchData[0].productAndService);
-      await businessAndPersonSearchPage.businessSearch(searchData[0].businessSearchText);
+      await termsOfUsepage.termsOfUseInput()
+      await registriesDashboardPage.selectProductAndServices(searchData[1].productAndService);
+      await businessAndPersonSearchPage.businessSearch(searchData[1].businessSearchText);
   
       await businessAndPersonSearchPage.personSearch(searchData[0].personalSearchText);
      

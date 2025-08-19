@@ -70,27 +70,13 @@ export class LoginPage {
     console.error('Invalid logi n type selected');  
   }
     await this.page.waitForTimeout(5000);
-   // await this.page.getByRole('checkbox', { name: 'accept' }).check();
-    //await this.page.check('name=accept');
-    //await this.page.c('#accept');
-   // await this.page.click('#btnSubmit')
-
-   // await this.termsOfUseCheckBox.check();
-   // await this.termsOfUseContinueButton.click();
-    
+   
   }
   async logout() {
     await this.logOutMenu.click();
     this.logOutItem.click();
     await this.page.waitForTimeout(5000);
-   // await this.page.getByRole('checkbox', { name: 'accept' }).check();
-    //await this.page.check('name=accept');
-    //await this.page.c('#accept');
-   // await this.page.click('#btnSubmit')
-
-   // await this.termsOfUseCheckBox.check();
-   // await this.termsOfUseContinueButton.click();
-    
+      
   }
   async loginAndReturnToken(loginType: string): Promise<string> {
     if (loginType === 'idir') {
@@ -112,12 +98,7 @@ export class LoginPage {
     await this.page.waitForTimeout(5000);
   
     console.info(`[AuthSetup] Logged in successfully`)
-    //console.info(`[AuthSetup] Navigated to dashboard page: ${process.env.NUXT_BASE_URL }`)
-    // Extract token from localStorage
-    //const token = await this.page.evaluate(() => {
-    //  return localStorage.getItem('access_token'); // Replace with the actual key your app uses
-    //});
-   // console.log('Token from localStorage:', token);
+
     const tokenSessionStorage = await this.page.evaluate(() => {
       return sessionStorage.getItem('KEYCLOAK_TOKEN'); // Adjust key if needed
     });

@@ -39,7 +39,7 @@ RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.disable.allowUrls=true\" >> /etc/defa
 # RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.environment=$ENVIRONMENT\" >> /etc/default/solr.in.sh
 # RUN echo SOLR_OPTS=\"$SOLR_OPTS_VAR -Dsolr.leaderUrl=$LEADER_URL\" >> /etc/default/solr.in.sh
 
-# jvm memory
+# NB: OPs flow is to override this during the startup script in the deployment
 RUN echo SOLR_JAVA_MEM=\"-Xms$JVM_MEM -Xmx$JVM_MEM\" >> /etc/default/solr.in.sh
 
 RUN chmod -R 777 /var/solr/data

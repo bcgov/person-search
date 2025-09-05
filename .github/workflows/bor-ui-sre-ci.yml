@@ -17,8 +17,8 @@ jobs:
       id-token: "write"
     uses: bcgov/bcregistry-sre/.github/workflows/frontend-ci.yaml@main
     with:
-      node_version: 20
-      pnpm_version: 8
+      node_version: 24
+      pnpm_version: 10
       app_name: "bor-ui"
       working_directory: "./bor-ui"
       codecov_flag: "borui"

@@ -1,8 +1,6 @@
 import { Page, Locator } from '@playwright/test';
-import { defineConfig } from '@playwright/test';
 import dotenv from 'dotenv';
 dotenv.config();
-import { expect } from '@playwright/test';
 export class LoginPage {
   readonly page: Page;
   readonly loginBcscButton: Locator;

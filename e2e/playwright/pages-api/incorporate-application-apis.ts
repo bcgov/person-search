@@ -1,4 +1,4 @@
-import { test, expect, request } from '@playwright/test';
+import {  expect, request } from '@playwright/test';
 import { getFormattedDate, utils } from '../helpers/utils';
 import dotenv from 'dotenv';
 dotenv.config();

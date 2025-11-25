@@ -1,5 +1,5 @@
 
-import { test, expect, request } from '@playwright/test';
+import { expect, request } from '@playwright/test';
 import { getFormattedDate, getFormattedUTCDate } from '../helpers/utils';
 
 import dotenv from 'dotenv';

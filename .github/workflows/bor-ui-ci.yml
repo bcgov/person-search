@@ -15,6 +15,7 @@ jobs:
     permissions:
       contents: "write"
       id-token: "write"
+      pull-requests: "write"
     uses: bcgov/bcregistry-sre/.github/workflows/frontend-ci.yaml@main
     with:
       node_version: 24

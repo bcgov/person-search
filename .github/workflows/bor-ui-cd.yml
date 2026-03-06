@@ -8,14 +8,22 @@ on:
       - "bor-ui/**"
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Environment"
+      target:
+        description: "Deploy To"
         required: true
         type: choice
         options:
           - dev
           - test
+          - sandbox
           - prod
+      redeploy:
+        description: "Redeploy Application"
+        required: true
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 jobs:
   bor-ui-cd:

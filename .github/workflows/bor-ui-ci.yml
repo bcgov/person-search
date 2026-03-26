@@ -18,7 +18,7 @@ jobs:
       pull-requests: "write"
     uses: bcgov/bcregistry-sre/.github/workflows/frontend-ci.yaml@main
     with:
-      node_version: 24
+      node_version: 26
       pnpm_version: 10
       app_name: "bor-ui"
       working_directory: "./bor-ui"
@@ -47,7 +47,7 @@ jobs:
         run_install: false
     - uses: actions/setup-node@v4
       with:
-        node-version: 24
+        node-version: 26
         cache: 'pnpm'
         cache-dependency-path: '${{ matrix.project }}/pnpm-lock.yaml'
     - name: Install dependencies

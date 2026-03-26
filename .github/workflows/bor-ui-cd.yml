@@ -33,7 +33,7 @@ jobs:
     uses: bcgov/bcregistry-sre/.github/workflows/frontend-cd.yaml@main
     with:
       target: ${{ inputs.environment }}
-      node_version: 26
+      node_version: 24
       app_name: "bor-ui"
       working_directory: "./bor-ui"
     secrets:

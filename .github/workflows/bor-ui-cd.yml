@@ -32,7 +32,7 @@ jobs:
       id-token: "write"
     uses: bcgov/bcregistry-sre/.github/workflows/frontend-cd.yaml@main
     with:
-      target: ${{ inputs.environment }}
+      target: ${{ inputs.target }}
       node_version: 24
       app_name: "bor-ui"
       working_directory: "./bor-ui"

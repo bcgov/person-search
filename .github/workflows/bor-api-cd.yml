@@ -7,7 +7,7 @@ on:
       - feature*
       - hotfix*
     paths:
-      - "queue-services/bor-api/**"
+      - "bor-api/**"
   workflow_dispatch:
     inputs:
       target:
@@ -37,7 +37,7 @@ jobs:
     with:
       target: ${{ inputs.target }}
       app_name: "bor-api"
-      working_directory: "./queue-services/bor-api"
+      working_directory: "./bor-api"
       redeploy: ${{ inputs.redeploy }}
     secrets:
       WORKLOAD_IDENTIFY_POOLS_PROVIDER: ${{ secrets.WORKLOAD_IDENTIFY_POOLS_PROVIDER }}

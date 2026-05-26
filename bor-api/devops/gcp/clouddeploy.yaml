@@ -50,7 +50,8 @@ serialPipeline:
       deploy-project-id: "yfjq17-dev"
       service-name: "bor-api-dev"
       container-name: "bor-api-dev"
-      cloudsql-instances: ""
+      container-concurrency: "8"
+      cloudsql-instances: "yfjq17-dev:northamerica-northeast1:bor-db"
       service-account: "sa-api@yfjq17-dev.iam.gserviceaccount.com"
  - targetId: yfjq17-test
    profiles: [test]
@@ -62,8 +63,9 @@ serialPipeline:
       deploy-env: "development"
       deploy-project-id: "yfjq17-test"
       service-name: "bor-api-test"
+      container-concurrency: "8"
       container-name: "bor-api-test"
-      cloudsql-instances: ""
+      cloudsql-instances: "yfjq17-test:northamerica-northeast1:bor-db-test"
       service-account: "sa-api@yfjq17-test.iam.gserviceaccount.com"
  - targetId: yfjq17-sandbox
    profiles: [sandbox]
@@ -76,6 +78,7 @@ serialPipeline:
       deploy-project-id: "yfjq17-tools"
       service-name: "bor-api-sandbox"
       container-name: "bor-api-sandbox"
+      container-concurrency: "8"
       cloudsql-instances: ""
       service-account: "sa-api@yfjq17-tools.iam.gserviceaccount.com"
  - targetId: yfjq17-prod
@@ -89,9 +92,9 @@ serialPipeline:
       deploy-project-id: "yfjq17-prod"
       service-name: "bor-api-prod"
       container-name: "bor-api-prod"
-      cloudsql-instances: ""
-      container-concurrency: "60"
+      cloudsql-instances: "yfjq17-prod:northamerica-northeast1:bor-db-prod"
+      container-concurrency: "10"
       resources-cpu: "8000m"
       resources-memory: "4Gi"
       service-account: "sa-api@yfjq17-prod.iam.gserviceaccount.com"
-      max-scale: "10"
+      max-scale: "20"

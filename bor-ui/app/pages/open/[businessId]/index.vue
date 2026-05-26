@@ -9,8 +9,8 @@ const registryHomeUrl = useRuntimeConfig().public.registryHomeUrl
 definePageMeta({
   layout: 'search-purchase-docs',
   middleware: 'connect-auth',
-  onAccountChange: (_oldAccount: ConnectAccount, newAccount: ConnectAccount) => {
-    useConnectAccountStore().switchCurrentAccount(newAccount.id)
+  onAccountChange: async (_oldAccount: ConnectAccount, newAccount: ConnectAccount) => {
+    await useConnectAccountStore().switchCurrentAccount(newAccount.id)
     useBcrosNavigate().redirect(useRuntimeConfig().public.baseUrl)
     return true
   }

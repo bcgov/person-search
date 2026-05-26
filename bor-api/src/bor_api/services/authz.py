@@ -72,7 +72,7 @@ def _call_auth_api(path: str, token: str) -> dict:
         ValueError,
         Exception,
     ) as err:
-        current_app.logger.debug(f"Auth api connection failure using svc:{api_url}", err)
+        current_app.logger.debug(f"Auth api connection failure using svc:{api_url}", err=err)
         raise ExternalServiceException(
             HTTPStatus.SERVICE_UNAVAILABLE,
             [{"message": "Unable to get information from auth.", "reason": err.with_traceback(None)}],

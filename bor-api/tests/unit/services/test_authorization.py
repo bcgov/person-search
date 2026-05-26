@@ -47,12 +47,26 @@ TEST_STAFF_DATA = [
 ]
 
 
-def test_user_orgs_mock(client, session, jwt):
+def test_user_orgs_mock(client, session, jwt, requests_mock):
     """Assert that a auth-api user orgs request works as expected with the mock service endpoint."""
     # setup
     current_app.config.update(AUTH_SVC_URL=MOCK_URL_NO_KEY)
     # print('env auth-api url=' + current_app.config.get('AUTH_SVC_URL'))
     token = helper_create_jwt(jwt, [authz.PPR_ROLE])
+
+    # mock the external auth API so tests do not rely on network
+    mock_response = {
+        "orgs": [
+            {
+                "orgStatus": "ACTIVE",
+                "statusCode": "ACTIVE",
+                "orgType": "PREMIUM",
+                "id": "12345",
+                "name": "Test Org",
+            }
+        ]
+    }
+    requests_mock.get(MOCK_URL_NO_KEY + "users/orgs", json=mock_response)
 
     # test
     org_data = authz.user_orgs(token)

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@sbc-connect/nuxt-business-base':
-        specifier: 0.20.0
-        version: 0.20.0(61638842fe88aca532e6353279d4f21d)
+        specifier: 0.21.0
+        version: 0.21.0(61638842fe88aca532e6353279d4f21d)
       '@types/iso-3166-2':
         specifier: ^1.0.4
         version: 1.0.4
@@ -1934,8 +1934,8 @@ packages:
   '@sbc-connect/nuxt-base@0.9.0':
     resolution: {integrity: sha512-6lSDJUYnCv6/+xa2Evx1zw5nn+a0Ore13HqDVWCaCAu9PRPiNgo8rtS2AIV8WeQtaQ6q2PmIenvhavzmB84t0w==}
 
-  '@sbc-connect/nuxt-business-base@0.20.0':
-    resolution: {integrity: sha512-F5DNwnzNKvaMHUU3V077tnNwmQhdQgbi1oMqlVDcN203Xfotz8djeh4ACGKajaTR4Rryhu8DMmYzS0FPiXyEVw==}
+  '@sbc-connect/nuxt-business-base@0.21.0':
+    resolution: {integrity: sha512-e7WwSm0pRAwe7gX3BqKoqE6WpXUe43gMlFG+oLpl+M7AJ59RXlI1g4kPeFnJJTJACnTNt8BUyvOYl0KZoAt30A==}
     engines: {node: '>=24'}
 
   '@sbc-connect/nuxt-forms@0.7.4':
@@ -6908,7 +6908,7 @@ snapshots:
       '@nuxt/devtools-kit': 3.2.1(magicast@0.5.2)(vite@7.3.1(@types/node@20.19.32)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(yaml@2.8.2))
       '@nuxt/kit': 4.4.6(magicast@0.5.2)
       consola: 3.4.2
-      local-pkg: 1.1.2
+      local-pkg: 1.2.1
       mlly: 1.8.2
       ohash: 2.0.11
       pathe: 2.0.3
@@ -7194,7 +7194,7 @@ snapshots:
       '@unhead/vue': 2.1.15(vue@3.5.26(typescript@5.9.3))
       '@vueuse/core': 14.3.0(vue@3.5.26(typescript@5.9.3))
       '@vueuse/integrations': 14.2.1(change-case@5.4.4)(fuse.js@7.3.0)(vue@3.5.26(typescript@5.9.3))
-      '@vueuse/shared': 14.2.1(vue@3.5.26(typescript@5.9.3))
+      '@vueuse/shared': 14.3.0(vue@3.5.26(typescript@5.9.3))
       colortranslator: 5.0.0
       consola: 3.4.2
       defu: 6.1.7
@@ -8071,7 +8071,7 @@ snapshots:
       - yjs
       - yup
 
-  '@sbc-connect/nuxt-business-base@0.20.0(61638842fe88aca532e6353279d4f21d)':
+  '@sbc-connect/nuxt-business-base@0.21.0(61638842fe88aca532e6353279d4f21d)':
     dependencies:
       '@sbc-connect/nuxt-pay': 0.3.10(61638842fe88aca532e6353279d4f21d)
       http-status-codes: 2.3.0
@@ -9218,7 +9218,7 @@ snapshots:
       '@nuxt/kit': 4.4.6(magicast@0.5.2)
       '@vueuse/core': 14.3.0(vue@3.5.26(typescript@5.9.3))
       '@vueuse/metadata': 14.3.0
-      local-pkg: 1.1.2
+      local-pkg: 1.2.1
       nuxt: 4.2.2(@parcel/watcher@2.5.6)(@types/node@20.19.32)(@vue/compiler-sfc@3.5.28)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.2(jiti@2.6.1))(ioredis@5.9.2)(lightningcss@1.32.0)(magicast@0.5.2)(optionator@0.9.4)(rollup@4.57.1)(terser@5.46.0)(typescript@5.9.3)(vite@7.3.1(@types/node@20.19.32)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(yaml@2.8.2))(vue-tsc@3.2.4(typescript@5.9.3))(yaml@2.8.2)
       vue: 3.5.26(typescript@5.9.3)
     transitivePeerDependencies:
@@ -11726,7 +11726,7 @@ snapshots:
       '@internationalized/number': 3.6.5
       '@tanstack/vue-virtual': 3.13.26(vue@3.5.26(typescript@5.9.3))
       '@vueuse/core': 14.3.0(vue@3.5.26(typescript@5.9.3))
-      '@vueuse/shared': 14.2.1(vue@3.5.26(typescript@5.9.3))
+      '@vueuse/shared': 14.3.0(vue@3.5.26(typescript@5.9.3))
       aria-hidden: 1.2.6
       defu: 6.1.7
       ohash: 2.0.11
@@ -12175,7 +12175,7 @@ snapshots:
 
   unplugin-auto-import@21.0.0(@nuxt/kit@4.4.6(magicast@0.5.2))(@vueuse/core@14.3.0(vue@3.5.26(typescript@5.9.3))):
     dependencies:
-      local-pkg: 1.1.2
+      local-pkg: 1.2.1
       magic-string: 0.30.21
       picomatch: 4.0.4
       unimport: 5.6.0
@@ -12559,7 +12559,7 @@ snapshots:
       ast-walker-scope: 0.8.3
       chokidar: 5.0.0
       json5: 2.2.3
-      local-pkg: 1.1.2
+      local-pkg: 1.2.1
       magic-string: 0.30.21
       mlly: 1.8.2
       muggle-string: 0.4.1

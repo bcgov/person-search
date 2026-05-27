@@ -6,7 +6,4 @@ __pycache__
 .eggs
 Makefile
 cache
-devops
-manage.py
-migrations
 tests

@@ -36,7 +36,7 @@ export const CorpInfoArray: Array<CorpInfo> = [
     colinInd: true,
     corpClass: CorpClass.BC,
     shortDesc: 'BC COMPANY',
-    fullDesc: 'BC Limited Company',
+    fullDesc: 'BC Limited Company TEST',
     numberedDesc: 'Numbered Limited Company'
   },
   {

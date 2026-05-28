@@ -19,6 +19,7 @@ import os
 import uuid
 from http import HTTPStatus
 
+from cloud_sql_connector import setup_pg8000_close_event_listener
 from flask import Flask, current_app, redirect, request
 from flask_migrate import Migrate
 
@@ -30,8 +31,6 @@ from bor_api.services import Flags, jwt, solr
 from bor_api.services.authz import auth_cache
 from bor_api.utils.run_version import get_run_version
 from structured_logging import StructuredLogging
-from cloud_sql_connector import DBConfig, setup_pg8000_close_event_listener
-
 
 CONFIG_MAP = {
     "development": DevelopmentConfig,
@@ -46,17 +45,6 @@ def create_app(environment: str = os.getenv("DEPLOYMENT_ENV", "production"), **k
     app = Flask(__name__)
     app.logger = StructuredLogging(app).get_logger().new(worker_id=str(uuid.uuid4()))
     app.config.from_object(CONFIG_MAP.get(environment, "production"))
-
-    if app.config.get("CLOUDSQL_INSTANCE_CONNECTION_NAME"):  # pragma: no cover
-        db_config = DBConfig(
-            instance_name=app.config["CLOUDSQL_INSTANCE_CONNECTION_NAME"],
-            database=app.config.get("DB_NAME", ""),
-            user=app.config.get("DB_USER", ""),
-            ip_type=app.config["DB_IP_TYPE"],
-            pool_recycle=60,
-            schema="public",
-        )
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = db_config.get_engine_options()
 
     db.init_app(app)
 

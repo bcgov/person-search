@@ -17,7 +17,6 @@ dependencies = [
     "gunicorn (>=23.0.0,<24.0.0)",
     "launchdarkly-server-sdk (>=9.11.0,<10.0.0)",
     "phonenumbers (>=9.0.5,<10.0.0)",
-    "psycopg2-binary (>=2.9.10,<3.0.0)",
     "pycountry (>=24.6.1,<25.0.0)",
     "python-dotenv (>=1.1.0,<2.0.0)",
     "requests (>=2.32.3,<3.0.0)",
@@ -25,6 +24,7 @@ dependencies = [
     "werkzeug (>=3.1.3,<4.0.0)",
     "attrs (>=25.3.0,<26.0.0)",
     "dpath (>=2.2.0,<3.0.0)",
+    "cloud-sql-connector @  git+https://github.com/bcgov/sbc-connect-common.git@main#subdirectory=python/cloud-sql-connector",
     "structured-logging @ git+https://github.com/bcgov/sbc-connect-common.git@main#subdirectory=python/structured-logging",
     "flask-cors (>=6.0.0,<7.0.0)"
 ]

@@ -1,8 +1,9 @@
 import logging
+import os
 from logging.config import fileConfig
 
 from flask import current_app
-
+import sqlalchemy as sa
 from alembic import context
 
 # this is the Alembic Config object, which provides
@@ -93,6 +94,11 @@ def run_migrations_online():
     connectable = get_engine()
 
     with connectable.connect() as connection:
+        owner_role = os.getenv("DATABASE_OWNER_ROLE")
+        if owner_role:
+            safe_role = owner_role.replace('"', '""')  # Escape any quotes for SQL safety
+            connection.execute(sa.text(f'SET ROLE "{safe_role}"'))
+            connection.commit()
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),

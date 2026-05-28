@@ -9,7 +9,7 @@ For API usage documentation see _TBD_
 ## Technology Stack Used
 
 - Python, Flask
-- Postgres - SQLAlchemy, psycopg2-binary & alembic
+- Postgres - SQLAlchemy, pg8000 & alembic
 - SOLR
 - Poetry
 

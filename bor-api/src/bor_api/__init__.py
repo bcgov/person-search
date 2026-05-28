@@ -19,6 +19,7 @@ import os
 import uuid
 from http import HTTPStatus
 
+from cloud_sql_connector import setup_pg8000_close_event_listener
 from flask import Flask, current_app, redirect, request
 from flask_migrate import Migrate
 
@@ -60,6 +61,10 @@ def create_app(environment: str = os.getenv("DEPLOYMENT_ENV", "production"), **k
         setup_jwt_manager(app, jwt)
 
         auth_cache.init_app(app)
+
+        with app.app_context():
+            engine = db.engine
+            setup_pg8000_close_event_listener(engine)
 
     @app.route("/")
     def be_nice_swagger_redirect():

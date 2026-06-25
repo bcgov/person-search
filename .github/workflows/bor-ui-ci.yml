@@ -19,7 +19,7 @@ jobs:
     uses: bcgov/bcregistry-sre/.github/workflows/frontend-ci.yaml@main
     with:
       node_version: 24
-      pnpm_version: 10
+      pnpm_version: latest-11
       app_name: "bor-ui"
       working_directory: "./bor-ui"
       codecov_flag: "borui"
@@ -41,7 +41,7 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.60.0-noble
     steps:
     - uses: actions/checkout@v4
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v6
       with:
         version: 10
         run_install: false

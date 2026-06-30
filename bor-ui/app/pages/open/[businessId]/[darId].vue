@@ -6,7 +6,8 @@ const { params, query } = useRoute()
 const businessId = params.businessId as string
 const darId = params.darId as string
 const status = query.status as string
-const registryHomeUrl = useRuntimeConfig().public.registryHomeUrl
+const rtc = useRuntimeConfig().public
+const isStaff = useIsStaff()
 
 definePageMeta({
   layout: 'search-view-docs',
@@ -52,7 +53,9 @@ onMounted(async () => {
     useRouter().push(localePath(`/open/${businessId}`))
   }
   setBreadcrumbs([
-    { to: registryHomeUrl + 'dashboard', label: t('label.bcregDash') },
+    isStaff.value
+      ? { to: `${rtc.authWebUrl}staff/dashboard/active`, label: t('label.staffDashboard') }
+      : { to: rtc.registryHomeUrl + 'dashboard', label: t('label.bcregDash') },
     { to: localePath('/'), label: t('label.businessPersonSearch') },
     { to: localePath(`/open/${businessId}`), label: businessId },
     { label: t('label.purchasedDocuments') }

@@ -23,6 +23,13 @@ export default defineNuxtConfig({
     }
   },
 
+  // Resolve icons from the locally-installed @iconify-json/mdi collection instead of
+  // fetching from api.iconify.design, so install/build works without network egress to it.
+  icon: {
+    clientBundle: { includeCustomCollections: true },
+    serverBundle: { collections: ['mdi'] }
+  },
+
   alias: {
     BeneficialOwnerIcon: resolve('./public/icons/shares-votes/beneficial-owner.svg'),
     IndirectControlIcon: resolve('./public/icons/shares-votes/indirect-control.svg'),

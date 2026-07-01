@@ -41,5 +41,10 @@
     "happy-dom": "^18.0.1",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.2.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "@nuxt/icon": ">=2.2.2"
+    }
   }
 }

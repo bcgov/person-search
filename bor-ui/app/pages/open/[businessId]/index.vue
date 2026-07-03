@@ -4,7 +4,8 @@ const businessId = params.businessId as string
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const registryHomeUrl = useRuntimeConfig().public.registryHomeUrl
+const rtc = useRuntimeConfig().public
+const isStaff = useIsStaff()
 
 definePageMeta({
   layout: 'search-purchase-docs',
@@ -80,7 +81,9 @@ const alerts = computed(() => businessAlerts.value?.filter(val => !hiddenAlertTy
 onMounted(() => {
   fees.value = {}
   setBreadcrumbs([
-    { to: registryHomeUrl + 'dashboard', label: t('label.bcregDash') },
+    isStaff.value
+      ? { to: `${rtc.authWebUrl}staff/dashboard/active`, label: t('label.staffDashboard') }
+      : { to: rtc.registryHomeUrl + 'dashboard', label: t('label.bcregDash') },
     { to: localePath('/'), label: t('label.businessPersonSearch') },
     { label: businessId }
   ])

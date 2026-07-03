@@ -2,6 +2,7 @@
 import { AccountType } from '#imports'
 
 const { t } = useI18n()
+const isStaff = useIsStaff()
 
 const searchAccess = useSearchAccessStore()
 const { hasExtendedAccess } = storeToRefs(searchAccess)
@@ -37,7 +38,9 @@ definePageMeta({
 onBeforeMount(() => {
   const config = useRuntimeConfig().public
   setBreadcrumbs([
-    { to: config.registryHomeUrl + 'dashboard', label: t('label.bcregDash') },
+    isStaff.value
+      ? { to: `${config.authWebUrl}staff/dashboard/active`, label: t('label.staffDashboard') }
+      : { to: config.registryHomeUrl + 'dashboard', label: t('label.bcregDash') },
     { label: t('label.businessPersonSearch') }
   ])
 })

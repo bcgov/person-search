@@ -25,10 +25,13 @@
   "dependencies": {
     "@sbc-connect/nuxt-business-base": "0.24.0",
     "@types/iso-3166-2": "^1.0.4",
+    "@vueuse/core": "^14.3.0",
     "@vuepic/vue-datepicker": "^11.0.3",
     "country-list": "^2.4.1",
+    "es-toolkit": "^1.46.1",
     "http-status-codes": "^2.3.0",
     "iso-3166-2": "^1.0.0",
+    "luxon": "3.7.2",
     "nuxt": "4.2.2",
     "vue": "3.5.26",
     "vue-country-flag-next": "^2.3.2"
@@ -38,6 +41,8 @@
     "@nuxt/eslint-config": "^1.13.0",
     "@nuxt/test-utils": "^3.23.0",
     "@playwright/test": "^1.60.0",
+    "@types/country-list": "^2.1.4",
+    "@types/luxon": "3.7.1",
     "@vue/test-utils": "^2.4.6",
     "dotenv": "^17.2.2",
     "eslint": "^9.0.0",

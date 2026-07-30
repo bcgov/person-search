@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@sbc-connect/nuxt-business-base':
         specifier: 0.24.0
-        version: 0.24.0(gpbljozhe6rr37fkgtraebffta)
+        version: 0.24.0(61638842fe88aca532e6353279d4f21d)
       '@types/iso-3166-2':
         specifier: ^1.0.4
         version: 1.0.4
@@ -51,6 +51,12 @@ importers:
       '@vue/test-utils':
         specifier: ^2.4.6
         version: 2.4.6
+      dotenv:
+        specifier: ^17.2.2
+        version: 17.4.2
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.2(jiti@2.6.1)
       happy-dom:
         specifier: ^18.0.1
         version: 18.0.1
@@ -3353,10 +3359,6 @@ packages:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
     engines: {node: '>=12'}
 
-  dotenv@17.2.3:
-    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
-    engines: {node: '>=12'}
-
   dotenv@17.4.2:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
@@ -4018,7 +4020,7 @@ packages:
     resolution: {integrity: sha512-51ypPSPCoTEIN9dy5Oy+h4pShgJmPCygKfyRCISBI+JoWT/2oJvK8QPxmwv7b/p239jXrm9M1mlQbyKJ5A152g==}
 
   is-number@7.0.0:
-    resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==, tarball: https://registry.npmjs.org/is-number/-/is-number-7.0.0.tgz}
+    resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
 
   is-path-inside@4.0.0:
@@ -7726,7 +7728,7 @@ snapshots:
       detect-libc: 2.1.2
       is-glob: 4.0.3
       node-addon-api: 7.1.1
-      picomatch: 4.0.3
+      picomatch: 4.0.4
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.5.6
       '@parcel/watcher-darwin-arm64': 2.5.6
@@ -7932,13 +7934,13 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.57.1':
     optional: true
 
-  '@sbc-connect/nuxt-auth@0.14.0(gpbljozhe6rr37fkgtraebffta)':
+  '@sbc-connect/nuxt-auth@0.14.0(61638842fe88aca532e6353279d4f21d)':
     dependencies:
       '@pinia/colada': 1.3.0(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))
       '@pinia/colada-nuxt': 1.0.1(@pinia/colada@1.3.0(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3)))(magicast@0.5.2)
       '@pinia/nuxt': 0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))
-      '@sbc-connect/nuxt-base': 0.11.0(2ue7ajj2cbpnokly5f7qxduyvq)
-      '@sbc-connect/nuxt-forms': 0.7.6(2ue7ajj2cbpnokly5f7qxduyvq)
+      '@sbc-connect/nuxt-base': 0.11.0(80e6912a6ec0171ba25d6f7ea11bbbc1)
+      '@sbc-connect/nuxt-forms': 0.7.6(80e6912a6ec0171ba25d6f7ea11bbbc1)
       keycloak-js: 26.2.4
       pinia: 3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
       pinia-plugin-persistedstate: 4.7.1(@nuxt/kit@4.4.6(magicast@0.5.2))(@pinia/nuxt@0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))))(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))
@@ -8002,7 +8004,7 @@ snapshots:
       - yjs
       - yup
 
-  '@sbc-connect/nuxt-base@0.11.0(2ue7ajj2cbpnokly5f7qxduyvq)':
+  '@sbc-connect/nuxt-base@0.11.0(80e6912a6ec0171ba25d6f7ea11bbbc1)':
     dependencies:
       '@iconify-json/mdi': 1.2.3
       '@launchdarkly/js-client-sdk': 4.6.5
@@ -8076,9 +8078,9 @@ snapshots:
       - yjs
       - yup
 
-  '@sbc-connect/nuxt-business-base@0.24.0(gpbljozhe6rr37fkgtraebffta)':
+  '@sbc-connect/nuxt-business-base@0.24.0(61638842fe88aca532e6353279d4f21d)':
     dependencies:
-      '@sbc-connect/nuxt-pay': 0.5.3(gpbljozhe6rr37fkgtraebffta)
+      '@sbc-connect/nuxt-pay': 0.5.3(61638842fe88aca532e6353279d4f21d)
       http-status-codes: 2.3.0
       iso-3166-2: 1.0.0
       luxon: 3.7.2
@@ -8142,9 +8144,9 @@ snapshots:
       - yjs
       - yup
 
-  '@sbc-connect/nuxt-forms@0.7.6(2ue7ajj2cbpnokly5f7qxduyvq)':
+  '@sbc-connect/nuxt-forms@0.7.6(80e6912a6ec0171ba25d6f7ea11bbbc1)':
     dependencies:
-      '@sbc-connect/nuxt-base': 0.11.0(2ue7ajj2cbpnokly5f7qxduyvq)
+      '@sbc-connect/nuxt-base': 0.11.0(80e6912a6ec0171ba25d6f7ea11bbbc1)
       country-codes-list: 2.0.0
       vue-country-flag-next: 2.3.2(vue@3.5.26(typescript@5.9.3))
     transitivePeerDependencies:
@@ -8208,9 +8210,9 @@ snapshots:
       - yjs
       - yup
 
-  '@sbc-connect/nuxt-pay@0.5.3(gpbljozhe6rr37fkgtraebffta)':
+  '@sbc-connect/nuxt-pay@0.5.3(61638842fe88aca532e6353279d4f21d)':
     dependencies:
-      '@sbc-connect/nuxt-auth': 0.14.0(gpbljozhe6rr37fkgtraebffta)
+      '@sbc-connect/nuxt-auth': 0.14.0(61638842fe88aca532e6353279d4f21d)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -8678,8 +8680,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.54.0(typescript@5.9.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.54.0(typescript@5.9.3)
-      '@typescript-eslint/types': 8.54.0
+      '@typescript-eslint/tsconfig-utils': 8.55.0(typescript@5.9.3)
+      '@typescript-eslint/types': 8.55.0
       debug: 4.4.3
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -8736,8 +8738,8 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.54.0
       debug: 4.4.3
       minimatch: 9.0.5
-      semver: 7.7.4
-      tinyglobby: 0.2.15
+      semver: 7.8.1
+      tinyglobby: 0.2.16
       ts-api-utils: 2.4.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -8854,8 +8856,8 @@ snapshots:
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.3
       '@rollup/pluginutils': 5.3.0(rollup@4.57.1)
-      acorn: 8.15.0
-      acorn-import-attributes: 1.9.5(acorn@8.15.0)
+      acorn: 8.16.0
+      acorn-import-attributes: 1.9.5(acorn@8.16.0)
       async-sema: 3.1.1
       bindings: 1.5.0
       estree-walker: 2.0.2
@@ -8943,9 +8945,9 @@ snapshots:
 
   '@vue-macros/common@3.1.2(vue@3.5.26(typescript@5.9.3))':
     dependencies:
-      '@vue/compiler-sfc': 3.5.27
+      '@vue/compiler-sfc': 3.5.28
       ast-kit: 2.2.0
-      local-pkg: 1.1.2
+      local-pkg: 1.2.1
       magic-string-ast: 1.0.3
       unplugin-utils: 0.3.1
     optionalDependencies:
@@ -9252,9 +9254,9 @@ snapshots:
     dependencies:
       event-target-shim: 5.0.1
 
-  acorn-import-attributes@1.9.5(acorn@8.15.0):
+  acorn-import-attributes@1.9.5(acorn@8.16.0):
     dependencies:
-      acorn: 8.15.0
+      acorn: 8.16.0
 
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
@@ -9411,7 +9413,7 @@ snapshots:
       chokidar: 5.0.0
       confbox: 0.2.2
       defu: 6.1.4
-      dotenv: 17.2.3
+      dotenv: 17.4.2
       exsolve: 1.0.8
       giget: 2.0.0
       jiti: 2.6.1
@@ -9739,8 +9741,6 @@ snapshots:
 
   dotenv@16.6.1: {}
 
-  dotenv@17.2.3: {}
-
   dotenv@17.4.2: {}
 
   duplexer@0.1.2: {}
@@ -10064,8 +10064,8 @@ snapshots:
 
   espree@10.4.0:
     dependencies:
-      acorn: 8.15.0
-      acorn-jsx: 5.3.2(acorn@8.15.0)
+      acorn: 8.16.0
+      acorn-jsx: 5.3.2(acorn@8.16.0)
       eslint-visitor-keys: 4.2.1
 
   espree@11.1.0:
@@ -11373,7 +11373,7 @@ snapshots:
   pkg-types@1.3.1:
     dependencies:
       confbox: 0.1.8
-      mlly: 1.8.0
+      mlly: 1.8.2
       pathe: 2.0.3
 
   pkg-types@2.3.0:
@@ -12051,7 +12051,7 @@ snapshots:
   terser@5.46.0:
     dependencies:
       '@jridgewell/source-map': 0.3.11
-      acorn: 8.15.0
+      acorn: 8.16.0
       commander: 2.20.3
       source-map-support: 0.5.21
 
@@ -12132,7 +12132,7 @@ snapshots:
 
   unctx@2.5.0:
     dependencies:
-      acorn: 8.15.0
+      acorn: 8.16.0
       estree-walker: 3.0.3
       magic-string: 0.30.21
       unplugin: 2.3.11
@@ -12198,7 +12198,7 @@ snapshots:
   unplugin-utils@0.3.1:
     dependencies:
       pathe: 2.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   unplugin-vue-components@32.1.0(@nuxt/kit@4.4.6(magicast@0.5.2))(vue@3.5.26(typescript@5.9.3)):
     dependencies:
@@ -12305,8 +12305,8 @@ snapshots:
   untyped@2.0.0:
     dependencies:
       citty: 0.1.6
-      defu: 6.1.4
-      jiti: 2.6.1
+      defu: 6.1.7
+      jiti: 2.7.0
       knitwork: 1.3.0
       scule: 1.3.0
 
@@ -12439,11 +12439,11 @@ snapshots:
   vite@7.3.1(@types/node@20.19.32)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.27.2
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
-      postcss: 8.5.6
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
+      postcss: 8.5.15
       rollup: 4.57.1
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.16
     optionalDependencies:
       '@types/node': 20.19.32
       fsevents: 2.3.3

@@ -74,11 +74,12 @@ setButtonControl({
 })
 
 const { setPublicDefault } = useBusinessTombstone()
+const { setTombstoneStateReason } = useBusinessStateReason()
 
 const hiddenAlertTypes = [BusinessAlert.FROZEN, BusinessAlert.DISABLED, BusinessAlert.MISSINGINFO]
 const alerts = computed(() => businessAlerts.value?.filter(val => !hiddenAlertTypes.includes(val.type)) || [])
 
-onMounted(() => {
+onMounted(async () => {
   fees.value = {}
   setBreadcrumbs([
     isStaff.value
@@ -88,7 +89,8 @@ onMounted(() => {
     { label: businessId }
   ])
   businessStore.$reset()
-  setPublicDefault(businessId, false)
+  await setPublicDefault(businessId, false)
+  await setTombstoneStateReason()
 })
 </script>
 

@@ -27,6 +27,7 @@ const date = computed(() => {
 })
 
 const { setPublicDefault } = useBusinessTombstone()
+const { setTombstoneStateReason } = useBusinessStateReason()
 
 const { getDocAccessDocument, getDocumentList } = useBusinessSearchApi()
 
@@ -61,7 +62,7 @@ onMounted(async () => {
     { label: t('label.purchasedDocuments') }
   ])
   useBusinessStore().$reset()
-  setPublicDefault(businessId)
+  setPublicDefault(businessId).then(() => setTombstoneStateReason())
   await docAccessStore.init(darId)
   if (![DocAccessStatus.COMPLETED, DocAccessStatus.PAID].includes(docAccess.value?.status as DocAccessStatus)) {
     // Doc access not paid for

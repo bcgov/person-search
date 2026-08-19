@@ -34,6 +34,7 @@ jobs:
     with:
       target: ${{ inputs.target }}
       node_version: 24
+      pnpm_version: 10
       app_name: "bor-ui"
       working_directory: "./bor-ui"
     secrets:

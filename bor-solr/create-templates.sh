@@ -50,7 +50,7 @@ case "$ENV" in
     MACHINE_TYPE_LEADER="custom-4-16384"
     BOOT_DISK_SIZE_LEADER="40GiB"
     MACHINE_TYPE_FOLLOWER="custom-4-16384"
-    BOOT_DISK_SIZE_FOLLOWER="20GiB"
+    BOOT_DISK_SIZE_FOLLOWER="40GiB"
     ;;
   prod)
     LABEL="Production"

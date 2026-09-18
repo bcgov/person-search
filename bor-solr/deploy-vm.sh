@@ -6,7 +6,7 @@ set -o errtrace  # ensure ERR traps fire inside functions/subshells
 # CONFIGURATION
 ########################################
 
-ENV="test"   # dev / test / prod
+ENV="dev"   # dev / test / prod
 SOURCE_TAG="dev"
 
 PROJECT="yfjq17"
@@ -254,13 +254,14 @@ wait_for_replication() {
     local leader_zone="${4:-}"
     local follower_core="${5:-bor_follower}"
     local leader_core="${6:-bor}"
-    local max_attempts="${7:-120}"
-    local interval=5
+    local max_attempts="${7:-240}"
+    local interval="${8:-30}"
 
     local expected_gen=0
     local leader_attempts=5
     local leader_retry_interval=10
     local leader_details
+    local start_time elapsed
 
     log "Getting target generation from leader ${leader_vm}…"
 
@@ -294,7 +295,9 @@ wait_for_replication() {
         return 1
     fi
 
-    log "Target leader generation=${expected_gen}. Waiting for ${follower_vm} to replicate…"
+    log "Target leader generation=${expected_gen}. Waiting for ${follower_vm} to replicate (budget $((max_attempts * interval))s)…"
+
+    start_time=$(date +%s)
 
     for i in $(seq 1 "${max_attempts}"); do
         local follower_details
@@ -304,20 +307,17 @@ wait_for_replication() {
             --command="curl -sf 'http://localhost:8983/solr/${follower_core}/replication?command=details&wt=json'" \
             2>/dev/null || echo '{}')
 
-        local is_replicating follower_gen times_replicated err_msg
+        local is_replicating follower_gen times_replicated failed_at index_size
 
         is_replicating=$(json_field "${follower_details}" isReplicating "true")
         follower_gen=$(json_field "${follower_details}" generation 0)
         times_replicated=$(json_field "${follower_details}" timesIndexReplicated 0)
-        err_msg=$(json_field "${follower_details}" errMsg "")
+        failed_at=$(json_field "${follower_details}" replicationFailedAt "")
+        index_size=$(json_field "${follower_details}" indexSize "")
 
         # Numeric hygiene
         [[ "${follower_gen}" =~ ^[0-9]+$ ]] || follower_gen=0
         [[ "${times_replicated}" =~ ^[0-9]+$ ]] || times_replicated=0
-
-        if [[ -n "${err_msg}" ]]; then
-            log "Replication cycle error on ${follower_vm}: ${err_msg}"
-        fi
 
         if [[ "${is_replicating}" == "false" ]] \
             && [[ "${times_replicated}" -ge 1 ]] \
@@ -326,12 +326,23 @@ wait_for_replication() {
             return 0
         fi
 
-        log "Replication in progress… isReplicating=${is_replicating}, follower_gen=${follower_gen}, target_gen=${expected_gen}, timesIndexReplicated=${times_replicated}"
+        elapsed=$(( $(date +%s) - start_time ))
+        log "Replication in progress… (elapsed ${elapsed}s, poll ${i}/${max_attempts}) isReplicating=${is_replicating}, follower_gen=${follower_gen}, target_gen=${expected_gen}, timesIndexReplicated=${times_replicated}, indexSize=${index_size}${failed_at:+, lastFailure=${failed_at}}"
+
+        # A full copy shows isReplicating=true, timesIndexReplicated=0 and a
+        # static follower generation until the swap completes. If instead the
+        # follower is idle, has never replicated, and is still behind the target
+        # with a recorded failure, surface it rather than waiting blindly.
+        if [[ "${is_replicating}" == "false" ]] \
+            && [[ "${times_replicated}" -lt 1 ]] \
+            && [[ -n "${failed_at}" ]]; then
+            log "WARNING: no in-flight replication and no successful replication yet on ${follower_vm}; recorded failure at ${failed_at}. Continuing to wait for an automatic retry…"
+        fi
 
         sleep "${interval}"
     done
 
-    echo "ERROR: Follower did not reach target generation ${expected_gen} within $((max_attempts * interval))s."
+    echo "ERROR: Follower did not reach target generation ${expected_gen} within $((max_attempts * interval))s (final: isReplicating=${is_replicating}, generation=${follower_gen}, timesIndexReplicated=${times_replicated})."
     return 1
 }
 
@@ -588,7 +599,12 @@ deploy_instances() {
         'http://localhost:8983/solr/bor_follower/config/requestHandler?componentName=/replication'"
 
     # Wait for follower to fully replicate before adding to backend
-    wait_for_replication "${NEW_FOLLOWER_VM}" "${FOLLOWER_ZONE}" "${NEW_LEADER_VM}" "${LEADER_ZONE}" "bor_follower" "bor"
+    if ! wait_for_replication "${NEW_FOLLOWER_VM}" "${FOLLOWER_ZONE}" "${NEW_LEADER_VM}" "${LEADER_ZONE}" "bor_follower" "bor"; then
+        log "Cleaning up failed follower VM: ${NEW_FOLLOWER_VM}"
+        gcloud compute instances delete "${NEW_FOLLOWER_VM}" --zone="${FOLLOWER_ZONE}" --project="${PROJECT_ID}" --quiet 2>/dev/null || true
+        echo "ERROR: Replication did not complete. New follower ${NEW_FOLLOWER_VM} deleted; old leader/follower left intact. Re-run the deploy."
+        exit 1
+    fi
 
     # Reuse the single existing follower group (already in the global backend)
     log "Adding follower to instance group ${FOLLOWER_GRP}…"
@@ -706,7 +722,12 @@ deploy_follower_instance() {
         'http://localhost:8983/solr/bor_follower/config/requestHandler?componentName=/replication'"
 
     # Wait for follower to fully replicate before adding to backend
-    wait_for_replication "${NEW_FOLLOWER_VM}" "${FOLLOWER_ZONE}" "${CURRENT_LEADER_VM}" "${CURRENT_LEADER_ZONE}" "bor_follower" "bor"
+    if ! wait_for_replication "${NEW_FOLLOWER_VM}" "${FOLLOWER_ZONE}" "${CURRENT_LEADER_VM}" "${CURRENT_LEADER_ZONE}" "bor_follower" "bor"; then
+        log "Cleaning up failed follower VM: ${NEW_FOLLOWER_VM}"
+        gcloud compute instances delete "${NEW_FOLLOWER_VM}" --zone="${FOLLOWER_ZONE}" --project="${PROJECT_ID}" --quiet 2>/dev/null || true
+        echo "ERROR: Replication did not complete. New follower ${NEW_FOLLOWER_VM} deleted; old follower left intact. Re-run the deploy."
+        exit 1
+    fi
 
     #####################################
     # SWAP INSTANCE GROUP + BACKEND

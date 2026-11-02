@@ -12,7 +12,7 @@ export enum BusinessType {
   BENEFIT_COMPANY = 'BEN',
   CONTINUE_IN = 'C',
   BC_CCC = 'CC',
-  CEMETARY = 'CEM',
+  CEMETERY = 'CEM',
   COOP = 'CP',
   CONT_IN_SOCIETY = 'CS',
   ULC_CONTINUE_IN = 'CUL',

@@ -2,7 +2,7 @@
 // Not suppressed (by business decision): PARISHES, COOP, XPRO_COOP.
 // Still outstanding: FINANCIAL (waiting on audience confirmation).
 const GOOD_STANDING_SUPPRESSED_TYPES: string[] = [
-  BusinessType.CEMETARY,
+  BusinessType.CEMETERY,
   BusinessType.LIBRARY,
   BusinessType.PENSION_FUND_SOCIETY,
   BusinessType.PRIVATE_ACT,

@@ -4,7 +4,7 @@ export const OtherCorpTypes = [
   BusinessType.CO_1878,
   BusinessType.CO_1890,
   BusinessType.CO_1897,
-  BusinessType.CEMETARY,
+  BusinessType.CEMETERY,
   BusinessType.EXTRA_PRO_REG,
   BusinessType.FINANCIAL,
   BusinessType.FOREIGN,

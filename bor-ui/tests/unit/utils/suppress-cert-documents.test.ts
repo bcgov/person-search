@@ -21,7 +21,7 @@ const makeFiling = (overrides: Partial<BusinessLedgerItem> = {}) => ({
 
 describe('suppressCertOfGoodStanding', () => {
   it.each([
-    BusinessType.CEMETARY,
+    BusinessType.CEMETERY,
     BusinessType.LIBRARY,
     BusinessType.PENSION_FUND_SOCIETY,
     BusinessType.RAILWAYS,
@@ -54,7 +54,7 @@ describe('suppressCertOfGoodStanding', () => {
 
 describe('suppressCertOfStatus', () => {
   it.each([
-    BusinessType.CEMETARY,
+    BusinessType.CEMETERY,
     BusinessType.FINANCIAL,
     BusinessType.LIBRARY,
     BusinessType.PARISHES,

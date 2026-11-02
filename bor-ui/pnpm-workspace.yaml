@@ -11,4 +11,4 @@ allowBuilds:
   unrs-resolver: true
   vue-demi: true
 minimumReleaseAgeExclude:
-  - '@sbc-connect/nuxt-business-base@0.28.0'
+  - '@sbc-connect/nuxt-business-base@0.28.0 || 0.29.0'

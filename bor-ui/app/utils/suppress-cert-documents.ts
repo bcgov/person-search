@@ -12,7 +12,7 @@ import { DateTime } from 'luxon'
 
 /** Always suppress the Certificate of Good Standing. */
 const suppressCGoodTypes: BusinessType[] = [
-  BusinessType.CEMETARY,
+  BusinessType.CEMETERY,
   BusinessType.LIBRARY,
   BusinessType.PENSION_FUND_SOCIETY,
   BusinessType.RAILWAYS,
@@ -28,7 +28,7 @@ const suppressCGoodUnlessRecentArTypes: BusinessType[] = [
 
 /** Always suppress the Certificate of Status. */
 const suppressCStatTypes: BusinessType[] = [
-  BusinessType.CEMETARY,
+  BusinessType.CEMETERY,
   BusinessType.FINANCIAL,
   BusinessType.LIBRARY,
   BusinessType.PARISHES,

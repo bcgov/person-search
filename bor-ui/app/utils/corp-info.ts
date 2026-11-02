@@ -54,11 +54,11 @@ export const CorpInfoArray: Array<CorpInfo> = [
     fullDesc: 'BC Community Contribution Company'
   },
   {
-    corpTypeCd: BusinessType.CEMETARY,
+    corpTypeCd: BusinessType.CEMETERY,
     colinInd: false,
     corpClass: CorpClass.OT,
-    shortDesc: 'CEMETARY',
-    fullDesc: 'Cemetary'
+    shortDesc: 'CEMETERY',
+    fullDesc: 'Cemetery'
   },
   {
     corpTypeCd: BusinessType.COOP,
@@ -108,7 +108,7 @@ export const CorpInfoArray: Array<CorpInfo> = [
     corpTypeCd: BusinessType.PARTNERSHIP,
     colinInd: true,
     corpClass: CorpClass.FIRM,
-    shortDesc: 'PARTNERSHPI',
+    shortDesc: 'PARTNERSHIP',
     fullDesc: 'BC General Partnership'
   },
   {

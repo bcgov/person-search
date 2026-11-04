@@ -93,7 +93,7 @@ serialPipeline:
       service-name: "bor-api-prod"
       container-name: "bor-api-prod"
       cloudsql-instances: "yfjq17-prod:northamerica-northeast1:bor-db-prod"
-      container-concurrency: "10"
+      container-concurrency: "8"
       resources-cpu: "8000m"
       resources-memory: "4Gi"
       service-account: "sa-api@yfjq17-prod.iam.gserviceaccount.com"

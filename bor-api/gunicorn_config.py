@@ -18,7 +18,7 @@ runtime options from environment variables
 import os
 
 workers = int(os.environ.get("GUNICORN_PROCESSES", "1"))
-threads = int(os.environ.get("GUNICORN_THREADS", "1"))
+threads = int(os.environ.get("GUNICORN_THREADS", "8"))
 timeout = int(os.environ.get("GUNICORN_TIMEOUT", "200"))
 print(f"GUNICORN -- workers: {workers}, threads: {threads}, thread timeout: {timeout}")  # noqa: T201
 

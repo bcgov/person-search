@@ -41,7 +41,13 @@ BC Beneficial Ownership Registry SOLR
 
 ### VM Deployment
 
-The Solr cluster runs on GCP Compute Engine VMs (`yfjq17-<env>`). Instance templates are created/refreshed via `bor-solr/create-templates.sh`; a blue-green deploy script is provided at `bor-solr/deploy-vm.sh`:
+The Solr cluster runs on GCP Compute Engine VMs (`yfjq17-<env>`). Instance templates are created/refreshed via `bor-solr/create-templates.sh`; a blue-green deploy script is provided at `bor-solr/deploy-vm.sh`.
+
+For shared-VPC deployments, set the VPC values at the top of `create-templates.sh`:
+
+- `VPC_HOST_PROJECT` — host project that owns the shared VPC network
+- `VPC_NETWORK` — shared VPC name
+- `VPC_SUBNET` — subnet in the host project where the Solr VMs should attach
 
 - `./create-templates.sh [dev|test|prod]` — recreate the leader (and follower for test/prod) instance templates from `startupscript.txt`, backing up any existing template to `<name>-old`. Machine types and JVM heap derive from per-env values in the script.
 - the deploy script creates a new leader VM (and follower for test/prod) from instance templates

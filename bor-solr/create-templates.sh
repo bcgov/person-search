@@ -3,17 +3,22 @@ set -euo pipefail
 
 # ============================================================
 #  CREATE / REFRESH BOR-SOLR INSTANCE TEMPLATES
-#  Usage: ./create-templates.sh [dev|test|prod]   (default: test)
+#  Usage: ./create-templates.sh [dev|test|prod]   (default: dev)
 #  Backs up any existing template to <name>-old before recreating.
 # ============================================================
 
-ENV="${1:-test}"
+ENV="${1:-dev}"
 
 PROJECT="yfjq17"
 PROJECT_ID="${PROJECT}-${ENV}"
 APP="bor"
 
-NETWORK="default"
+# Shared VPC settings. These are required for all Solr VMs; do not fall back
+# to a project-local network when deploying in a shared VPC environment.
+VPC_HOST_PROJECT="c4hnrd"
+VPC_HOST_PROJECT_ID="${VPC_HOST_PROJECT}-${ENV}"
+VPC_NETWORK="bcr-vpc-${ENV}"
+VPC_SUBNET="bcr-common-${ENV}-montreal"
 REGION="northamerica-northeast1"
 ZONE="${REGION}-a"
 TAGS="bor-solr"
@@ -97,6 +102,17 @@ fi
 # ============================================================
 log() { echo -e "[$(date -u +%H:%M:%S)] $1"; }
 
+network_interface_spec() {
+  local no_address="${1:-false}"
+  local nic="network=projects/${VPC_HOST_PROJECT_ID}/global/networks/${VPC_NETWORK},subnet=projects/${VPC_HOST_PROJECT_ID}/regions/${REGION}/subnetworks/${VPC_SUBNET},stack-type=IPV4_ONLY"
+
+  if [[ "$no_address" == "true" ]]; then
+    nic="${nic},no-address"
+  fi
+
+  echo "$nic"
+}
+
 # Back up an existing template to <name>-old, then remove the original.
 # gcloud has no template-clone flag, so the copy is rebuilt from the
 # current template's own config (describe -> explicit create flags).
@@ -129,9 +145,9 @@ backup_instance_template() {
   other_meta="$(python3 -c 'import json,sys;j=json.load(open(sys.argv[1]));o=open(sys.argv[2],"w");p=[i["key"]+"="+i["value"] for i in j["properties"]["metadata"].get("items",[]) if i["key"]!="startup-script"];[o.write(i["value"]) for i in j["properties"]["metadata"].get("items",[]) if i["key"]=="startup-script"];o.close();print(",".join(p))' "$json_file" "$startup_file")"
 
   if [[ "$has_nat" == "no" ]]; then
-    nic="network=projects/${PROJECT_ID}/global/networks/${NETWORK},stack-type=IPV4_ONLY,no-address"
+    nic="$(network_interface_spec true)"
   else
-    nic="network=projects/${PROJECT_ID}/global/networks/${NETWORK},stack-type=IPV4_ONLY"
+    nic="$(network_interface_spec false)"
   fi
 
   local extra_meta=()
@@ -179,7 +195,7 @@ create_template() {
   gcloud compute instance-templates create "$tmpl" \
     --project="$PROJECT_ID" \
     --machine-type="$machine_type" \
-    --network-interface=network=projects/${PROJECT_ID}/global/networks/${NETWORK},stack-type=IPV4_ONLY \
+    --network-interface="$(network_interface_spec true)" \
     --metadata-from-file=startup-script="$PATH_TO_STARTUP_SCRIPT" \
     --metadata="$metadata" \
     --maintenance-policy=MIGRATE \

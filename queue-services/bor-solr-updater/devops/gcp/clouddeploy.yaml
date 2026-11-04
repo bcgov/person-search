@@ -90,7 +90,7 @@ serialPipeline:
       service-name: "bor-solr-updater-prod"
       container-name: "bor-solr-updater-prod"
       cloudsql-instances: ""
-      container-concurrency: "60"
+      container-concurrency: "8"
       resources-cpu: "8000m"
       resources-memory: "4Gi"
       service-account: "sa-api@yfjq17-prod.iam.gserviceaccount.com"
